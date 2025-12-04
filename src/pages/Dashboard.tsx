@@ -5,8 +5,10 @@ import { PortfolioOverview } from "@/components/dashboard/PortfolioOverview";
 import { AssetsView } from "@/components/dashboard/AssetsView";
 import { BridgeView } from "@/components/dashboard/BridgeView";
 import { DiscoverView } from "@/components/dashboard/DiscoverView";
+import { AnalyticsView } from "@/components/dashboard/AnalyticsView";
+import { SettingsView } from "@/components/dashboard/SettingsView";
 
-export type DashboardView = "overview" | "assets" | "bridge" | "discover";
+export type DashboardView = "overview" | "assets" | "bridge" | "discover" | "analytics" | "settings";
 
 const Dashboard = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -22,6 +24,10 @@ const Dashboard = () => {
         return <BridgeView />;
       case "discover":
         return <DiscoverView />;
+      case "analytics":
+        return <AnalyticsView />;
+      case "settings":
+        return <SettingsView />;
       default:
         return <PortfolioOverview />;
     }
