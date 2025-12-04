@@ -27,7 +27,7 @@ const navItems = [
   { id: "discover" as DashboardView, label: "Discover", icon: Compass },
 ];
 
-const bottomNavItems = [
+const bottomNavItems: { id: DashboardView; label: string; icon: typeof BarChart3 }[] = [
   { id: "analytics", label: "Analytics", icon: BarChart3 },
   { id: "settings", label: "Settings", icon: Settings },
 ];
@@ -80,7 +80,13 @@ export function DashboardSidebar({ collapsed, onToggle, activeView, onViewChange
         {bottomNavItems.map((item) => (
           <button
             key={item.id}
-            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+            onClick={() => onViewChange(item.id)}
+            className={cn(
+              "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors",
+              activeView === item.id
+                ? "bg-primary/10 text-primary font-medium"
+                : "text-muted-foreground hover:text-foreground hover:bg-secondary"
+            )}
           >
             <item.icon className="w-5 h-5 shrink-0" />
             {!collapsed && <span className="text-small">{item.label}</span>}
