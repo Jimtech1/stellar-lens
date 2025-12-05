@@ -96,6 +96,26 @@ export function PortfolioOverview() {
         </div>
       </motion.div>
 
+      {/* Quick Actions */}
+      <motion.div variants={itemVariants} className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {[
+          { label: "Deposit", icon: "↓", color: "bg-success/10 text-success" },
+          { label: "Withdraw", icon: "↑", color: "bg-destructive/10 text-destructive" },
+          { label: "Bridge", icon: "⇄", color: "bg-primary/10 text-primary" },
+          { label: "Stake", icon: "◈", color: "bg-warning/10 text-warning" },
+        ].map((action) => (
+          <button
+            key={action.label}
+            className="card-elevated p-4 flex items-center gap-3 hover:border-primary/30 transition-colors group"
+          >
+            <div className={`w-10 h-10 rounded-lg ${action.color} flex items-center justify-center text-lg font-bold`}>
+              {action.icon}
+            </div>
+            <span className="font-medium text-foreground group-hover:text-primary transition-colors">{action.label}</span>
+          </button>
+        ))}
+      </motion.div>
+
       {/* Charts Row */}
       <div className="grid lg:grid-cols-3 gap-6">
         {/* Performance Chart */}
