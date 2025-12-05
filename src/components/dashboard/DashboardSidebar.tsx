@@ -25,10 +25,10 @@ const navItems = [
   { id: "assets" as DashboardView, label: "Assets", icon: Wallet },
   { id: "bridge" as DashboardView, label: "Bridge", icon: ArrowLeftRight },
   { id: "discover" as DashboardView, label: "Discover", icon: Compass },
+  { id: "analytics" as DashboardView, label: "Analytics", icon: BarChart3 },
 ];
 
 const bottomNavItems: { id: DashboardView; label: string; icon: typeof BarChart3 }[] = [
-  { id: "analytics", label: "Analytics", icon: BarChart3 },
   { id: "settings", label: "Settings", icon: Settings },
 ];
 
