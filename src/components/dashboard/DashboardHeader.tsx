@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Search, Bell, Menu, ChevronDown } from "lucide-react";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 interface DashboardHeaderProps {
   onMenuToggle: () => void;
@@ -30,6 +31,9 @@ export function DashboardHeader({ onMenuToggle }: DashboardHeaderProps) {
 
       {/* Right - Actions */}
       <div className="flex items-center gap-3">
+        {/* Theme Toggle */}
+        <ThemeToggle />
+        
         {/* Notifications */}
         <button className="relative p-2 rounded-lg hover:bg-secondary text-muted-foreground transition-colors">
           <Bell className="w-5 h-5" />
