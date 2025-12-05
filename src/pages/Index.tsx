@@ -8,12 +8,10 @@ import { TestimonialsSection } from "@/components/landing/TestimonialsSection";
 import { TechStackSection } from "@/components/landing/TechStackSection";
 import { CTASection } from "@/components/landing/CTASection";
 import { FooterSection } from "@/components/landing/FooterSection";
-import { CursorParticles } from "@/components/CursorParticles";
 
 const Index = () => {
   return (
     <div className="min-h-screen bg-background holo-bg holo-noise">
-      <CursorParticles />
       {/* Holographic orbs */}
       <div className="holo-orb w-[600px] h-[600px] bg-[hsl(var(--holo-cyan))] top-[-200px] left-[-100px] fixed" />
       <div className="holo-orb w-[500px] h-[500px] bg-[hsl(var(--holo-purple))] top-[30%] right-[-150px] fixed" style={{ animationDelay: '-5s' }} />
