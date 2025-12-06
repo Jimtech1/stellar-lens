@@ -27,8 +27,9 @@ import {
   LineChart,
   Line,
 } from "recharts";
-import { TrendingUp, TrendingDown, Activity, DollarSign, Percent, Calendar, Download } from "lucide-react";
+import { TrendingUp, TrendingDown, Activity, DollarSign, Percent, Calendar, Download, Bell } from "lucide-react";
 import { useState } from "react";
+import { PriceAlertDialog } from "./forms/PriceAlertDialog";
 
 const portfolioPerformance = [
   { month: "Jan", value: 42000, benchmark: 40000 },
@@ -78,9 +79,13 @@ const chartConfig = {
 
 export function AnalyticsView() {
   const [timeframe, setTimeframe] = useState("6m");
+  const [priceAlertOpen, setPriceAlertOpen] = useState(false);
 
   return (
-    <div className="space-y-6">
+    <>
+      <PriceAlertDialog open={priceAlertOpen} onOpenChange={setPriceAlertOpen} />
+      
+      <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
@@ -103,6 +108,10 @@ export function AnalyticsView() {
               <SelectItem value="all">All Time</SelectItem>
             </SelectContent>
           </Select>
+          <Button variant="outline" size="sm" onClick={() => setPriceAlertOpen(true)}>
+            <Bell className="w-4 h-4 mr-2" />
+            Price Alerts
+          </Button>
           <Button variant="outline" size="sm">
             <Download className="w-4 h-4 mr-2" />
             Export
@@ -327,5 +336,6 @@ export function AnalyticsView() {
         </Card>
       </div>
     </div>
+    </>
   );
 }

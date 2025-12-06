@@ -1,9 +1,12 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Search, Filter, ArrowUpDown, MoreHorizontal, TrendingUp, TrendingDown } from "lucide-react";
+import { Search, Filter, ArrowUpDown, TrendingUp, TrendingDown } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { mockAssets, Asset } from "@/lib/mockData";
+import { SendReceiveDialog } from "./forms/SendReceiveDialog";
+import { StakeDialog } from "./forms/StakeDialog";
+import { AssetActionsMenu } from "./forms/AssetActionsMenu";
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -23,8 +26,18 @@ export function AssetsView() {
   const [selectedChain, setSelectedChain] = useState<string>("all");
   const [sortBy, setSortBy] = useState<keyof Asset>("value");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
+  const [sendReceiveOpen, setSendReceiveOpen] = useState(false);
+  const [sendReceiveTab, setSendReceiveTab] = useState<"send" | "receive">("send");
+  const [selectedAsset, setSelectedAsset] = useState<string>("");
+  const [stakeOpen, setStakeOpen] = useState(false);
 
   const chains = ["all", "Stellar", "Ethereum", "Polygon", "Arbitrum"];
+
+  const openSendReceive = (tab: "send" | "receive", asset: string) => {
+    setSendReceiveTab(tab);
+    setSelectedAsset(asset);
+    setSendReceiveOpen(true);
+  };
 
   const filteredAssets = mockAssets
     .filter((asset) => {
@@ -51,12 +64,21 @@ export function AssetsView() {
   const totalValue = filteredAssets.reduce((sum, asset) => sum + asset.value, 0);
 
   return (
-    <motion.div
-      variants={containerVariants}
-      initial="hidden"
-      animate="visible"
-      className="space-y-6"
-    >
+    <>
+      <SendReceiveDialog 
+        open={sendReceiveOpen} 
+        onOpenChange={setSendReceiveOpen} 
+        initialTab={sendReceiveTab}
+        preselectedAsset={selectedAsset}
+      />
+      <StakeDialog open={stakeOpen} onOpenChange={setStakeOpen} />
+      
+      <motion.div
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+        className="space-y-6"
+      >
       {/* Header */}
       <motion.div variants={itemVariants}>
         <h1 className="text-h1 font-bold text-foreground">Assets</h1>
@@ -199,9 +221,12 @@ export function AssetsView() {
                     )}
                   </td>
                   <td className="px-4 py-4 text-right">
-                    <Button variant="ghost" size="icon-sm">
-                      <MoreHorizontal className="w-4 h-4" />
-                    </Button>
+                    <AssetActionsMenu
+                      asset={asset}
+                      onSend={() => openSendReceive("send", asset.symbol)}
+                      onReceive={() => openSendReceive("receive", asset.symbol)}
+                      onStake={() => setStakeOpen(true)}
+                    />
                   </td>
                 </motion.tr>
               ))}
@@ -210,5 +235,6 @@ export function AssetsView() {
         </div>
       </motion.div>
     </motion.div>
+    </>
   );
 }

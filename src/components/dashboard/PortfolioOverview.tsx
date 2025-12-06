@@ -1,8 +1,11 @@
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { TrendingUp, TrendingDown, DollarSign, Percent, Shield, PieChart } from "lucide-react";
 import { AreaChart, Area, ResponsiveContainer, XAxis, YAxis, Tooltip } from "recharts";
 import { portfolioHistory, portfolioStats, mockTransactions } from "@/lib/mockData";
-
+import { DepositWithdrawDialog } from "./forms/DepositWithdrawDialog";
+import { StakeDialog } from "./forms/StakeDialog";
+import { SendReceiveDialog } from "./forms/SendReceiveDialog";
 const containerVariants = {
   hidden: { opacity: 0 },
   visible: {
@@ -17,13 +20,30 @@ const itemVariants = {
 };
 
 export function PortfolioOverview() {
+  const [depositOpen, setDepositOpen] = useState(false);
+  const [withdrawOpen, setWithdrawOpen] = useState(false);
+  const [stakeOpen, setStakeOpen] = useState(false);
+  const [sendReceiveOpen, setSendReceiveOpen] = useState(false);
+  const [sendReceiveTab, setSendReceiveTab] = useState<"send" | "receive">("send");
+
+  const openSendReceive = (tab: "send" | "receive") => {
+    setSendReceiveTab(tab);
+    setSendReceiveOpen(true);
+  };
+
   return (
-    <motion.div
-      variants={containerVariants}
-      initial="hidden"
-      animate="visible"
-      className="space-y-6"
-    >
+    <>
+      <DepositWithdrawDialog open={depositOpen} onOpenChange={setDepositOpen} type="deposit" />
+      <DepositWithdrawDialog open={withdrawOpen} onOpenChange={setWithdrawOpen} type="withdraw" />
+      <StakeDialog open={stakeOpen} onOpenChange={setStakeOpen} />
+      <SendReceiveDialog open={sendReceiveOpen} onOpenChange={setSendReceiveOpen} initialTab={sendReceiveTab} />
+      
+      <motion.div
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+        className="space-y-6"
+      >
       {/* Page Title */}
       <motion.div variants={itemVariants}>
         <h1 className="text-h1 font-bold text-foreground">Portfolio Overview</h1>
@@ -98,22 +118,42 @@ export function PortfolioOverview() {
 
       {/* Quick Actions */}
       <motion.div variants={itemVariants} className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {[
-          { label: "Deposit", icon: "↓", color: "bg-success/10 text-success" },
-          { label: "Withdraw", icon: "↑", color: "bg-destructive/10 text-destructive" },
-          { label: "Bridge", icon: "⇄", color: "bg-primary/10 text-primary" },
-          { label: "Stake", icon: "◈", color: "bg-warning/10 text-warning" },
-        ].map((action) => (
-          <button
-            key={action.label}
-            className="card-elevated p-4 flex items-center gap-3 hover:border-primary/30 transition-colors group"
-          >
-            <div className={`w-10 h-10 rounded-lg ${action.color} flex items-center justify-center text-lg font-bold`}>
-              {action.icon}
-            </div>
-            <span className="font-medium text-foreground group-hover:text-primary transition-colors">{action.label}</span>
-          </button>
-        ))}
+        <button
+          onClick={() => setDepositOpen(true)}
+          className="card-elevated p-4 flex items-center gap-3 hover:border-primary/30 transition-colors group"
+        >
+          <div className="w-10 h-10 rounded-lg bg-success/10 text-success flex items-center justify-center text-lg font-bold">
+            ↓
+          </div>
+          <span className="font-medium text-foreground group-hover:text-primary transition-colors">Deposit</span>
+        </button>
+        <button
+          onClick={() => setWithdrawOpen(true)}
+          className="card-elevated p-4 flex items-center gap-3 hover:border-primary/30 transition-colors group"
+        >
+          <div className="w-10 h-10 rounded-lg bg-destructive/10 text-destructive flex items-center justify-center text-lg font-bold">
+            ↑
+          </div>
+          <span className="font-medium text-foreground group-hover:text-primary transition-colors">Withdraw</span>
+        </button>
+        <button
+          onClick={() => openSendReceive("send")}
+          className="card-elevated p-4 flex items-center gap-3 hover:border-primary/30 transition-colors group"
+        >
+          <div className="w-10 h-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center text-lg font-bold">
+            ⇄
+          </div>
+          <span className="font-medium text-foreground group-hover:text-primary transition-colors">Send</span>
+        </button>
+        <button
+          onClick={() => setStakeOpen(true)}
+          className="card-elevated p-4 flex items-center gap-3 hover:border-primary/30 transition-colors group"
+        >
+          <div className="w-10 h-10 rounded-lg bg-warning/10 text-warning flex items-center justify-center text-lg font-bold">
+            ◈
+          </div>
+          <span className="font-medium text-foreground group-hover:text-primary transition-colors">Stake</span>
+        </button>
       </motion.div>
 
       {/* Charts Row */}
@@ -212,5 +252,6 @@ export function PortfolioOverview() {
         </motion.div>
       </div>
     </motion.div>
+    </>
   );
 }
