@@ -4,6 +4,7 @@ import { Search, Filter, Star, ExternalLink, Shield, TrendingUp } from "lucide-r
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { mockYieldOpportunities } from "@/lib/mockData";
+import { InvestDialog } from "./forms/InvestDialog";
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -24,6 +25,13 @@ export function DiscoverView() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [sortBy, setSortBy] = useState<"apy" | "risk" | "tvl">("apy");
+  const [investOpen, setInvestOpen] = useState(false);
+  const [selectedOpportunity, setSelectedOpportunity] = useState<typeof mockYieldOpportunities[0] | null>(null);
+
+  const openInvest = (opp: typeof mockYieldOpportunities[0]) => {
+    setSelectedOpportunity(opp);
+    setInvestOpen(true);
+  };
 
   const filteredOpportunities = mockYieldOpportunities
     .filter((opp) => {
@@ -52,12 +60,15 @@ export function DiscoverView() {
   };
 
   return (
-    <motion.div
-      variants={containerVariants}
-      initial="hidden"
-      animate="visible"
-      className="space-y-6"
-    >
+    <>
+      <InvestDialog open={investOpen} onOpenChange={setInvestOpen} opportunity={selectedOpportunity} />
+      
+      <motion.div
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+        className="space-y-6"
+      >
       {/* Header */}
       <motion.div variants={itemVariants}>
         <h1 className="text-h1 font-bold text-foreground">Discover</h1>
@@ -176,8 +187,8 @@ export function DiscoverView() {
 
             {/* Hover Action */}
             <div className="mt-4 opacity-0 group-hover:opacity-100 transition-opacity">
-              <Button variant="outline" size="sm" className="w-full">
-                View Details
+              <Button variant="outline" size="sm" className="w-full" onClick={() => openInvest(opp)}>
+                Invest Now
                 <ExternalLink className="w-3 h-3" />
               </Button>
             </div>
@@ -196,5 +207,6 @@ export function DiscoverView() {
         </div>
       )}
     </motion.div>
+    </>
   );
 }
