@@ -26,11 +26,10 @@ const navItems = [
   { id: "bridge" as DashboardView, label: "Bridge", icon: ArrowLeftRight },
   { id: "discover" as DashboardView, label: "Discover", icon: Compass },
   { id: "analytics" as DashboardView, label: "Analytics", icon: BarChart3 },
+  { id: "settings" as DashboardView, label: "Settings", icon: Settings },
 ];
 
-const bottomNavItems: { id: DashboardView; label: string; icon: typeof BarChart3 }[] = [
-  { id: "settings", label: "Settings", icon: Settings },
-];
+const bottomNavItems: { id: DashboardView; label: string; icon: typeof BarChart3 }[] = [];
 
 export function DashboardSidebar({ collapsed, onToggle, activeView, onViewChange }: DashboardSidebarProps) {
   return (

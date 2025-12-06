@@ -37,9 +37,9 @@ export function HeroSection() {
               transition={{ delay: 0.2 }}
               className="text-4xl md:text-5xl lg:text-display font-bold text-foreground mb-6 leading-tight"
             >
-              Track, Bridge & Optimize Your{" "}
-              <span className="text-primary">Stellar Portfolio</span>
-            </motion.h1>
+            Track, Discover & Optimize Your{" "}
+            <span className="text-primary">Stellar Portfolio</span>
+          </motion.h1>
 
             <motion.p
               initial={{ opacity: 0, y: 20 }}
