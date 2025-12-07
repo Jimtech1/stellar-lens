@@ -61,21 +61,21 @@ export function BridgeView() {
     >
       {/* Header */}
       <motion.div variants={itemVariants}>
-        <h1 className="text-h1 font-bold text-foreground">Bridge</h1>
-        <p className="text-small text-muted-foreground">Transfer assets across chains securely</p>
+        <h1 className="text-xl md:text-h1 font-bold text-foreground">Bridge</h1>
+        <p className="text-xs md:text-small text-muted-foreground">Transfer assets across chains securely</p>
       </motion.div>
 
-      <div className="grid lg:grid-cols-2 gap-6">
+      <div className="grid lg:grid-cols-2 gap-4 md:gap-6">
         {/* Bridge Form */}
-        <motion.div variants={itemVariants} className="card-elevated p-6">
-          <h3 className="text-h3 font-semibold text-foreground mb-6">Bridge Assets</h3>
+        <motion.div variants={itemVariants} className="card-elevated p-4 md:p-6">
+          <h3 className="text-lg md:text-h3 font-semibold text-foreground mb-4 md:mb-6">Bridge Assets</h3>
 
           {/* From Section */}
           <div className="space-y-3 mb-4">
-            <label className="text-small font-medium text-muted-foreground">From</label>
-            <div className="flex gap-3">
+            <label className="text-xs md:text-small font-medium text-muted-foreground">From</label>
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
               <Select value={fromChain} onValueChange={setFromChain}>
-                <SelectTrigger className="w-40">
+                <SelectTrigger className="w-full sm:w-40">
                   <SelectValue placeholder="Chain" />
                 </SelectTrigger>
                 <SelectContent>
@@ -85,7 +85,7 @@ export function BridgeView() {
                 </SelectContent>
               </Select>
               <Select value={fromToken} onValueChange={setFromToken}>
-                <SelectTrigger className="w-32">
+                <SelectTrigger className="w-full sm:w-32">
                   <SelectValue placeholder="Token" />
                 </SelectTrigger>
                 <SelectContent>
@@ -116,11 +116,11 @@ export function BridgeView() {
           </div>
 
           {/* To Section */}
-          <div className="space-y-3 mb-6">
-            <label className="text-small font-medium text-muted-foreground">To</label>
-            <div className="flex gap-3">
+          <div className="space-y-3 mb-4 md:mb-6">
+            <label className="text-xs md:text-small font-medium text-muted-foreground">To</label>
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
               <Select value={toChain} onValueChange={setToChain}>
-                <SelectTrigger className="w-40">
+                <SelectTrigger className="w-full sm:w-40">
                   <SelectValue placeholder="Chain" />
                 </SelectTrigger>
                 <SelectContent>
@@ -138,29 +138,29 @@ export function BridgeView() {
           </div>
 
           {/* Fee Breakdown */}
-          <div className="p-4 bg-secondary/50 rounded-lg mb-6 space-y-2">
-            <div className="flex items-center justify-between text-small">
+          <div className="p-3 md:p-4 bg-secondary/50 rounded-lg mb-4 md:mb-6 space-y-2">
+            <div className="flex items-center justify-between text-xs md:text-small">
               <span className="text-muted-foreground">Bridge Fee</span>
               <span className="text-foreground font-mono">0.1%</span>
             </div>
-            <div className="flex items-center justify-between text-small">
+            <div className="flex items-center justify-between text-xs md:text-small">
               <span className="text-muted-foreground">Estimated Gas</span>
               <span className="text-foreground font-mono">~$2.50</span>
             </div>
-            <div className="flex items-center justify-between text-small">
+            <div className="flex items-center justify-between text-xs md:text-small">
               <span className="text-muted-foreground">Estimated Time</span>
               <span className="text-foreground font-mono">~15 min</span>
             </div>
             <div className="border-t border-border pt-2 mt-2 flex items-center justify-between">
-              <span className="text-small font-medium text-foreground">You Receive</span>
-              <span className="text-body font-mono font-semibold text-foreground">
+              <span className="text-xs md:text-small font-medium text-foreground">You Receive</span>
+              <span className="text-sm md:text-body font-mono font-semibold text-foreground">
                 {amount ? (parseFloat(amount) * 0.999 - 2.5).toFixed(2) : '0.00'} {fromToken}
               </span>
             </div>
           </div>
 
           {/* Actions */}
-          <div className="flex gap-3">
+          <div className="flex gap-2 md:gap-3">
             <Button variant="outline" className="flex-1">Estimate</Button>
             <Button variant="hero" className="flex-1">
               Bridge
@@ -178,10 +178,10 @@ export function BridgeView() {
         </motion.div>
 
         {/* Bridge History */}
-        <motion.div variants={itemVariants} className="card-elevated p-6">
-          <h3 className="text-h3 font-semibold text-foreground mb-6">Recent Bridges</h3>
+        <motion.div variants={itemVariants} className="card-elevated p-4 md:p-6">
+          <h3 className="text-lg md:text-h3 font-semibold text-foreground mb-4 md:mb-6">Recent Bridges</h3>
 
-          <div className="space-y-4">
+          <div className="space-y-3 md:space-y-4">
             {recentBridges.map((bridge) => (
               <div
                 key={bridge.id}

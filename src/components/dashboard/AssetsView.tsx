@@ -81,8 +81,8 @@ export function AssetsView() {
       >
       {/* Header */}
       <motion.div variants={itemVariants}>
-        <h1 className="text-h1 font-bold text-foreground">Assets</h1>
-        <p className="text-small text-muted-foreground">Manage your multi-chain portfolio</p>
+        <h1 className="text-xl md:text-h1 font-bold text-foreground">Assets</h1>
+        <p className="text-xs md:text-small text-muted-foreground">Manage your multi-chain portfolio</p>
       </motion.div>
 
       {/* Filters */}
@@ -100,32 +100,32 @@ export function AssetsView() {
         </div>
 
         {/* Chain Filter */}
-        <div className="flex gap-2 bg-secondary rounded-lg p-1">
+        <div className="flex gap-1.5 md:gap-2 bg-secondary rounded-lg p-1 overflow-x-auto">
           {chains.map((chain) => (
             <button
               key={chain}
               onClick={() => setSelectedChain(chain)}
-              className={`px-3 py-1.5 text-small font-medium rounded-md transition-colors capitalize ${
+              className={`px-2 md:px-3 py-1.5 text-xs md:text-small font-medium rounded-md transition-colors capitalize whitespace-nowrap ${
                 selectedChain === chain
                   ? "bg-card text-foreground shadow-sm"
                   : "text-muted-foreground hover:text-foreground"
               }`}
             >
-              {chain === "all" ? "All Chains" : chain}
+              {chain === "all" ? "All" : chain}
             </button>
           ))}
         </div>
       </motion.div>
 
       {/* Summary */}
-      <motion.div variants={itemVariants} className="card-elevated p-4 flex items-center justify-between">
+      <motion.div variants={itemVariants} className="card-elevated p-3 md:p-4 flex items-center justify-between">
         <div>
-          <p className="text-small text-muted-foreground">Total Value</p>
-          <p className="text-h2 font-bold font-mono text-foreground">${totalValue.toLocaleString()}</p>
+          <p className="text-xs md:text-small text-muted-foreground">Total Value</p>
+          <p className="text-lg md:text-h2 font-bold font-mono text-foreground">${totalValue.toLocaleString()}</p>
         </div>
         <div className="text-right">
-          <p className="text-small text-muted-foreground">{filteredAssets.length} assets</p>
-          <p className="text-small text-muted-foreground">Across {new Set(filteredAssets.map(a => a.chain)).size} chains</p>
+          <p className="text-xs md:text-small text-muted-foreground">{filteredAssets.length} assets</p>
+          <p className="text-xs md:text-small text-muted-foreground">Across {new Set(filteredAssets.map(a => a.chain)).size} chains</p>
         </div>
       </motion.div>
 

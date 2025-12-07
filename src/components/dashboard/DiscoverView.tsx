@@ -71,8 +71,8 @@ export function DiscoverView() {
       >
       {/* Header */}
       <motion.div variants={itemVariants}>
-        <h1 className="text-h1 font-bold text-foreground">Discover</h1>
-        <p className="text-small text-muted-foreground">Find the best yield opportunities across chains</p>
+        <h1 className="text-xl md:text-h1 font-bold text-foreground">Discover</h1>
+        <p className="text-xs md:text-small text-muted-foreground">Find the best yield opportunities across chains</p>
       </motion.div>
 
       {/* Filters */}
@@ -90,12 +90,12 @@ export function DiscoverView() {
         </div>
 
         {/* Category Filter */}
-        <div className="flex gap-2 bg-secondary rounded-lg p-1">
+        <div className="flex gap-1.5 md:gap-2 bg-secondary rounded-lg p-1 overflow-x-auto">
           {categories.map((cat) => (
             <button
               key={cat}
               onClick={() => setSelectedCategory(cat)}
-              className={`px-3 py-1.5 text-small font-medium rounded-md transition-colors capitalize ${
+              className={`px-2 md:px-3 py-1.5 text-xs md:text-small font-medium rounded-md transition-colors capitalize whitespace-nowrap ${
                 selectedCategory === cat
                   ? "bg-card text-foreground shadow-sm"
                   : "text-muted-foreground hover:text-foreground"
@@ -107,7 +107,7 @@ export function DiscoverView() {
         </div>
 
         {/* Sort */}
-        <div className="flex gap-2">
+        <div className="flex gap-1.5 md:gap-2">
           {[
             { key: "apy", label: "APY" },
             { key: "risk", label: "Risk" },
@@ -116,7 +116,7 @@ export function DiscoverView() {
             <button
               key={option.key}
               onClick={() => setSortBy(option.key as typeof sortBy)}
-              className={`px-3 py-1.5 text-small font-medium rounded-lg border transition-colors ${
+              className={`px-2 md:px-3 py-1.5 text-xs md:text-small font-medium rounded-lg border transition-colors ${
                 sortBy === option.key
                   ? "border-primary text-primary bg-primary/5"
                   : "border-border text-muted-foreground hover:text-foreground"
@@ -129,14 +129,14 @@ export function DiscoverView() {
       </motion.div>
 
       {/* Opportunities Grid */}
-      <motion.div variants={itemVariants} className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <motion.div variants={itemVariants} className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
         {filteredOpportunities.map((opp, index) => (
           <motion.div
             key={opp.id}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.05 }}
-            className="card-elevated p-5 hover:shadow-card transition-shadow group"
+            className="card-elevated p-4 md:p-5 hover:shadow-card transition-shadow group"
           >
             {/* Header */}
             <div className="flex items-start justify-between mb-4">

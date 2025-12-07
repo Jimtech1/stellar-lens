@@ -85,19 +85,19 @@ export function AnalyticsView() {
     <>
       <PriceAlertDialog open={priceAlertOpen} onOpenChange={setPriceAlertOpen} />
       
-      <div className="space-y-6">
+      <div className="space-y-4 md:space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex flex-col gap-4">
         <div>
-          <h1 className="text-2xl font-semibold text-foreground">Analytics</h1>
-          <p className="text-sm text-muted-foreground">
+          <h1 className="text-xl md:text-2xl font-semibold text-foreground">Analytics</h1>
+          <p className="text-xs md:text-sm text-muted-foreground">
             Track your portfolio performance and insights
           </p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2 md:gap-3">
           <Select value={timeframe} onValueChange={setTimeframe}>
-            <SelectTrigger className="w-32">
-              <Calendar className="w-4 h-4 mr-2" />
+            <SelectTrigger className="w-28 md:w-32">
+              <Calendar className="w-4 h-4 mr-1 md:mr-2" />
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -108,91 +108,92 @@ export function AnalyticsView() {
               <SelectItem value="all">All Time</SelectItem>
             </SelectContent>
           </Select>
-          <Button variant="outline" size="sm" onClick={() => setPriceAlertOpen(true)}>
-            <Bell className="w-4 h-4 mr-2" />
-            Price Alerts
+          <Button variant="outline" size="sm" onClick={() => setPriceAlertOpen(true)} className="text-xs md:text-sm">
+            <Bell className="w-4 h-4 mr-1 md:mr-2" />
+            <span className="hidden sm:inline">Price Alerts</span>
+            <span className="sm:hidden">Alerts</span>
           </Button>
-          <Button variant="outline" size="sm">
-            <Download className="w-4 h-4 mr-2" />
-            Export
+          <Button variant="outline" size="sm" className="text-xs md:text-sm">
+            <Download className="w-4 h-4 mr-1 md:mr-2" />
+            <span className="hidden sm:inline">Export</span>
           </Button>
         </div>
       </div>
 
       {/* Key Metrics */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
         <Card>
-          <CardContent className="p-4">
+          <CardContent className="p-3 md:p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Total Return</p>
-                <p className="text-2xl font-semibold font-mono text-foreground">+29.76%</p>
+                <p className="text-xs md:text-sm text-muted-foreground">Total Return</p>
+                <p className="text-lg md:text-2xl font-semibold font-mono text-foreground">+29.76%</p>
               </div>
-              <div className="w-10 h-10 rounded-lg bg-success/10 flex items-center justify-center">
-                <TrendingUp className="w-5 h-5 text-success" />
+              <div className="w-8 h-8 md:w-10 md:h-10 rounded-lg bg-success/10 flex items-center justify-center">
+                <TrendingUp className="w-4 h-4 md:w-5 md:h-5 text-success" />
               </div>
             </div>
-            <p className="text-xs text-success mt-2">+5.2% vs benchmark</p>
+            <p className="text-[10px] md:text-xs text-success mt-1 md:mt-2">+5.2% vs benchmark</p>
           </CardContent>
         </Card>
 
         <Card>
-          <CardContent className="p-4">
+          <CardContent className="p-3 md:p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Avg. APY</p>
-                <p className="text-2xl font-semibold font-mono text-foreground">8.45%</p>
+                <p className="text-xs md:text-sm text-muted-foreground">Avg. APY</p>
+                <p className="text-lg md:text-2xl font-semibold font-mono text-foreground">8.45%</p>
               </div>
-              <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                <Percent className="w-5 h-5 text-primary" />
+              <div className="w-8 h-8 md:w-10 md:h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                <Percent className="w-4 h-4 md:w-5 md:h-5 text-primary" />
               </div>
             </div>
-            <p className="text-xs text-muted-foreground mt-2">Across all positions</p>
+            <p className="text-[10px] md:text-xs text-muted-foreground mt-1 md:mt-2">Across all positions</p>
           </CardContent>
         </Card>
 
         <Card>
-          <CardContent className="p-4">
+          <CardContent className="p-3 md:p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Total Yield</p>
-                <p className="text-2xl font-semibold font-mono text-foreground">$520.80</p>
+                <p className="text-xs md:text-sm text-muted-foreground">Total Yield</p>
+                <p className="text-lg md:text-2xl font-semibold font-mono text-foreground">$520.80</p>
               </div>
-              <div className="w-10 h-10 rounded-lg bg-success/10 flex items-center justify-center">
-                <DollarSign className="w-5 h-5 text-success" />
+              <div className="w-8 h-8 md:w-10 md:h-10 rounded-lg bg-success/10 flex items-center justify-center">
+                <DollarSign className="w-4 h-4 md:w-5 md:h-5 text-success" />
               </div>
             </div>
-            <p className="text-xs text-success mt-2">+18% from last period</p>
+            <p className="text-[10px] md:text-xs text-success mt-1 md:mt-2">+18% from last period</p>
           </CardContent>
         </Card>
 
         <Card>
-          <CardContent className="p-4">
+          <CardContent className="p-3 md:p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Transactions</p>
-                <p className="text-2xl font-semibold font-mono text-foreground">269</p>
+                <p className="text-xs md:text-sm text-muted-foreground">Transactions</p>
+                <p className="text-lg md:text-2xl font-semibold font-mono text-foreground">269</p>
               </div>
-              <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center">
-                <Activity className="w-5 h-5 text-muted-foreground" />
+              <div className="w-8 h-8 md:w-10 md:h-10 rounded-lg bg-muted flex items-center justify-center">
+                <Activity className="w-4 h-4 md:w-5 md:h-5 text-muted-foreground" />
               </div>
             </div>
-            <p className="text-xs text-muted-foreground mt-2">This period</p>
+            <p className="text-[10px] md:text-xs text-muted-foreground mt-1 md:mt-2">This period</p>
           </CardContent>
         </Card>
       </div>
 
       {/* Portfolio Performance Chart */}
       <Card>
-        <CardHeader>
-          <CardTitle className="text-base font-medium">Portfolio vs Benchmark</CardTitle>
+        <CardHeader className="pb-2 md:pb-4">
+          <CardTitle className="text-sm md:text-base font-medium">Portfolio vs Benchmark</CardTitle>
         </CardHeader>
         <CardContent>
-          <ChartContainer config={chartConfig} className="h-[300px] w-full">
+          <ChartContainer config={chartConfig} className="h-[200px] md:h-[300px] w-full">
             <AreaChart data={portfolioPerformance}>
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-              <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" fontSize={12} />
-              <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} tickFormatter={(v) => `$${v/1000}k`} />
+              <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" fontSize={10} />
+              <YAxis stroke="hsl(var(--muted-foreground))" fontSize={10} tickFormatter={(v) => `$${v/1000}k`} />
               <ChartTooltip content={<ChartTooltipContent />} />
               <Area
                 type="monotone"
@@ -213,23 +214,23 @@ export function AnalyticsView() {
         </CardContent>
       </Card>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
         {/* Asset Allocation */}
         <Card>
-          <CardHeader>
-            <CardTitle className="text-base font-medium">Asset Allocation</CardTitle>
+          <CardHeader className="pb-2 md:pb-4">
+            <CardTitle className="text-sm md:text-base font-medium">Asset Allocation</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="flex items-center gap-6">
-              <div className="w-[180px] h-[180px]">
+            <div className="flex flex-col sm:flex-row items-center gap-4 md:gap-6">
+              <div className="w-[140px] h-[140px] md:w-[180px] md:h-[180px]">
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
                     <Pie
                       data={assetAllocation}
                       cx="50%"
                       cy="50%"
-                      innerRadius={50}
-                      outerRadius={80}
+                      innerRadius={40}
+                      outerRadius={65}
                       dataKey="value"
                       stroke="none"
                     >
@@ -240,17 +241,17 @@ export function AnalyticsView() {
                   </PieChart>
                 </ResponsiveContainer>
               </div>
-              <div className="flex-1 space-y-2">
+              <div className="flex-1 space-y-1.5 md:space-y-2 w-full">
                 {assetAllocation.map((item) => (
                   <div key={item.name} className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <div
-                        className="w-3 h-3 rounded-full"
+                        className="w-2.5 h-2.5 md:w-3 md:h-3 rounded-full"
                         style={{ backgroundColor: item.color }}
                       />
-                      <span className="text-sm text-foreground">{item.name}</span>
+                      <span className="text-xs md:text-sm text-foreground">{item.name}</span>
                     </div>
-                    <span className="text-sm font-mono text-muted-foreground">{item.value}%</span>
+                    <span className="text-xs md:text-sm font-mono text-muted-foreground">{item.value}%</span>
                   </div>
                 ))}
               </div>
@@ -260,15 +261,15 @@ export function AnalyticsView() {
 
         {/* Monthly Earnings */}
         <Card>
-          <CardHeader>
-            <CardTitle className="text-base font-medium">Monthly Earnings</CardTitle>
+          <CardHeader className="pb-2 md:pb-4">
+            <CardTitle className="text-sm md:text-base font-medium">Monthly Earnings</CardTitle>
           </CardHeader>
           <CardContent>
-            <ChartContainer config={chartConfig} className="h-[180px] w-full">
+            <ChartContainer config={chartConfig} className="h-[140px] md:h-[180px] w-full">
               <BarChart data={monthlyEarnings}>
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
-                <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" fontSize={12} />
-                <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} tickFormatter={(v) => `$${v}`} />
+                <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" fontSize={10} />
+                <YAxis stroke="hsl(var(--muted-foreground))" fontSize={10} tickFormatter={(v) => `$${v}`} />
                 <ChartTooltip content={<ChartTooltipContent />} />
                 <Bar dataKey="earnings" fill="hsl(var(--success))" radius={[4, 4, 0, 0]} />
               </BarChart>

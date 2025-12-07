@@ -46,8 +46,8 @@ export function PortfolioOverview() {
       >
       {/* Page Title */}
       <motion.div variants={itemVariants}>
-        <h1 className="text-h1 font-bold text-foreground">Portfolio Overview</h1>
-        <p className="text-small text-muted-foreground">Track your cross-chain assets and earnings</p>
+        <h1 className="text-xl md:text-h1 font-bold text-foreground">Portfolio Overview</h1>
+        <p className="text-xs md:text-small text-muted-foreground">Track your cross-chain assets and earnings</p>
       </motion.div>
 
       {/* Stats Grid */}
@@ -157,7 +157,7 @@ export function PortfolioOverview() {
       </motion.div>
 
       {/* Charts Row */}
-      <div className="grid lg:grid-cols-3 gap-6">
+      <div className="grid lg:grid-cols-3 gap-4 md:gap-6">
         {/* Performance Chart */}
         <motion.div variants={itemVariants} className="lg:col-span-2 card-elevated p-5">
           <div className="flex items-center justify-between mb-4">
