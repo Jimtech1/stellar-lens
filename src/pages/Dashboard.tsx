@@ -2,6 +2,7 @@ import { useState } from "react";
 import { DashboardSidebar } from "@/components/dashboard/DashboardSidebar";
 import { MobileSidebar } from "@/components/dashboard/MobileSidebar";
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
+import { DashboardFooter } from "@/components/dashboard/DashboardFooter";
 import { PortfolioOverview } from "@/components/dashboard/PortfolioOverview";
 import { AssetsView } from "@/components/dashboard/AssetsView";
 import { BridgeView } from "@/components/dashboard/BridgeView";
@@ -63,6 +64,8 @@ const Dashboard = () => {
         <main className="flex-1 p-4 md:p-6 overflow-auto">
           {renderView()}
         </main>
+
+        <DashboardFooter />
       </div>
     </div>
   );

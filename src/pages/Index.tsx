@@ -1,6 +1,6 @@
 import { Navbar } from "@/components/landing/Navbar";
 import { HeroSection } from "@/components/landing/HeroSection";
-import { PartnersSection } from "@/components/landing/PartnersSection";
+import { TrendingSection } from "@/components/landing/TrendingSection";
 import { FeaturesSection } from "@/components/landing/FeaturesSection";
 import { HowItWorksSection } from "@/components/landing/HowItWorksSection";
 import { DemoSection } from "@/components/landing/DemoSection";
@@ -19,7 +19,7 @@ const Index = () => {
       <Navbar />
       <main className="relative z-10">
         <HeroSection />
-        <PartnersSection />
+        <TrendingSection />
         <FeaturesSection />
         <HowItWorksSection />
         <DemoSection />
