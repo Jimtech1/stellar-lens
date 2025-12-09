@@ -209,17 +209,17 @@ export function PortfolioOverview() {
         </motion.div>
 
         {/* Charts Row */}
-        <div className="grid lg:grid-cols-3 gap-4 md:gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
           {/* Performance Chart */}
-          <motion.div variants={itemVariants} className="lg:col-span-2 card-elevated p-4 md:p-5">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
-              <h3 className="text-base md:text-h3 font-semibold text-foreground">Performance</h3>
-              <div className="flex gap-1 bg-secondary rounded-lg p-1 overflow-x-auto">
+          <motion.div variants={itemVariants} className="lg:col-span-2 card-elevated p-3 md:p-5">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 md:gap-3 mb-3 md:mb-4">
+              <h3 className="text-sm md:text-h3 font-semibold text-foreground">Performance</h3>
+              <div className="flex gap-0.5 md:gap-1 bg-secondary rounded-lg p-0.5 md:p-1 overflow-x-auto">
                 {timeframes.map((period) => (
                   <button
                     key={period}
                     onClick={() => setSelectedTimeframe(period)}
-                    className={`px-2 md:px-3 py-1 text-[10px] md:text-tiny font-medium rounded-md transition-colors whitespace-nowrap ${
+                    className={`px-2 md:px-3 py-1 text-[9px] md:text-tiny font-medium rounded-md transition-colors whitespace-nowrap ${
                       selectedTimeframe === period ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
                     }`}
                   >
@@ -229,9 +229,9 @@ export function PortfolioOverview() {
               </div>
             </div>
             
-            <div className="h-48 md:h-64">
+            <div className="h-40 md:h-64">
               <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={portfolioHistory}>
+                <AreaChart data={portfolioHistory} margin={{ left: 0, right: 4, top: 4, bottom: 0 }}>
                   <defs>
                     <linearGradient id="portfolioGradient" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="0%" stopColor="hsl(224, 100%, 58%)" stopOpacity={0.3} />
@@ -242,8 +242,9 @@ export function PortfolioOverview() {
                     dataKey="date" 
                     axisLine={false} 
                     tickLine={false} 
-                    tick={{ fontSize: 10, fill: 'hsl(0, 0%, 45%)' }}
+                    tick={{ fontSize: 9, fill: 'hsl(0, 0%, 45%)' }}
                     interval="preserveStartEnd"
+                    tickMargin={4}
                   />
                   <YAxis hide domain={['dataMin - 500', 'dataMax + 500']} />
                   <Tooltip
@@ -252,6 +253,7 @@ export function PortfolioOverview() {
                       border: '1px solid hsl(var(--border))',
                       borderRadius: '8px',
                       boxShadow: '0px 4px 16px rgba(0, 0, 0, 0.06)',
+                      fontSize: '12px',
                     }}
                     formatter={(value: number) => [`$${value.toLocaleString()}`, 'Value']}
                   />
@@ -268,19 +270,19 @@ export function PortfolioOverview() {
           </motion.div>
 
           {/* Recent Activity */}
-          <motion.div variants={itemVariants} className="card-elevated p-4 md:p-5">
-            <div className="flex items-center justify-between mb-3 md:mb-4">
-              <h3 className="text-base md:text-h3 font-semibold text-foreground">Recent Activity</h3>
-              <Filter className="w-4 h-4 text-muted-foreground" />
+          <motion.div variants={itemVariants} className="card-elevated p-3 md:p-5">
+            <div className="flex items-center justify-between mb-2 md:mb-4">
+              <h3 className="text-sm md:text-h3 font-semibold text-foreground">Recent Activity</h3>
+              <Filter className="w-3.5 h-3.5 md:w-4 md:h-4 text-muted-foreground" />
             </div>
             
             {/* Activity Filter - Scrollable */}
-            <div className="flex gap-1 mb-3 md:mb-4 overflow-x-auto pb-1 -mx-1 px-1">
+            <div className="flex gap-0.5 md:gap-1 mb-2 md:mb-4 overflow-x-auto pb-1 -mx-1 px-1">
               {activityFilters.map((filter) => (
                 <button
                   key={filter.key}
                   onClick={() => setActivityFilter(filter.key)}
-                  className={`px-2 py-1 text-[10px] md:text-xs font-medium rounded-md transition-colors whitespace-nowrap ${
+                  className={`px-1.5 md:px-2 py-0.5 md:py-1 text-[9px] md:text-xs font-medium rounded-md transition-colors whitespace-nowrap ${
                     activityFilter === filter.key
                       ? "bg-primary/10 text-primary"
                       : "text-muted-foreground hover:text-foreground hover:bg-secondary"
@@ -291,7 +293,7 @@ export function PortfolioOverview() {
               ))}
             </div>
 
-            <div className="space-y-3 md:space-y-4 max-h-[280px] md:max-h-[320px] overflow-y-auto">
+            <div className="space-y-2 md:space-y-4 max-h-[220px] md:max-h-[320px] overflow-y-auto">
               <AnimatePresence mode="popLayout">
                 {filteredTransactions.slice(0, 5).map((tx) => (
                   <motion.div 
@@ -302,27 +304,27 @@ export function PortfolioOverview() {
                     exit={{ opacity: 0, x: 10 }}
                     layout
                   >
-                    <div className="flex items-center gap-2 md:gap-3">
-                      <div className={`w-7 h-7 md:w-8 md:h-8 rounded-lg flex items-center justify-center ${
+                    <div className="flex items-center gap-1.5 md:gap-3">
+                      <div className={`w-6 h-6 md:w-8 md:h-8 rounded-lg flex items-center justify-center ${
                         tx.type === 'deposit' ? 'bg-success/10' :
                         tx.type === 'withdrawal' ? 'bg-destructive/10' :
                         tx.type === 'swap' ? 'bg-primary/10' : 'bg-warning/10'
                       }`}>
-                        {tx.type === 'deposit' && <TrendingUp className="w-3.5 h-3.5 md:w-4 md:h-4 text-success" />}
-                        {tx.type === 'withdrawal' && <TrendingDown className="w-3.5 h-3.5 md:w-4 md:h-4 text-destructive" />}
-                        {tx.type === 'swap' && <Percent className="w-3.5 h-3.5 md:w-4 md:h-4 text-primary" />}
-                        {tx.type === 'bridge' && <DollarSign className="w-3.5 h-3.5 md:w-4 md:h-4 text-warning" />}
+                        {tx.type === 'deposit' && <TrendingUp className="w-3 h-3 md:w-4 md:h-4 text-success" />}
+                        {tx.type === 'withdrawal' && <TrendingDown className="w-3 h-3 md:w-4 md:h-4 text-destructive" />}
+                        {tx.type === 'swap' && <Percent className="w-3 h-3 md:w-4 md:h-4 text-primary" />}
+                        {tx.type === 'bridge' && <DollarSign className="w-3 h-3 md:w-4 md:h-4 text-warning" />}
                       </div>
                       <div>
-                        <p className="text-xs md:text-small font-medium text-foreground capitalize">{tx.type}</p>
-                        <p className="text-[10px] md:text-tiny text-muted-foreground">{tx.asset}</p>
+                        <p className="text-[10px] md:text-small font-medium text-foreground capitalize">{tx.type}</p>
+                        <p className="text-[9px] md:text-tiny text-muted-foreground">{tx.asset}</p>
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="text-xs md:text-small font-mono font-medium text-foreground">
+                      <p className="text-[10px] md:text-small font-mono font-medium text-foreground">
                         ${tx.value.toLocaleString()}
                       </p>
-                      <p className={`text-[10px] md:text-tiny ${tx.status === 'completed' ? 'text-success' : tx.status === 'pending' ? 'text-warning' : 'text-destructive'}`}>
+                      <p className={`text-[9px] md:text-tiny ${tx.status === 'completed' ? 'text-success' : tx.status === 'pending' ? 'text-warning' : 'text-destructive'}`}>
                         {tx.status}
                       </p>
                     </div>
@@ -331,8 +333,8 @@ export function PortfolioOverview() {
               </AnimatePresence>
               
               {filteredTransactions.length === 0 && (
-                <div className="text-center py-8">
-                  <p className="text-xs md:text-small text-muted-foreground">No {activityFilter} transactions</p>
+                <div className="text-center py-6 md:py-8">
+                  <p className="text-[10px] md:text-small text-muted-foreground">No {activityFilter} transactions</p>
                 </div>
               )}
             </div>

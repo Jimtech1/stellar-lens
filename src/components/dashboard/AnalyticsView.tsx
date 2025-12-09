@@ -185,22 +185,32 @@ export function AnalyticsView() {
 
       {/* Portfolio Performance Chart */}
       <Card>
-        <CardHeader className="pb-2 md:pb-4">
+        <CardHeader className="pb-2 md:pb-4 px-3 md:px-6 pt-3 md:pt-6">
           <CardTitle className="text-sm md:text-base font-medium">Portfolio vs Benchmark</CardTitle>
         </CardHeader>
-        <CardContent>
-          <ChartContainer config={chartConfig} className="h-[200px] md:h-[300px] w-full">
-            <AreaChart data={portfolioPerformance}>
+        <CardContent className="p-2 md:p-6 pt-0">
+          <ChartContainer config={chartConfig} className="h-[180px] md:h-[300px] w-full">
+            <AreaChart data={portfolioPerformance} margin={{ left: 0, right: 8, top: 8, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-              <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" fontSize={10} />
-              <YAxis stroke="hsl(var(--muted-foreground))" fontSize={10} tickFormatter={(v) => `$${v/1000}k`} />
+              <XAxis 
+                dataKey="month" 
+                stroke="hsl(var(--muted-foreground))" 
+                fontSize={9} 
+                tickMargin={4}
+              />
+              <YAxis 
+                stroke="hsl(var(--muted-foreground))" 
+                fontSize={9} 
+                tickFormatter={(v) => `$${v/1000}k`} 
+                width={40}
+              />
               <ChartTooltip content={<ChartTooltipContent />} />
               <Area
                 type="monotone"
                 dataKey="benchmark"
                 stroke="hsl(var(--muted-foreground))"
                 fill="hsl(var(--muted-foreground) / 0.1)"
-                strokeWidth={2}
+                strokeWidth={1.5}
               />
               <Area
                 type="monotone"
@@ -220,17 +230,17 @@ export function AnalyticsView() {
           <CardHeader className="pb-2 md:pb-4">
             <CardTitle className="text-sm md:text-base font-medium">Asset Allocation</CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="flex flex-col sm:flex-row items-center gap-4 md:gap-6">
-              <div className="w-[140px] h-[140px] md:w-[180px] md:h-[180px]">
+          <CardContent className="p-3 md:p-6">
+            <div className="flex flex-col sm:flex-row items-center gap-3 md:gap-6">
+              <div className="w-[120px] h-[120px] md:w-[180px] md:h-[180px] flex-shrink-0">
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
                     <Pie
                       data={assetAllocation}
                       cx="50%"
                       cy="50%"
-                      innerRadius={40}
-                      outerRadius={65}
+                      innerRadius={30}
+                      outerRadius={50}
                       dataKey="value"
                       stroke="none"
                     >
@@ -241,17 +251,17 @@ export function AnalyticsView() {
                   </PieChart>
                 </ResponsiveContainer>
               </div>
-              <div className="flex-1 space-y-1.5 md:space-y-2 w-full">
+              <div className="flex-1 space-y-1 md:space-y-2 w-full">
                 {assetAllocation.map((item) => (
-                  <div key={item.name} className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
+                  <div key={item.name} className="flex items-center justify-between py-0.5">
+                    <div className="flex items-center gap-1.5 md:gap-2">
                       <div
-                        className="w-2.5 h-2.5 md:w-3 md:h-3 rounded-full"
+                        className="w-2 h-2 md:w-3 md:h-3 rounded-full flex-shrink-0"
                         style={{ backgroundColor: item.color }}
                       />
-                      <span className="text-xs md:text-sm text-foreground">{item.name}</span>
+                      <span className="text-[10px] md:text-sm text-foreground truncate">{item.name}</span>
                     </div>
-                    <span className="text-xs md:text-sm font-mono text-muted-foreground">{item.value}%</span>
+                    <span className="text-[10px] md:text-sm font-mono text-muted-foreground ml-2">{item.value}%</span>
                   </div>
                 ))}
               </div>
@@ -264,37 +274,37 @@ export function AnalyticsView() {
           <CardHeader className="pb-2 md:pb-4">
             <CardTitle className="text-sm md:text-base font-medium">Monthly Earnings</CardTitle>
           </CardHeader>
-          <CardContent>
-            <ChartContainer config={chartConfig} className="h-[140px] md:h-[180px] w-full">
+          <CardContent className="p-3 md:p-6">
+            <ChartContainer config={chartConfig} className="h-[120px] md:h-[180px] w-full">
               <BarChart data={monthlyEarnings}>
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
-                <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" fontSize={10} />
-                <YAxis stroke="hsl(var(--muted-foreground))" fontSize={10} tickFormatter={(v) => `$${v}`} />
+                <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" fontSize={9} tickMargin={4} />
+                <YAxis stroke="hsl(var(--muted-foreground))" fontSize={9} tickFormatter={(v) => `$${v}`} width={35} />
                 <ChartTooltip content={<ChartTooltipContent />} />
-                <Bar dataKey="earnings" fill="hsl(var(--success))" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="earnings" fill="hsl(var(--success))" radius={[3, 3, 0, 0]} />
               </BarChart>
             </ChartContainer>
           </CardContent>
         </Card>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
         {/* Yield Breakdown */}
         <Card>
-          <CardHeader>
-            <CardTitle className="text-base font-medium">Yield Sources</CardTitle>
+          <CardHeader className="pb-2 md:pb-4">
+            <CardTitle className="text-sm md:text-base font-medium">Yield Sources</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
+            <div className="space-y-3 md:space-y-4">
               {yieldBreakdown.map((item) => (
                 <div key={item.source}>
                   <div className="flex items-center justify-between mb-1">
-                    <span className="text-sm text-foreground">{item.source}</span>
-                    <span className="text-sm font-mono text-muted-foreground">
+                    <span className="text-xs md:text-sm text-foreground">{item.source}</span>
+                    <span className="text-xs md:text-sm font-mono text-muted-foreground">
                       ${item.amount.toFixed(2)}
                     </span>
                   </div>
-                  <div className="h-2 bg-muted rounded-full overflow-hidden">
+                  <div className="h-1.5 md:h-2 bg-muted rounded-full overflow-hidden">
                     <div
                       className="h-full bg-primary rounded-full transition-all"
                       style={{ width: `${item.percentage}%` }}
@@ -308,27 +318,27 @@ export function AnalyticsView() {
 
         {/* Chain Activity */}
         <Card>
-          <CardHeader>
-            <CardTitle className="text-base font-medium">Chain Activity</CardTitle>
+          <CardHeader className="pb-2 md:pb-4">
+            <CardTitle className="text-sm md:text-base font-medium">Chain Activity</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-3">
+            <div className="space-y-2 md:space-y-3">
               {chainActivity.map((chain) => (
                 <div
                   key={chain.chain}
-                  className="flex items-center justify-between p-3 bg-muted/50 rounded-lg"
+                  className="flex items-center justify-between p-2 md:p-3 bg-muted/50 rounded-lg"
                 >
                   <div>
-                    <p className="text-sm font-medium text-foreground">{chain.chain}</p>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-xs md:text-sm font-medium text-foreground">{chain.chain}</p>
+                    <p className="text-[10px] md:text-xs text-muted-foreground">
                       {chain.transactions} transactions
                     </p>
                   </div>
                   <div className="text-right">
-                    <p className="text-sm font-mono text-foreground">
+                    <p className="text-xs md:text-sm font-mono text-foreground">
                       ${chain.volume.toLocaleString()}
                     </p>
-                    <p className="text-xs text-muted-foreground">volume</p>
+                    <p className="text-[10px] md:text-xs text-muted-foreground">volume</p>
                   </div>
                 </div>
               ))}
