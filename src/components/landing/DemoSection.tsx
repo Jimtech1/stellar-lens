@@ -69,21 +69,21 @@ export function DemoSection() {
               {/* Left Column - Stats & Chart */}
               <div className="lg:col-span-2 space-y-6">
                 {/* Stats Row */}
-                <div className="grid grid-cols-3 gap-4">
-                  <div className="card-elevated p-4">
-                    <p className="text-tiny text-muted-foreground mb-1">Total Value</p>
-                    <p className="text-h2 font-bold font-mono text-foreground">$22,500</p>
-                    <p className="text-tiny text-success">+$750 (3.45%)</p>
+                <div className="grid grid-cols-3 gap-2 sm:gap-4">
+                  <div className="card-elevated p-2 sm:p-4">
+                    <p className="text-[10px] sm:text-tiny text-muted-foreground mb-1">Total Value</p>
+                    <p className="text-sm sm:text-h2 font-bold font-mono text-foreground">$22,500</p>
+                    <p className="text-[10px] sm:text-tiny text-success">+$750 (3.45%)</p>
                   </div>
-                  <div className="card-elevated p-4">
-                    <p className="text-tiny text-muted-foreground mb-1">30D Earnings</p>
-                    <p className="text-h2 font-bold font-mono text-foreground">$847</p>
-                    <p className="text-tiny text-muted-foreground">5.8% APY</p>
+                  <div className="card-elevated p-2 sm:p-4">
+                    <p className="text-[10px] sm:text-tiny text-muted-foreground mb-1">30D Earnings</p>
+                    <p className="text-sm sm:text-h2 font-bold font-mono text-foreground">$847</p>
+                    <p className="text-[10px] sm:text-tiny text-muted-foreground">5.8% APY</p>
                   </div>
-                  <div className="card-elevated p-4">
-                    <p className="text-tiny text-muted-foreground mb-1">Risk Score</p>
-                    <p className="text-h2 font-bold font-mono text-success">42</p>
-                    <p className="text-tiny text-muted-foreground">Low Risk</p>
+                  <div className="card-elevated p-2 sm:p-4">
+                    <p className="text-[10px] sm:text-tiny text-muted-foreground mb-1">Risk Score</p>
+                    <p className="text-sm sm:text-h2 font-bold font-mono text-success">42</p>
+                    <p className="text-[10px] sm:text-tiny text-muted-foreground">Low Risk</p>
                   </div>
                 </div>
 

@@ -96,7 +96,7 @@ export function HeroSection() {
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.3, duration: 0.6 }}
-            className="hidden lg:block"
+            className="mt-8 lg:mt-0"
           >
             <HeroChart />
           </motion.div>
