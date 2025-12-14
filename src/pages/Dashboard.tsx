@@ -6,15 +6,16 @@ import { DashboardFooter } from "@/components/dashboard/DashboardFooter";
 import { HoloBackground } from "@/components/landing/HoloBackground";
 import { Skeleton } from "@/components/ui/skeleton";
 
-// Lazy load dashboard views
+// Lazy load dashboard views with prefetch hints
 const PortfolioOverview = lazy(() => import("@/components/dashboard/PortfolioOverview").then(m => ({ default: m.PortfolioOverview })));
 const AssetsView = lazy(() => import("@/components/dashboard/AssetsView").then(m => ({ default: m.AssetsView })));
 const BridgeView = lazy(() => import("@/components/dashboard/BridgeView").then(m => ({ default: m.BridgeView })));
 const DiscoverView = lazy(() => import("@/components/dashboard/DiscoverView").then(m => ({ default: m.DiscoverView })));
 const AnalyticsView = lazy(() => import("@/components/dashboard/AnalyticsView").then(m => ({ default: m.AnalyticsView })));
 const SettingsView = lazy(() => import("@/components/dashboard/SettingsView").then(m => ({ default: m.SettingsView })));
+const TransactionHistoryView = lazy(() => import("@/components/dashboard/TransactionHistoryView").then(m => ({ default: m.TransactionHistoryView })));
 
-export type DashboardView = "overview" | "assets" | "bridge" | "discover" | "analytics" | "settings";
+export type DashboardView = "overview" | "assets" | "bridge" | "discover" | "analytics" | "transactions" | "settings";
 
 // View loading skeleton
 const ViewLoader = memo(() => (
@@ -60,6 +61,8 @@ const Dashboard = () => {
         return <DiscoverView />;
       case "analytics":
         return <AnalyticsView />;
+      case "transactions":
+        return <TransactionHistoryView />;
       case "settings":
         return <SettingsView />;
       default:
