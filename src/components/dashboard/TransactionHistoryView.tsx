@@ -117,6 +117,51 @@ const formatDate = (date: Date) => {
   }).format(date);
 };
 
+const MobileTransactionCard = memo(({ tx }: { tx: Transaction }) => (
+  <div className="p-4 border-b border-border/50 last:border-b-0">
+    <div className="flex items-start justify-between gap-3 mb-3">
+      <div className="flex items-center gap-2">
+        <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center shrink-0">
+          {getTypeIcon(tx.type)}
+        </div>
+        <div>
+          <p className="font-medium capitalize text-foreground">{tx.type}</p>
+          <p className="text-tiny text-muted-foreground">{tx.chain}</p>
+        </div>
+      </div>
+      {getStatusBadge(tx.status)}
+    </div>
+    <div className="grid grid-cols-2 gap-2 text-small">
+      <div>
+        <p className="text-muted-foreground text-tiny">Amount</p>
+        <p className="font-mono text-foreground">
+          {tx.amount.toLocaleString()} {tx.fromAsset}
+          {tx.toAsset && <span className="text-muted-foreground"> → {tx.toAsset}</span>}
+        </p>
+      </div>
+      <div>
+        <p className="text-muted-foreground text-tiny">Value</p>
+        <p className="font-mono text-foreground">${tx.value.toLocaleString()}</p>
+      </div>
+      <div>
+        <p className="text-muted-foreground text-tiny">Fee</p>
+        <p className="font-mono text-muted-foreground">${tx.fee.toFixed(2)}</p>
+      </div>
+      <div>
+        <p className="text-muted-foreground text-tiny">Time</p>
+        <p className="text-muted-foreground">{formatDate(tx.timestamp)}</p>
+      </div>
+    </div>
+    <div className="mt-2 pt-2 border-t border-border/30">
+      <a href="#" className="font-mono text-tiny text-primary hover:underline">
+        {tx.txHash}
+      </a>
+    </div>
+  </div>
+));
+
+MobileTransactionCard.displayName = "MobileTransactionCard";
+
 const TransactionRow = memo(({ tx }: { tx: Transaction }) => (
   <TableRow className="hover:bg-secondary/30">
     <TableCell>
@@ -281,8 +326,25 @@ export const TransactionHistoryView = memo(() => {
         </CardContent>
       </Card>
 
-      {/* Transactions Table */}
-      <Card className="bg-card/80 backdrop-blur-sm border-border/50">
+      {/* Transactions - Mobile Cards */}
+      <Card className="bg-card/80 backdrop-blur-sm border-border/50 md:hidden">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-h3 font-medium">Recent Transactions</CardTitle>
+        </CardHeader>
+        <CardContent className="p-0">
+          {filteredTransactions.map((tx) => (
+            <MobileTransactionCard key={tx.id} tx={tx} />
+          ))}
+          {filteredTransactions.length === 0 && (
+            <div className="py-12 text-center text-muted-foreground">
+              No transactions found matching your filters.
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Transactions Table - Desktop */}
+      <Card className="bg-card/80 backdrop-blur-sm border-border/50 hidden md:block">
         <CardHeader className="pb-2">
           <CardTitle className="text-h3 font-medium">Recent Transactions</CardTitle>
         </CardHeader>
