@@ -296,6 +296,55 @@
   }
 }
 
+/* Holographic float animations for background orbs */
+@keyframes holoFloat1 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(30px, -20px) scale(1.1); }
+}
+
+@keyframes holoFloat2 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(-40px, 30px) scale(0.9); }
+}
+
+@keyframes holoFloat3 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(25px, -35px) scale(1.05); }
+}
+
+@keyframes holoFloat4 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(-20px, 40px) scale(0.95); }
+}
+
+@keyframes holoShimmer {
+  0%, 100% { opacity: 0.02; background-position: 0% 0%; }
+  50% { opacity: 0.05; background-position: 100% 100%; }
+}
+
+.animate-holo-float-1 {
+  animation: holoFloat1 20s ease-in-out infinite;
+}
+
+.animate-holo-float-2 {
+  animation: holoFloat2 25s ease-in-out infinite;
+  animation-delay: 2s;
+}
+
+.animate-holo-float-3 {
+  animation: holoFloat3 22s ease-in-out infinite;
+  animation-delay: 4s;
+}
+
+.animate-holo-float-4 {
+  animation: holoFloat4 18s ease-in-out infinite;
+  animation-delay: 6s;
+}
+
+.animate-holo-shimmer {
+  animation: holoShimmer 10s linear infinite;
+}
+
 /* Custom scrollbar */
 ::-webkit-scrollbar {
   width: 8px;

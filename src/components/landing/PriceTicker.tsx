@@ -1,5 +1,4 @@
-import { motion } from 'framer-motion';
-import { useState, useEffect } from 'react';
+import { memo, useState, useEffect, useMemo } from 'react';
 
 const initialTickerData = [
   { symbol: 'XLM', price: 0.12, change: 3.24 },
@@ -14,10 +13,24 @@ const initialTickerData = [
   { symbol: 'LINK', price: 14.80, change: 3.45 },
 ];
 
+const TickerItem = memo(({ item }: { item: typeof initialTickerData[0] }) => (
+  <div className="flex items-center gap-2 px-4">
+    <span className="font-semibold text-foreground text-sm">{item.symbol}</span>
+    <span className="text-muted-foreground text-sm font-mono">
+      ${item.price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+    </span>
+    <span className={`text-xs font-medium ${item.change >= 0 ? 'text-success' : 'text-destructive'}`}>
+      {item.change >= 0 ? '+' : ''}{item.change.toFixed(2)}%
+    </span>
+  </div>
+));
+
+TickerItem.displayName = "TickerItem";
+
 const PriceTicker = () => {
   const [tickerData, setTickerData] = useState(initialTickerData);
 
-  // Simulate live price updates
+  // Simulate live price updates with longer interval
   useEffect(() => {
     const interval = setInterval(() => {
       setTickerData(prev => prev.map(item => {
@@ -29,54 +42,34 @@ const PriceTicker = () => {
           change: item.change + changeUpdate
         };
       }));
-    }, 2000 + Math.random() * 2000);
+    }, 4000); // Increased interval
 
     return () => clearInterval(interval);
   }, []);
 
-  const duplicatedData = [...tickerData, ...tickerData, ...tickerData];
+  const duplicatedData = useMemo(() => [...tickerData, ...tickerData, ...tickerData], [tickerData]);
 
   return (
     <div className="w-full bg-background/80 backdrop-blur-sm border-b border-border/50 overflow-hidden py-2">
-      <motion.div
-        className="flex gap-8 whitespace-nowrap"
-        animate={{
-          x: ['0%', '-33.33%'],
-        }}
-        transition={{
-          duration: 30,
-          repeat: Infinity,
-          ease: 'linear',
+      <div
+        className="flex gap-8 whitespace-nowrap animate-ticker"
+        style={{
+          animation: 'ticker 30s linear infinite',
         }}
       >
         {duplicatedData.map((item, index) => (
-          <motion.div 
-            key={index} 
-            className="flex items-center gap-2 px-4"
-            animate={{ opacity: [0.8, 1, 0.8] }}
-            transition={{ duration: 2, repeat: Infinity, delay: index * 0.1 }}
-          >
-            <span className="font-semibold text-foreground text-sm">{item.symbol}</span>
-            <motion.span 
-              className="text-muted-foreground text-sm font-mono"
-              key={item.price.toFixed(2)}
-              initial={{ scale: 1.05 }}
-              animate={{ scale: 1 }}
-              transition={{ duration: 0.2 }}
-            >
-              ${item.price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-            </motion.span>
-            <motion.span 
-              className={`text-xs font-medium ${item.change >= 0 ? 'text-success' : 'text-destructive'}`}
-              key={item.change.toFixed(2)}
-              initial={{ scale: 1.1 }}
-              animate={{ scale: 1 }}
-            >
-              {item.change >= 0 ? '+' : ''}{item.change.toFixed(2)}%
-            </motion.span>
-          </motion.div>
+          <TickerItem key={`${item.symbol}-${index}`} item={item} />
         ))}
-      </motion.div>
+      </div>
+      <style>{`
+        @keyframes ticker {
+          0% { transform: translateX(0%); }
+          100% { transform: translateX(-33.33%); }
+        }
+        .animate-ticker {
+          will-change: transform;
+        }
+      `}</style>
     </div>
   );
 };
