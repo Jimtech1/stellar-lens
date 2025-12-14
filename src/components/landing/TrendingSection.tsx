@@ -1,10 +1,9 @@
-import { motion } from "framer-motion";
+import { memo, useState, useEffect, useCallback, useMemo } from "react";
 import { TrendingUp, Droplets, Boxes, ArrowUpRight, Search, Activity, Zap, Shield, Globe, Layers, Users, Coins, Star } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { useState, useEffect } from "react";
 
-// Extended Soroban smart contract positions
+// Static data - moved outside component to prevent re-creation
 const initialSorobanPositions = [
   { id: '1', contract: 'Blend Protocol', position: 'Lending', value: 12450.00, apy: 8.5, token: 'XLM-USDC' },
   { id: '2', contract: 'Aquarius AMM', position: 'LP Provider', value: 8200.00, apy: 12.3, token: 'XLM-AQUA' },
@@ -16,7 +15,6 @@ const initialSorobanPositions = [
   { id: '8', contract: 'Mercury Indexer', position: 'Data Provider', value: 2100.00, apy: 4.2, token: 'MERC' },
 ];
 
-// Extended trending assets
 const initialTrendingAssets = [
   { symbol: 'XLM', name: 'Stellar Lumens', price: 0.124, change: 5.24, volume: '2.4B', marketCap: '$3.8B' },
   { symbol: 'AQUA', name: 'Aquarius', price: 0.0045, change: 12.8, volume: '145M', marketCap: '$52M' },
@@ -30,7 +28,6 @@ const initialTrendingAssets = [
   { symbol: 'ARST', name: 'ARS Token', price: 0.0089, change: 3.2, volume: '520K', marketCap: '$3.8M' },
 ];
 
-// Extended liquidity pools
 const initialLiquidityPools = [
   { pair: 'XLM/USDC', protocol: 'Aquarius', tvl: 45000000, apy: 14.5, age: '2d', volume24h: '$890K' },
   { pair: 'AQUA/XLM', protocol: 'StellarSwap', tvl: 12000000, apy: 22.3, age: '5d', volume24h: '$420K' },
@@ -42,7 +39,6 @@ const initialLiquidityPools = [
   { pair: 'EURC/USDC', protocol: 'Circle', tvl: 28900000, apy: 4.1, age: '1w', volume24h: '$2.1M' },
 ];
 
-// Extended emerging dApps
 const emergingDApps = [
   { name: 'Blend Protocol', category: 'Lending', users: '12.5K', growth: 45, logo: '🔷', tvl: '$15.2M' },
   { name: 'Aquarius DEX', category: 'DEX', users: '45.2K', growth: 28, logo: '🌊', tvl: '$8.2M' },
@@ -56,7 +52,6 @@ const emergingDApps = [
   { name: 'Stellar Expert', category: 'Explorer', users: '85K', growth: 12, logo: '🔍', tvl: 'N/A' },
 ];
 
-// Live network aggregates
 const initialNetworkAggregates = [
   { metric: 'Total XLM Volume', value: 2400000000, change: '+8.2%', period: '24h', format: 'currency' },
   { metric: 'Active Contracts', value: 1847, change: '+124', period: 'today', format: 'number' },
@@ -66,13 +61,134 @@ const initialNetworkAggregates = [
   { metric: 'Contract Calls', value: 2800000, change: '+95K', period: '24h', format: 'number' },
 ];
 
-// Protocol stats
 const protocolStats = [
   { name: 'Stellar TPS', value: '4,000+', icon: Zap },
   { name: 'Soroban Contracts', value: '2,500+', icon: Layers },
   { name: 'Active Anchors', value: '180+', icon: Shield },
   { name: 'Global Nodes', value: '40+', icon: Globe },
 ];
+
+// Memoized sub-components
+const ProtocolStatCard = memo(({ stat }: { stat: typeof protocolStats[0] }) => (
+  <div className="card-elevated p-4 text-center">
+    <stat.icon className="w-6 h-6 mx-auto mb-2 text-primary" />
+    <p className="text-h2 font-bold text-foreground">{stat.value}</p>
+    <p className="text-tiny text-muted-foreground">{stat.name}</p>
+  </div>
+));
+
+ProtocolStatCard.displayName = "ProtocolStatCard";
+
+const NetworkAggregateCard = memo(({ item, formatValue }: { item: typeof initialNetworkAggregates[0], formatValue: (value: number, format: string) => string }) => (
+  <div className="card-elevated p-3">
+    <p className="text-tiny text-muted-foreground mb-1">{item.metric}</p>
+    <p className="text-body font-bold font-mono text-foreground">
+      {formatValue(item.value, item.format)}
+    </p>
+    <p className="text-tiny text-success">{item.change} ({item.period})</p>
+  </div>
+));
+
+NetworkAggregateCard.displayName = "NetworkAggregateCard";
+
+const PositionCard = memo(({ position }: { position: typeof initialSorobanPositions[0] }) => (
+  <div className="card-elevated p-4 hover:shadow-card transition-all">
+    <div className="flex items-center justify-between mb-3">
+      <span className="text-small font-medium text-foreground">{position.contract}</span>
+      <Badge variant="outline" className="text-tiny">{position.position}</Badge>
+    </div>
+    <p className="text-h3 font-bold font-mono text-foreground mb-1">
+      ${position.value.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+    </p>
+    <div className="flex items-center justify-between">
+      <span className="text-tiny text-muted-foreground">{position.token}</span>
+      <span className="text-tiny text-success">
+        {position.apy.toFixed(1)}% APY
+      </span>
+    </div>
+  </div>
+));
+
+PositionCard.displayName = "PositionCard";
+
+const AssetRow = memo(({ asset, index }: { asset: typeof initialTrendingAssets[0], index: number }) => (
+  <div className="p-4 flex items-center justify-between hover:bg-secondary/50 transition-colors">
+    <div className="flex items-center gap-3">
+      <span className="text-tiny text-muted-foreground w-4">{index + 1}</span>
+      <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+        <Star className="w-4 h-4 text-primary" />
+      </div>
+      <div>
+        <p className="text-small font-medium text-foreground">{asset.symbol}</p>
+        <p className="text-tiny text-muted-foreground">{asset.name}</p>
+      </div>
+    </div>
+    <div className="text-right">
+      <p className="text-small font-mono text-foreground">
+        ${asset.price.toFixed(asset.price < 1 ? 4 : 2)}
+      </p>
+      <p className={`text-tiny ${asset.change >= 0 ? 'text-success' : 'text-destructive'}`}>
+        {asset.change >= 0 ? '+' : ''}{asset.change.toFixed(2)}%
+      </p>
+    </div>
+    <div className="text-right hidden md:block">
+      <p className="text-tiny text-muted-foreground">Vol: {asset.volume}</p>
+      <p className="text-tiny text-muted-foreground">MCap: {asset.marketCap}</p>
+    </div>
+  </div>
+));
+
+AssetRow.displayName = "AssetRow";
+
+const PoolRow = memo(({ pool }: { pool: typeof initialLiquidityPools[0] }) => (
+  <div className="p-4 flex items-center justify-between hover:bg-secondary/50 transition-colors">
+    <div>
+      <div className="flex items-center gap-2">
+        <p className="text-small font-medium text-foreground">{pool.pair}</p>
+        <Badge variant="secondary" className="text-tiny">{pool.age}</Badge>
+      </div>
+      <p className="text-tiny text-muted-foreground">{pool.protocol}</p>
+    </div>
+    <div className="text-right">
+      <p className="text-small font-mono text-success">
+        {pool.apy.toFixed(1)}% APY
+      </p>
+      <p className="text-tiny text-muted-foreground">
+        ${(pool.tvl / 1000000).toFixed(1)}M TVL
+      </p>
+    </div>
+    <div className="text-right hidden md:block">
+      <p className="text-tiny text-muted-foreground">{pool.volume24h}</p>
+      <p className="text-tiny text-primary flex items-center gap-1">
+        View <ArrowUpRight className="w-3 h-3" />
+      </p>
+    </div>
+  </div>
+));
+
+PoolRow.displayName = "PoolRow";
+
+const DAppCard = memo(({ dapp }: { dapp: typeof emergingDApps[0] }) => (
+  <div className="card-elevated p-4 hover:shadow-card transition-all">
+    <div className="flex items-center gap-3 mb-3">
+      <span className="text-2xl">{dapp.logo}</span>
+      <div>
+        <p className="text-small font-medium text-foreground">{dapp.name}</p>
+        <Badge variant="outline" className="text-tiny">{dapp.category}</Badge>
+      </div>
+    </div>
+    <div className="flex items-center justify-between">
+      <div className="flex items-center gap-1">
+        <Users className="w-3 h-3 text-muted-foreground" />
+        <span className="text-tiny text-muted-foreground">{dapp.users}</span>
+      </div>
+      <span className="text-tiny text-success">+{dapp.growth}%</span>
+    </div>
+    <p className="text-tiny text-muted-foreground mt-2">TVL: {dapp.tvl}</p>
+  </div>
+));
+
+DAppCard.displayName = "DAppCard";
 
 export function TrendingSection() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -81,41 +197,37 @@ export function TrendingSection() {
   const [newLiquidityPools, setNewLiquidityPools] = useState(initialLiquidityPools);
   const [networkAggregates, setNetworkAggregates] = useState(initialNetworkAggregates);
 
-  // Live data simulation
+  // Optimized live data simulation with longer interval
   useEffect(() => {
     const interval = setInterval(() => {
-      // Update Soroban positions
       setSorobanPositions(prev => prev.map(pos => ({
         ...pos,
         value: pos.value * (1 + (Math.random() - 0.48) * 0.02),
         apy: Math.max(1, pos.apy + (Math.random() - 0.5) * 0.3)
       })));
 
-      // Update trending assets
       setTrendingAssets(prev => prev.map(asset => ({
         ...asset,
         price: asset.symbol === 'USDC' ? 1.00 : Math.max(0.00001, asset.price * (1 + (Math.random() - 0.5) * 0.02)),
         change: asset.change + (Math.random() - 0.5) * 0.5
       })));
 
-      // Update liquidity pools
       setNewLiquidityPools(prev => prev.map(pool => ({
         ...pool,
         tvl: pool.tvl * (1 + (Math.random() - 0.48) * 0.01),
         apy: Math.max(1, pool.apy + (Math.random() - 0.5) * 0.5)
       })));
 
-      // Update network aggregates
       setNetworkAggregates(prev => prev.map(agg => ({
         ...agg,
         value: agg.value * (1 + (Math.random() - 0.4) * 0.005)
       })));
-    }, 3000);
+    }, 5000); // Increased interval from 3s to 5s
 
     return () => clearInterval(interval);
   }, []);
 
-  const formatAggValue = (value: number, format: string) => {
+  const formatAggValue = useCallback((value: number, format: string) => {
     if (format === 'currency') {
       if (value >= 1000000000) return '$' + (value / 1000000000).toFixed(1) + 'B';
       if (value >= 1000000) return '$' + (value / 1000000).toFixed(1) + 'M';
@@ -125,18 +237,13 @@ export function TrendingSection() {
     if (value >= 1000000) return (value / 1000000).toFixed(1) + 'M';
     if (value >= 1000) return (value / 1000).toFixed(1) + 'K';
     return value.toLocaleString();
-  };
+  }, []);
 
   return (
     <section className="py-24 bg-secondary/20">
       <div className="container mx-auto px-4">
         {/* Section Header with Search */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="text-center max-w-2xl mx-auto mb-8"
-        >
+        <div className="text-center max-w-2xl mx-auto mb-8 animate-fade-in">
           <Badge variant="outline" className="mb-4 border-primary/30 text-primary">
             <Activity className="w-3 h-3 mr-1" />
             Live Data
@@ -159,261 +266,85 @@ export function TrendingSection() {
               className="pl-10 h-12 bg-background border-border"
             />
           </div>
-        </motion.div>
+        </div>
 
         {/* Protocol Stats Banner */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ delay: 0.05 }}
-          className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8"
-        >
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
           {protocolStats.map((stat, index) => (
-            <div key={index} className="card-elevated p-4 text-center">
-              <stat.icon className="w-6 h-6 mx-auto mb-2 text-primary" />
-              <p className="text-h2 font-bold text-foreground">{stat.value}</p>
-              <p className="text-tiny text-muted-foreground">{stat.name}</p>
-            </div>
+            <ProtocolStatCard key={index} stat={stat} />
           ))}
-        </motion.div>
+        </div>
 
         {/* Live Network Aggregates */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ delay: 0.1 }}
-          className="mb-8"
-        >
+        <div className="mb-8">
           <div className="flex items-center gap-2 mb-4">
             <Activity className="w-5 h-5 text-primary animate-pulse" />
             <h3 className="text-h3 font-semibold text-foreground">Live Network Aggregates</h3>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
             {networkAggregates.map((item, index) => (
-              <motion.div 
-                key={index} 
-                className="card-elevated p-3"
-                initial={{ opacity: 0, scale: 0.95 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                transition={{ delay: index * 0.05 }}
-              >
-                <p className="text-tiny text-muted-foreground mb-1">{item.metric}</p>
-                <motion.p 
-                  className="text-body font-bold font-mono text-foreground"
-                  key={Math.floor(item.value / 1000)}
-                  initial={{ scale: 1.05 }}
-                  animate={{ scale: 1 }}
-                >
-                  {formatAggValue(item.value, item.format)}
-                </motion.p>
-                <p className="text-tiny text-success">{item.change} ({item.period})</p>
-              </motion.div>
+              <NetworkAggregateCard key={index} item={item} formatValue={formatAggValue} />
             ))}
           </div>
-        </motion.div>
+        </div>
 
         {/* Soroban Positions */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ delay: 0.15 }}
-          className="mb-8"
-        >
+        <div className="mb-8">
           <div className="flex items-center gap-2 mb-4">
             <Coins className="w-5 h-5 text-primary" />
             <h3 className="text-h3 font-semibold text-foreground">Soroban Smart Contract Positions</h3>
             <Badge variant="secondary" className="text-tiny">Live</Badge>
           </div>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {sorobanPositions.map((position, index) => (
-              <motion.div 
-                key={position.id} 
-                className="card-elevated p-4 hover:shadow-card transition-all"
-                initial={{ opacity: 0, y: 10 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.05 }}
-              >
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-small font-medium text-foreground">{position.contract}</span>
-                  <Badge variant="outline" className="text-tiny">{position.position}</Badge>
-                </div>
-                <motion.p 
-                  className="text-h3 font-bold font-mono text-foreground mb-1"
-                  key={position.value.toFixed(0)}
-                  initial={{ scale: 1.02 }}
-                  animate={{ scale: 1 }}
-                >
-                  ${position.value.toLocaleString(undefined, { maximumFractionDigits: 0 })}
-                </motion.p>
-                <div className="flex items-center justify-between">
-                  <span className="text-tiny text-muted-foreground">{position.token}</span>
-                  <motion.span 
-                    className="text-tiny text-success"
-                    key={position.apy.toFixed(1)}
-                    initial={{ scale: 1.1 }}
-                    animate={{ scale: 1 }}
-                  >
-                    {position.apy.toFixed(1)}% APY
-                  </motion.span>
-                </div>
-              </motion.div>
+            {sorobanPositions.map((position) => (
+              <PositionCard key={position.id} position={position} />
             ))}
           </div>
-        </motion.div>
+        </div>
 
         <div className="grid lg:grid-cols-2 gap-8">
           {/* Trending Assets */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.2 }}
-          >
+          <div>
             <div className="flex items-center gap-2 mb-4">
               <TrendingUp className="w-5 h-5 text-success" />
               <h3 className="text-h3 font-semibold text-foreground">Trending Assets</h3>
             </div>
             <div className="card-elevated divide-y divide-border max-h-[400px] overflow-y-auto">
               {trendingAssets.map((asset, i) => (
-                <motion.div 
-                  key={asset.symbol} 
-                  className="p-4 flex items-center justify-between hover:bg-secondary/50 transition-colors"
-                  initial={{ opacity: 0, x: -10 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  transition={{ delay: i * 0.03 }}
-                >
-                  <div className="flex items-center gap-3">
-                    <span className="text-tiny text-muted-foreground w-4">{i + 1}</span>
-                    <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                      <Star className="w-4 h-4 text-primary" />
-                    </div>
-                    <div>
-                      <p className="text-small font-medium text-foreground">{asset.symbol}</p>
-                      <p className="text-tiny text-muted-foreground">{asset.name}</p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <motion.p 
-                      className="text-small font-mono text-foreground"
-                      key={asset.price.toFixed(4)}
-                      initial={{ scale: 1.05 }}
-                      animate={{ scale: 1 }}
-                    >
-                      ${asset.price.toFixed(asset.price < 1 ? 4 : 2)}
-                    </motion.p>
-                    <motion.p 
-                      className={`text-tiny ${asset.change >= 0 ? 'text-success' : 'text-destructive'}`}
-                      key={asset.change.toFixed(1)}
-                      initial={{ scale: 1.1 }}
-                      animate={{ scale: 1 }}
-                    >
-                      {asset.change >= 0 ? '+' : ''}{asset.change.toFixed(2)}%
-                    </motion.p>
-                  </div>
-                  <div className="text-right hidden md:block">
-                    <p className="text-tiny text-muted-foreground">Vol: {asset.volume}</p>
-                    <p className="text-tiny text-muted-foreground">MCap: {asset.marketCap}</p>
-                  </div>
-                </motion.div>
+                <AssetRow key={asset.symbol} asset={asset} index={i} />
               ))}
             </div>
-          </motion.div>
+          </div>
 
           {/* New Liquidity Pools */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.3 }}
-          >
+          <div>
             <div className="flex items-center gap-2 mb-4">
               <Droplets className="w-5 h-5 text-primary" />
               <h3 className="text-h3 font-semibold text-foreground">New Liquidity Pools</h3>
             </div>
             <div className="card-elevated divide-y divide-border max-h-[400px] overflow-y-auto">
-              {newLiquidityPools.map((pool, i) => (
-                <motion.div 
-                  key={pool.pair} 
-                  className="p-4 flex items-center justify-between hover:bg-secondary/50 transition-colors"
-                  initial={{ opacity: 0, x: 10 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  transition={{ delay: i * 0.03 }}
-                >
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <p className="text-small font-medium text-foreground">{pool.pair}</p>
-                      <Badge variant="secondary" className="text-tiny">{pool.age}</Badge>
-                    </div>
-                    <p className="text-tiny text-muted-foreground">{pool.protocol}</p>
-                  </div>
-                  <div className="text-right">
-                    <motion.p 
-                      className="text-small font-mono text-success"
-                      key={pool.apy.toFixed(1)}
-                      initial={{ scale: 1.05 }}
-                      animate={{ scale: 1 }}
-                    >
-                      {pool.apy.toFixed(1)}% APY
-                    </motion.p>
-                    <motion.p 
-                      className="text-tiny text-muted-foreground"
-                      key={pool.tvl.toFixed(0)}
-                    >
-                      ${(pool.tvl / 1000000).toFixed(1)}M TVL
-                    </motion.p>
-                  </div>
-                  <div className="text-right hidden md:block">
-                    <p className="text-tiny text-muted-foreground">24h Vol</p>
-                    <p className="text-tiny font-mono">{pool.volume24h}</p>
-                  </div>
-                </motion.div>
+              {newLiquidityPools.map((pool) => (
+                <PoolRow key={pool.pair} pool={pool} />
               ))}
             </div>
-          </motion.div>
+          </div>
         </div>
 
         {/* Emerging dApps */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ delay: 0.4 }}
-          className="mt-8"
-        >
+        <div className="mt-8">
           <div className="flex items-center gap-2 mb-4">
-            <ArrowUpRight className="w-5 h-5 text-warning" />
+            <Boxes className="w-5 h-5 text-primary" />
             <h3 className="text-h3 font-semibold text-foreground">Emerging dApps</h3>
           </div>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
             {emergingDApps.map((dapp) => (
-              <div key={dapp.name} className="card-elevated p-4 hover:shadow-card transition-all group cursor-pointer">
-                <div className="flex items-center gap-3 mb-3">
-                  <span className="text-2xl">{dapp.logo}</span>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-small font-medium text-foreground group-hover:text-primary transition-colors truncate">
-                      {dapp.name}
-                    </p>
-                    <Badge variant="outline" className="text-tiny">{dapp.category}</Badge>
-                  </div>
-                </div>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-1 text-tiny text-muted-foreground">
-                    <Users className="w-3 h-3" />
-                    {dapp.users}
-                  </div>
-                  <span className="text-tiny text-success">+{dapp.growth}%</span>
-                </div>
-                {dapp.tvl !== 'N/A' && (
-                  <p className="text-tiny font-mono text-muted-foreground mt-2">{dapp.tvl} TVL</p>
-                )}
-              </div>
+              <DAppCard key={dapp.name} dapp={dapp} />
             ))}
           </div>
-        </motion.div>
+        </div>
       </div>
     </section>
   );
 }
+
+export default TrendingSection;

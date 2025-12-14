@@ -1,11 +1,12 @@
-import { motion } from "framer-motion";
+import { memo } from "react";
 
 interface HoloBackgroundProps {
   variant?: "default" | "subtle" | "intense";
   className?: string;
 }
 
-export function HoloBackground({ variant = "default", className = "" }: HoloBackgroundProps) {
+// Optimized holographic background using CSS animations instead of framer-motion
+export const HoloBackground = memo(function HoloBackground({ variant = "default", className = "" }: HoloBackgroundProps) {
   const intensityMap = {
     subtle: { opacity: 0.15, blur: 80 },
     default: { opacity: 0.25, blur: 60 },
@@ -16,60 +17,40 @@ export function HoloBackground({ variant = "default", className = "" }: HoloBack
 
   return (
     <div className={`absolute inset-0 overflow-hidden pointer-events-none ${className}`}>
-      {/* Animated holographic orbs */}
-      <motion.div
-        animate={{
-          x: [0, 30, -20, 0],
-          y: [0, -20, 30, 0],
-          scale: [1, 1.1, 0.95, 1],
-        }}
-        transition={{ duration: 20, repeat: Infinity, ease: "easeInOut" }}
-        className="absolute -top-32 -left-32 w-[400px] h-[400px] rounded-full"
+      {/* CSS-animated holographic orbs - no JS animations */}
+      <div
+        className="absolute -top-32 -left-32 w-[400px] h-[400px] rounded-full animate-holo-float-1"
         style={{
           background: `radial-gradient(circle, hsl(var(--holo-cyan) / ${config.opacity}) 0%, transparent 70%)`,
           filter: `blur(${config.blur}px)`,
+          willChange: 'transform',
         }}
       />
       
-      <motion.div
-        animate={{
-          x: [0, -40, 20, 0],
-          y: [0, 30, -40, 0],
-          scale: [1, 0.9, 1.15, 1],
-        }}
-        transition={{ duration: 25, repeat: Infinity, ease: "easeInOut", delay: 2 }}
-        className="absolute top-1/4 -right-20 w-[350px] h-[350px] rounded-full"
+      <div
+        className="absolute top-1/4 -right-20 w-[350px] h-[350px] rounded-full animate-holo-float-2"
         style={{
           background: `radial-gradient(circle, hsl(var(--holo-purple) / ${config.opacity}) 0%, transparent 70%)`,
           filter: `blur(${config.blur}px)`,
+          willChange: 'transform',
         }}
       />
       
-      <motion.div
-        animate={{
-          x: [0, 25, -30, 0],
-          y: [0, -35, 25, 0],
-          scale: [1, 1.05, 0.9, 1],
-        }}
-        transition={{ duration: 22, repeat: Infinity, ease: "easeInOut", delay: 4 }}
-        className="absolute bottom-1/4 left-1/4 w-[300px] h-[300px] rounded-full"
+      <div
+        className="absolute bottom-1/4 left-1/4 w-[300px] h-[300px] rounded-full animate-holo-float-3"
         style={{
           background: `radial-gradient(circle, hsl(var(--holo-blue) / ${config.opacity}) 0%, transparent 70%)`,
           filter: `blur(${config.blur}px)`,
+          willChange: 'transform',
         }}
       />
       
-      <motion.div
-        animate={{
-          x: [0, -20, 35, 0],
-          y: [0, 40, -20, 0],
-          scale: [1, 0.95, 1.1, 1],
-        }}
-        transition={{ duration: 18, repeat: Infinity, ease: "easeInOut", delay: 6 }}
-        className="absolute bottom-20 right-1/3 w-[250px] h-[250px] rounded-full"
+      <div
+        className="absolute bottom-20 right-1/3 w-[250px] h-[250px] rounded-full animate-holo-float-4"
         style={{
           background: `radial-gradient(circle, hsl(var(--holo-pink) / ${config.opacity * 0.8}) 0%, transparent 70%)`,
           filter: `blur(${config.blur}px)`,
+          willChange: 'transform',
         }}
       />
 
@@ -85,14 +66,9 @@ export function HoloBackground({ variant = "default", className = "" }: HoloBack
         }}
       />
 
-      {/* Holographic shimmer effect */}
-      <motion.div
-        animate={{
-          opacity: [0.02, 0.05, 0.02],
-          backgroundPosition: ['0% 0%', '100% 100%', '0% 0%'],
-        }}
-        transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
-        className="absolute inset-0"
+      {/* Simplified shimmer effect */}
+      <div
+        className="absolute inset-0 animate-holo-shimmer"
         style={{
           background: `linear-gradient(
             135deg,
@@ -107,4 +83,4 @@ export function HoloBackground({ variant = "default", className = "" }: HoloBack
       />
     </div>
   );
-}
+});

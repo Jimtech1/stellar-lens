@@ -1,22 +1,52 @@
-import { useState } from "react";
+import { useState, lazy, Suspense, memo, useCallback } from "react";
 import { DashboardSidebar } from "@/components/dashboard/DashboardSidebar";
 import { MobileSidebar } from "@/components/dashboard/MobileSidebar";
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
 import { DashboardFooter } from "@/components/dashboard/DashboardFooter";
-import { PortfolioOverview } from "@/components/dashboard/PortfolioOverview";
-import { AssetsView } from "@/components/dashboard/AssetsView";
-import { BridgeView } from "@/components/dashboard/BridgeView";
-import { DiscoverView } from "@/components/dashboard/DiscoverView";
-import { AnalyticsView } from "@/components/dashboard/AnalyticsView";
-import { SettingsView } from "@/components/dashboard/SettingsView";
 import { HoloBackground } from "@/components/landing/HoloBackground";
+import { Skeleton } from "@/components/ui/skeleton";
+
+// Lazy load dashboard views
+const PortfolioOverview = lazy(() => import("@/components/dashboard/PortfolioOverview").then(m => ({ default: m.PortfolioOverview })));
+const AssetsView = lazy(() => import("@/components/dashboard/AssetsView").then(m => ({ default: m.AssetsView })));
+const BridgeView = lazy(() => import("@/components/dashboard/BridgeView").then(m => ({ default: m.BridgeView })));
+const DiscoverView = lazy(() => import("@/components/dashboard/DiscoverView").then(m => ({ default: m.DiscoverView })));
+const AnalyticsView = lazy(() => import("@/components/dashboard/AnalyticsView").then(m => ({ default: m.AnalyticsView })));
+const SettingsView = lazy(() => import("@/components/dashboard/SettingsView").then(m => ({ default: m.SettingsView })));
 
 export type DashboardView = "overview" | "assets" | "bridge" | "discover" | "analytics" | "settings";
+
+// View loading skeleton
+const ViewLoader = memo(() => (
+  <div className="space-y-6 animate-fade-in">
+    <div className="flex items-center justify-between">
+      <Skeleton className="h-8 w-48" />
+      <Skeleton className="h-10 w-32" />
+    </div>
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <Skeleton className="h-28 rounded-xl" />
+      <Skeleton className="h-28 rounded-xl" />
+      <Skeleton className="h-28 rounded-xl" />
+      <Skeleton className="h-28 rounded-xl" />
+    </div>
+    <Skeleton className="h-64 rounded-xl" />
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <Skeleton className="h-48 rounded-xl" />
+      <Skeleton className="h-48 rounded-xl" />
+    </div>
+  </div>
+));
+
+ViewLoader.displayName = "ViewLoader";
 
 const Dashboard = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [activeView, setActiveView] = useState<DashboardView>("overview");
+
+  const toggleSidebar = useCallback(() => setSidebarCollapsed(prev => !prev), []);
+  const openMobileSidebar = useCallback(() => setMobileSidebarOpen(true), []);
+  const closeMobileSidebar = useCallback(() => setMobileSidebarOpen(false), []);
 
   const renderView = () => {
     switch (activeView) {
@@ -45,7 +75,7 @@ const Dashboard = () => {
       {/* Desktop Sidebar */}
       <DashboardSidebar
         collapsed={sidebarCollapsed}
-        onToggle={() => setSidebarCollapsed(!sidebarCollapsed)}
+        onToggle={toggleSidebar}
         activeView={activeView}
         onViewChange={setActiveView}
       />
@@ -53,16 +83,18 @@ const Dashboard = () => {
       {/* Mobile Sidebar */}
       <MobileSidebar
         open={mobileSidebarOpen}
-        onClose={() => setMobileSidebarOpen(false)}
+        onClose={closeMobileSidebar}
         activeView={activeView}
         onViewChange={setActiveView}
       />
       
       <div className="flex-1 flex flex-col min-h-screen relative z-10">
-        <DashboardHeader onMenuToggle={() => setMobileSidebarOpen(true)} />
+        <DashboardHeader onMenuToggle={openMobileSidebar} />
         
         <main className="flex-1 p-4 md:p-6 overflow-auto">
-          {renderView()}
+          <Suspense fallback={<ViewLoader />}>
+            {renderView()}
+          </Suspense>
         </main>
 
         <DashboardFooter />
