@@ -1,11 +1,11 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { TrendingUp, TrendingDown, DollarSign, Percent, Shield, PieChart, ArrowUpDown, Filter } from "lucide-react";
+import { TrendingUp, TrendingDown, DollarSign, Percent, Shield, PieChart, ArrowUpDown, Filter, Sparkles } from "lucide-react";
 import { AreaChart, Area, ResponsiveContainer, XAxis, YAxis, Tooltip } from "recharts";
 import { portfolioHistory, portfolioStats, mockTransactions } from "@/lib/mockData";
 import { DepositWithdrawDialog } from "./forms/DepositWithdrawDialog";
-import { StakeDialog } from "./forms/StakeDialog";
-import { SendReceiveDialog } from "./forms/SendReceiveDialog";
+import { SwapDialog } from "./forms/SwapDialog";
+import { EarnDialog } from "./forms/EarnDialog";
 import { useLivePortfolio, useAnimatedCounter } from "@/hooks/useLiveData";
 
 const containerVariants = {
@@ -34,9 +34,8 @@ type ActivityFilter = "all" | "deposit" | "withdrawal" | "swap" | "bridge";
 export function PortfolioOverview() {
   const [depositOpen, setDepositOpen] = useState(false);
   const [withdrawOpen, setWithdrawOpen] = useState(false);
-  const [stakeOpen, setStakeOpen] = useState(false);
-  const [sendReceiveOpen, setSendReceiveOpen] = useState(false);
-  const [sendReceiveTab, setSendReceiveTab] = useState<"send" | "receive">("send");
+  const [swapOpen, setSwapOpen] = useState(false);
+  const [earnOpen, setEarnOpen] = useState(false);
   const [selectedTimeframe, setSelectedTimeframe] = useState<TimeFrame>("1M");
   const [activityFilter, setActivityFilter] = useState<ActivityFilter>("all");
   const [lastUpdate, setLastUpdate] = useState<string | null>(null);
@@ -53,10 +52,14 @@ export function PortfolioOverview() {
     return () => clearTimeout(timer);
   }, [liveStats.totalValue]);
 
-  const openSendReceive = (tab: "send" | "receive") => {
-    setSendReceiveTab(tab);
-    setSendReceiveOpen(true);
-  };
+  // Listen for navigate-to-discover events from EarnDialog
+  useEffect(() => {
+    const handleNavigate = () => {
+      window.dispatchEvent(new CustomEvent('set-dashboard-view', { detail: 'discover' }));
+    };
+    window.addEventListener('navigate-to-discover', handleNavigate);
+    return () => window.removeEventListener('navigate-to-discover', handleNavigate);
+  }, []);
 
   const filteredTransactions = mockTransactions.filter(
     (tx) => activityFilter === "all" || tx.type === activityFilter
@@ -75,8 +78,8 @@ export function PortfolioOverview() {
     <>
       <DepositWithdrawDialog open={depositOpen} onOpenChange={setDepositOpen} type="deposit" />
       <DepositWithdrawDialog open={withdrawOpen} onOpenChange={setWithdrawOpen} type="withdraw" />
-      <StakeDialog open={stakeOpen} onOpenChange={setStakeOpen} />
-      <SendReceiveDialog open={sendReceiveOpen} onOpenChange={setSendReceiveOpen} initialTab={sendReceiveTab} />
+      <SwapDialog open={swapOpen} onOpenChange={setSwapOpen} />
+      <EarnDialog open={earnOpen} onOpenChange={setEarnOpen} />
       
       <motion.div
         variants={containerVariants}
@@ -188,22 +191,22 @@ export function PortfolioOverview() {
               <span className="font-medium text-sm md:text-base text-foreground group-hover:text-primary transition-colors">Withdraw</span>
             </button>
             <button
-              onClick={() => openSendReceive("send")}
+              onClick={() => setSwapOpen(true)}
               className="card-elevated p-3 md:p-4 flex items-center gap-2 md:gap-3 hover:border-primary/30 transition-colors group flex-shrink-0 w-32 md:w-auto"
             >
-              <div className="w-8 h-8 md:w-10 md:h-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center text-base md:text-lg font-bold">
-                ⇄
+              <div className="w-8 h-8 md:w-10 md:h-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
+                <ArrowUpDown className="w-4 h-4 md:w-5 md:h-5" />
               </div>
-              <span className="font-medium text-sm md:text-base text-foreground group-hover:text-primary transition-colors">Send</span>
+              <span className="font-medium text-sm md:text-base text-foreground group-hover:text-primary transition-colors">Swap</span>
             </button>
             <button
-              onClick={() => setStakeOpen(true)}
+              onClick={() => setEarnOpen(true)}
               className="card-elevated p-3 md:p-4 flex items-center gap-2 md:gap-3 hover:border-primary/30 transition-colors group flex-shrink-0 w-32 md:w-auto"
             >
-              <div className="w-8 h-8 md:w-10 md:h-10 rounded-lg bg-warning/10 text-warning flex items-center justify-center text-base md:text-lg font-bold">
-                ◈
+              <div className="w-8 h-8 md:w-10 md:h-10 rounded-lg bg-warning/10 text-warning flex items-center justify-center">
+                <Sparkles className="w-4 h-4 md:w-5 md:h-5" />
               </div>
-              <span className="font-medium text-sm md:text-base text-foreground group-hover:text-primary transition-colors">Stake</span>
+              <span className="font-medium text-sm md:text-base text-foreground group-hover:text-primary transition-colors">Earn</span>
             </button>
           </div>
         </motion.div>

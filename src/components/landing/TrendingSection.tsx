@@ -2,10 +2,10 @@ import { motion } from "framer-motion";
 import { TrendingUp, Droplets, Boxes, ArrowUpRight, Search, Activity, Zap, Shield, Globe, Layers, Users, Coins, Star } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 // Extended Soroban smart contract positions
-const sorobanPositions = [
+const initialSorobanPositions = [
   { id: '1', contract: 'Blend Protocol', position: 'Lending', value: 12450.00, apy: 8.5, token: 'XLM-USDC' },
   { id: '2', contract: 'Aquarius AMM', position: 'LP Provider', value: 8200.00, apy: 12.3, token: 'XLM-AQUA' },
   { id: '3', contract: 'StellarSwap', position: 'Staking', value: 5600.00, apy: 6.8, token: 'SWAP' },
@@ -17,7 +17,7 @@ const sorobanPositions = [
 ];
 
 // Extended trending assets
-const trendingAssets = [
+const initialTrendingAssets = [
   { symbol: 'XLM', name: 'Stellar Lumens', price: 0.124, change: 5.24, volume: '2.4B', marketCap: '$3.8B' },
   { symbol: 'AQUA', name: 'Aquarius', price: 0.0045, change: 12.8, volume: '145M', marketCap: '$52M' },
   { symbol: 'yXLM', name: 'Ultra Stellar', price: 0.126, change: 4.1, volume: '89M', marketCap: '$18M' },
@@ -31,7 +31,7 @@ const trendingAssets = [
 ];
 
 // Extended liquidity pools
-const newLiquidityPools = [
+const initialLiquidityPools = [
   { pair: 'XLM/USDC', protocol: 'Aquarius', tvl: 45000000, apy: 14.5, age: '2d', volume24h: '$890K' },
   { pair: 'AQUA/XLM', protocol: 'StellarSwap', tvl: 12000000, apy: 22.3, age: '5d', volume24h: '$420K' },
   { pair: 'yXLM/USDC', protocol: 'Blend', tvl: 8500000, apy: 18.7, age: '1w', volume24h: '$650K' },
@@ -57,13 +57,13 @@ const emergingDApps = [
 ];
 
 // Live network aggregates
-const networkAggregates = [
-  { metric: 'Total XLM Volume', value: '$2.4B', change: '+8.2%', period: '24h' },
-  { metric: 'Active Contracts', value: '1,847', change: '+124', period: 'today' },
-  { metric: 'Unique Wallets', value: '892K', change: '+2.1K', period: '24h' },
-  { metric: 'Total Transactions', value: '4.2M', change: '+180K', period: '24h' },
-  { metric: 'Gas Fees', value: '$48.5K', change: '+12%', period: '24h' },
-  { metric: 'Contract Calls', value: '2.8M', change: '+95K', period: '24h' },
+const initialNetworkAggregates = [
+  { metric: 'Total XLM Volume', value: 2400000000, change: '+8.2%', period: '24h', format: 'currency' },
+  { metric: 'Active Contracts', value: 1847, change: '+124', period: 'today', format: 'number' },
+  { metric: 'Unique Wallets', value: 892000, change: '+2.1K', period: '24h', format: 'number' },
+  { metric: 'Total Transactions', value: 4200000, change: '+180K', period: '24h', format: 'number' },
+  { metric: 'Gas Fees', value: 48500, change: '+12%', period: '24h', format: 'currency' },
+  { metric: 'Contract Calls', value: 2800000, change: '+95K', period: '24h', format: 'number' },
 ];
 
 // Protocol stats
@@ -76,6 +76,56 @@ const protocolStats = [
 
 export function TrendingSection() {
   const [searchQuery, setSearchQuery] = useState('');
+  const [sorobanPositions, setSorobanPositions] = useState(initialSorobanPositions);
+  const [trendingAssets, setTrendingAssets] = useState(initialTrendingAssets);
+  const [newLiquidityPools, setNewLiquidityPools] = useState(initialLiquidityPools);
+  const [networkAggregates, setNetworkAggregates] = useState(initialNetworkAggregates);
+
+  // Live data simulation
+  useEffect(() => {
+    const interval = setInterval(() => {
+      // Update Soroban positions
+      setSorobanPositions(prev => prev.map(pos => ({
+        ...pos,
+        value: pos.value * (1 + (Math.random() - 0.48) * 0.02),
+        apy: Math.max(1, pos.apy + (Math.random() - 0.5) * 0.3)
+      })));
+
+      // Update trending assets
+      setTrendingAssets(prev => prev.map(asset => ({
+        ...asset,
+        price: asset.symbol === 'USDC' ? 1.00 : Math.max(0.00001, asset.price * (1 + (Math.random() - 0.5) * 0.02)),
+        change: asset.change + (Math.random() - 0.5) * 0.5
+      })));
+
+      // Update liquidity pools
+      setNewLiquidityPools(prev => prev.map(pool => ({
+        ...pool,
+        tvl: pool.tvl * (1 + (Math.random() - 0.48) * 0.01),
+        apy: Math.max(1, pool.apy + (Math.random() - 0.5) * 0.5)
+      })));
+
+      // Update network aggregates
+      setNetworkAggregates(prev => prev.map(agg => ({
+        ...agg,
+        value: agg.value * (1 + (Math.random() - 0.4) * 0.005)
+      })));
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  const formatAggValue = (value: number, format: string) => {
+    if (format === 'currency') {
+      if (value >= 1000000000) return '$' + (value / 1000000000).toFixed(1) + 'B';
+      if (value >= 1000000) return '$' + (value / 1000000).toFixed(1) + 'M';
+      if (value >= 1000) return '$' + (value / 1000).toFixed(1) + 'K';
+      return '$' + value.toFixed(0);
+    }
+    if (value >= 1000000) return (value / 1000000).toFixed(1) + 'M';
+    if (value >= 1000) return (value / 1000).toFixed(1) + 'K';
+    return value.toLocaleString();
+  };
 
   return (
     <section className="py-24 bg-secondary/20">
@@ -142,11 +192,24 @@ export function TrendingSection() {
           </div>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
             {networkAggregates.map((item, index) => (
-              <div key={index} className="card-elevated p-3">
+              <motion.div 
+                key={index} 
+                className="card-elevated p-3"
+                initial={{ opacity: 0, scale: 0.95 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                transition={{ delay: index * 0.05 }}
+              >
                 <p className="text-tiny text-muted-foreground mb-1">{item.metric}</p>
-                <p className="text-body font-bold font-mono text-foreground">{item.value}</p>
+                <motion.p 
+                  className="text-body font-bold font-mono text-foreground"
+                  key={Math.floor(item.value / 1000)}
+                  initial={{ scale: 1.05 }}
+                  animate={{ scale: 1 }}
+                >
+                  {formatAggValue(item.value, item.format)}
+                </motion.p>
                 <p className="text-tiny text-success">{item.change} ({item.period})</p>
-              </div>
+              </motion.div>
             ))}
           </div>
         </motion.div>
@@ -165,20 +228,38 @@ export function TrendingSection() {
             <Badge variant="secondary" className="text-tiny">Live</Badge>
           </div>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {sorobanPositions.map((position) => (
-              <div key={position.id} className="card-elevated p-4 hover:shadow-card transition-all">
+            {sorobanPositions.map((position, index) => (
+              <motion.div 
+                key={position.id} 
+                className="card-elevated p-4 hover:shadow-card transition-all"
+                initial={{ opacity: 0, y: 10 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.05 }}
+              >
                 <div className="flex items-center justify-between mb-3">
                   <span className="text-small font-medium text-foreground">{position.contract}</span>
                   <Badge variant="outline" className="text-tiny">{position.position}</Badge>
                 </div>
-                <p className="text-h3 font-bold font-mono text-foreground mb-1">
-                  ${position.value.toLocaleString()}
-                </p>
+                <motion.p 
+                  className="text-h3 font-bold font-mono text-foreground mb-1"
+                  key={position.value.toFixed(0)}
+                  initial={{ scale: 1.02 }}
+                  animate={{ scale: 1 }}
+                >
+                  ${position.value.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                </motion.p>
                 <div className="flex items-center justify-between">
                   <span className="text-tiny text-muted-foreground">{position.token}</span>
-                  <span className="text-tiny text-success">{position.apy}% APY</span>
+                  <motion.span 
+                    className="text-tiny text-success"
+                    key={position.apy.toFixed(1)}
+                    initial={{ scale: 1.1 }}
+                    animate={{ scale: 1 }}
+                  >
+                    {position.apy.toFixed(1)}% APY
+                  </motion.span>
                 </div>
-              </div>
+              </motion.div>
             ))}
           </div>
         </motion.div>
@@ -197,7 +278,13 @@ export function TrendingSection() {
             </div>
             <div className="card-elevated divide-y divide-border max-h-[400px] overflow-y-auto">
               {trendingAssets.map((asset, i) => (
-                <div key={asset.symbol} className="p-4 flex items-center justify-between hover:bg-secondary/50 transition-colors">
+                <motion.div 
+                  key={asset.symbol} 
+                  className="p-4 flex items-center justify-between hover:bg-secondary/50 transition-colors"
+                  initial={{ opacity: 0, x: -10 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  transition={{ delay: i * 0.03 }}
+                >
                   <div className="flex items-center gap-3">
                     <span className="text-tiny text-muted-foreground w-4">{i + 1}</span>
                     <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
@@ -209,16 +296,28 @@ export function TrendingSection() {
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="text-small font-mono text-foreground">${asset.price}</p>
-                    <p className={`text-tiny ${asset.change >= 0 ? 'text-success' : 'text-destructive'}`}>
-                      {asset.change >= 0 ? '+' : ''}{asset.change}%
-                    </p>
+                    <motion.p 
+                      className="text-small font-mono text-foreground"
+                      key={asset.price.toFixed(4)}
+                      initial={{ scale: 1.05 }}
+                      animate={{ scale: 1 }}
+                    >
+                      ${asset.price.toFixed(asset.price < 1 ? 4 : 2)}
+                    </motion.p>
+                    <motion.p 
+                      className={`text-tiny ${asset.change >= 0 ? 'text-success' : 'text-destructive'}`}
+                      key={asset.change.toFixed(1)}
+                      initial={{ scale: 1.1 }}
+                      animate={{ scale: 1 }}
+                    >
+                      {asset.change >= 0 ? '+' : ''}{asset.change.toFixed(2)}%
+                    </motion.p>
                   </div>
                   <div className="text-right hidden md:block">
                     <p className="text-tiny text-muted-foreground">Vol: {asset.volume}</p>
                     <p className="text-tiny text-muted-foreground">MCap: {asset.marketCap}</p>
                   </div>
-                </div>
+                </motion.div>
               ))}
             </div>
           </motion.div>
@@ -235,8 +334,14 @@ export function TrendingSection() {
               <h3 className="text-h3 font-semibold text-foreground">New Liquidity Pools</h3>
             </div>
             <div className="card-elevated divide-y divide-border max-h-[400px] overflow-y-auto">
-              {newLiquidityPools.map((pool) => (
-                <div key={pool.pair} className="p-4 flex items-center justify-between hover:bg-secondary/50 transition-colors">
+              {newLiquidityPools.map((pool, i) => (
+                <motion.div 
+                  key={pool.pair} 
+                  className="p-4 flex items-center justify-between hover:bg-secondary/50 transition-colors"
+                  initial={{ opacity: 0, x: 10 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  transition={{ delay: i * 0.03 }}
+                >
                   <div>
                     <div className="flex items-center gap-2">
                       <p className="text-small font-medium text-foreground">{pool.pair}</p>
@@ -245,16 +350,26 @@ export function TrendingSection() {
                     <p className="text-tiny text-muted-foreground">{pool.protocol}</p>
                   </div>
                   <div className="text-right">
-                    <p className="text-small font-mono text-success">{pool.apy}% APY</p>
-                    <p className="text-tiny text-muted-foreground">
+                    <motion.p 
+                      className="text-small font-mono text-success"
+                      key={pool.apy.toFixed(1)}
+                      initial={{ scale: 1.05 }}
+                      animate={{ scale: 1 }}
+                    >
+                      {pool.apy.toFixed(1)}% APY
+                    </motion.p>
+                    <motion.p 
+                      className="text-tiny text-muted-foreground"
+                      key={pool.tvl.toFixed(0)}
+                    >
                       ${(pool.tvl / 1000000).toFixed(1)}M TVL
-                    </p>
+                    </motion.p>
                   </div>
                   <div className="text-right hidden md:block">
                     <p className="text-tiny text-muted-foreground">24h Vol</p>
                     <p className="text-tiny font-mono">{pool.volume24h}</p>
                   </div>
-                </div>
+                </motion.div>
               ))}
             </div>
           </motion.div>
