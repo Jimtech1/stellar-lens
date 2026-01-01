@@ -8,6 +8,7 @@ import { SendReceiveDialog } from "./forms/SendReceiveDialog";
 import { StakeDialog } from "./forms/StakeDialog";
 import { AssetActionsMenu } from "./forms/AssetActionsMenu";
 import { useLiveAssets } from "@/hooks/useLiveData";
+import { AssetDetailModal } from "./modals/AssetDetailModal";
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -34,6 +35,8 @@ export function AssetsView() {
   const [selectedAsset, setSelectedAsset] = useState<string>("");
   const [stakeOpen, setStakeOpen] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
+  const [assetDetailOpen, setAssetDetailOpen] = useState(false);
+  const [selectedAssetDetail, setSelectedAssetDetail] = useState<Asset | null>(null);
 
   const chains = ["all", "Stellar", "Ethereum", "Polygon", "Arbitrum"];
 
@@ -44,6 +47,11 @@ export function AssetsView() {
     setSendReceiveTab(tab);
     setSelectedAsset(asset);
     setSendReceiveOpen(true);
+  };
+
+  const openAssetDetail = (asset: Asset) => {
+    setSelectedAssetDetail(asset);
+    setAssetDetailOpen(true);
   };
 
   const filteredAssets = liveAssets
@@ -85,6 +93,14 @@ export function AssetsView() {
         preselectedAsset={selectedAsset}
       />
       <StakeDialog open={stakeOpen} onOpenChange={setStakeOpen} />
+      <AssetDetailModal
+        open={assetDetailOpen}
+        onOpenChange={setAssetDetailOpen}
+        asset={selectedAssetDetail}
+        onSend={() => openSendReceive("send", selectedAssetDetail?.symbol || "")}
+        onReceive={() => openSendReceive("receive", selectedAssetDetail?.symbol || "")}
+        onStake={() => setStakeOpen(true)}
+      />
       
       <motion.div
         variants={containerVariants}
@@ -275,7 +291,8 @@ export function AssetsView() {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95 }}
-                className="card-elevated p-4"
+                className="card-elevated p-4 cursor-pointer hover:shadow-card transition-all"
+                onClick={() => openAssetDetail(asset)}
               >
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex items-center gap-3">
@@ -287,12 +304,14 @@ export function AssetsView() {
                       <p className="text-xs text-muted-foreground">{asset.symbol}</p>
                     </div>
                   </div>
-                  <AssetActionsMenu
-                    asset={asset}
-                    onSend={() => openSendReceive("send", asset.symbol)}
-                    onReceive={() => openSendReceive("receive", asset.symbol)}
-                    onStake={() => setStakeOpen(true)}
-                  />
+                  <div onClick={(e) => e.stopPropagation()}>
+                    <AssetActionsMenu
+                      asset={asset}
+                      onSend={() => openSendReceive("send", asset.symbol)}
+                      onReceive={() => openSendReceive("receive", asset.symbol)}
+                      onStake={() => setStakeOpen(true)}
+                    />
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
@@ -394,7 +413,8 @@ export function AssetsView() {
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0 }}
                       transition={{ delay: index * 0.03 }}
-                      className="border-b border-border/50 hover:bg-secondary/50 transition-colors"
+                      className="border-b border-border/50 hover:bg-secondary/50 transition-colors cursor-pointer"
+                      onClick={() => openAssetDetail(asset)}
                     >
                       <td className="px-4 py-4">
                         <div className="flex items-center gap-3">
@@ -444,7 +464,7 @@ export function AssetsView() {
                           <span className="text-small text-muted-foreground">-</span>
                         )}
                       </td>
-                      <td className="px-4 py-4 text-right">
+                      <td className="px-4 py-4 text-right" onClick={(e) => e.stopPropagation()}>
                         <AssetActionsMenu
                           asset={asset}
                           onSend={() => openSendReceive("send", asset.symbol)}

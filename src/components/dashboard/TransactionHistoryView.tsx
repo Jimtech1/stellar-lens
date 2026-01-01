@@ -32,6 +32,7 @@ import {
   Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { TransactionDetailModal } from "./modals/TransactionDetailModal";
 
 interface Transaction {
   id: string;
@@ -117,8 +118,11 @@ const formatDate = (date: Date) => {
   }).format(date);
 };
 
-const MobileTransactionCard = memo(({ tx }: { tx: Transaction }) => (
-  <div className="p-4 border-b border-border/50 last:border-b-0">
+const MobileTransactionCard = memo(({ tx, onClick }: { tx: Transaction; onClick: () => void }) => (
+  <div 
+    className="p-4 border-b border-border/50 last:border-b-0 cursor-pointer hover:bg-secondary/30 transition-colors"
+    onClick={onClick}
+  >
     <div className="flex items-start justify-between gap-3 mb-3">
       <div className="flex items-center gap-2">
         <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center shrink-0">
@@ -153,17 +157,17 @@ const MobileTransactionCard = memo(({ tx }: { tx: Transaction }) => (
       </div>
     </div>
     <div className="mt-2 pt-2 border-t border-border/30">
-      <a href="#" className="font-mono text-tiny text-primary hover:underline">
+      <span className="font-mono text-tiny text-primary">
         {tx.txHash}
-      </a>
+      </span>
     </div>
   </div>
 ));
 
 MobileTransactionCard.displayName = "MobileTransactionCard";
 
-const TransactionRow = memo(({ tx }: { tx: Transaction }) => (
-  <TableRow className="hover:bg-secondary/30">
+const TransactionRow = memo(({ tx, onClick }: { tx: Transaction; onClick: () => void }) => (
+  <TableRow className="hover:bg-secondary/30 cursor-pointer" onClick={onClick}>
     <TableCell>
       <div className="flex items-center gap-2">
         <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center">
@@ -199,12 +203,9 @@ const TransactionRow = memo(({ tx }: { tx: Transaction }) => (
     </TableCell>
     <TableCell>{getStatusBadge(tx.status)}</TableCell>
     <TableCell>
-      <a
-        href="#"
-        className="font-mono text-small text-primary hover:underline"
-      >
+      <span className="font-mono text-small text-primary">
         {tx.txHash}
-      </a>
+      </span>
     </TableCell>
   </TableRow>
 ));
@@ -215,6 +216,13 @@ export const TransactionHistoryView = memo(() => {
   const [searchQuery, setSearchQuery] = useState("");
   const [typeFilter, setTypeFilter] = useState<string>("all");
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
+  const [detailModalOpen, setDetailModalOpen] = useState(false);
+
+  const openTransactionDetail = (tx: Transaction) => {
+    setSelectedTransaction(tx);
+    setDetailModalOpen(true);
+  };
 
   const filteredTransactions = useMemo(() => {
     return mockTransactions.filter((tx) => {
@@ -240,6 +248,12 @@ export const TransactionHistoryView = memo(() => {
   }, []);
 
   return (
+    <>
+      <TransactionDetailModal
+        open={detailModalOpen}
+        onOpenChange={setDetailModalOpen}
+        transaction={selectedTransaction}
+      />
     <div className="space-y-4 sm:space-y-6 animate-fade-in">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -333,7 +347,7 @@ export const TransactionHistoryView = memo(() => {
         </CardHeader>
         <CardContent className="p-0">
           {filteredTransactions.map((tx) => (
-            <MobileTransactionCard key={tx.id} tx={tx} />
+            <MobileTransactionCard key={tx.id} tx={tx} onClick={() => openTransactionDetail(tx)} />
           ))}
           {filteredTransactions.length === 0 && (
             <div className="py-12 text-center text-muted-foreground">
@@ -363,7 +377,7 @@ export const TransactionHistoryView = memo(() => {
             </TableHeader>
             <TableBody>
               {filteredTransactions.map((tx) => (
-                <TransactionRow key={tx.id} tx={tx} />
+                <TransactionRow key={tx.id} tx={tx} onClick={() => openTransactionDetail(tx)} />
               ))}
             </TableBody>
           </Table>
@@ -375,6 +389,7 @@ export const TransactionHistoryView = memo(() => {
         </CardContent>
       </Card>
     </div>
+    </>
   );
 });
 
