@@ -1,7 +1,10 @@
-import { memo, useState, useEffect, useCallback, useMemo } from "react";
+import { memo, useState, useEffect, useCallback } from "react";
 import { TrendingUp, Droplets, Boxes, ArrowUpRight, Search, Activity, Zap, Shield, Globe, Layers, Users, Coins, Star } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { PoolDetailModal } from "@/components/dashboard/modals/PoolDetailModal";
+import { DAppDetailModal } from "@/components/dashboard/modals/DAppDetailModal";
+import { PositionDetailModal } from "@/components/dashboard/modals/PositionDetailModal";
 
 // Static data - moved outside component to prevent re-creation
 const initialSorobanPositions = [
@@ -91,8 +94,8 @@ const NetworkAggregateCard = memo(({ item, formatValue }: { item: typeof initial
 
 NetworkAggregateCard.displayName = "NetworkAggregateCard";
 
-const PositionCard = memo(({ position }: { position: typeof initialSorobanPositions[0] }) => (
-  <div className="card-elevated p-4 hover:shadow-card transition-all">
+const PositionCard = memo(({ position, onClick }: { position: typeof initialSorobanPositions[0]; onClick: () => void }) => (
+  <div className="card-elevated p-4 hover:shadow-card transition-all cursor-pointer" onClick={onClick}>
     <div className="flex items-center justify-between mb-3">
       <span className="text-small font-medium text-foreground">{position.contract}</span>
       <Badge variant="outline" className="text-tiny">{position.position}</Badge>
@@ -140,8 +143,8 @@ const AssetRow = memo(({ asset, index }: { asset: typeof initialTrendingAssets[0
 
 AssetRow.displayName = "AssetRow";
 
-const PoolRow = memo(({ pool }: { pool: typeof initialLiquidityPools[0] }) => (
-  <div className="p-4 flex items-center justify-between hover:bg-secondary/50 transition-colors">
+const PoolRow = memo(({ pool, onClick }: { pool: typeof initialLiquidityPools[0]; onClick: () => void }) => (
+  <div className="p-4 flex items-center justify-between hover:bg-secondary/50 transition-colors cursor-pointer" onClick={onClick}>
     <div>
       <div className="flex items-center gap-2">
         <p className="text-small font-medium text-foreground">{pool.pair}</p>
@@ -168,8 +171,8 @@ const PoolRow = memo(({ pool }: { pool: typeof initialLiquidityPools[0] }) => (
 
 PoolRow.displayName = "PoolRow";
 
-const DAppCard = memo(({ dapp }: { dapp: typeof emergingDApps[0] }) => (
-  <div className="card-elevated p-4 hover:shadow-card transition-all">
+const DAppCard = memo(({ dapp, onClick }: { dapp: typeof emergingDApps[0]; onClick: () => void }) => (
+  <div className="card-elevated p-4 hover:shadow-card transition-all cursor-pointer" onClick={onClick}>
     <div className="flex items-center gap-3 mb-3">
       <span className="text-2xl">{dapp.logo}</span>
       <div>
@@ -196,6 +199,14 @@ export function TrendingSection() {
   const [trendingAssets, setTrendingAssets] = useState(initialTrendingAssets);
   const [newLiquidityPools, setNewLiquidityPools] = useState(initialLiquidityPools);
   const [networkAggregates, setNetworkAggregates] = useState(initialNetworkAggregates);
+  
+  // Modal states
+  const [selectedPool, setSelectedPool] = useState<typeof initialLiquidityPools[0] | null>(null);
+  const [selectedDApp, setSelectedDApp] = useState<typeof emergingDApps[0] | null>(null);
+  const [selectedPosition, setSelectedPosition] = useState<typeof initialSorobanPositions[0] | null>(null);
+  const [poolModalOpen, setPoolModalOpen] = useState(false);
+  const [dappModalOpen, setDappModalOpen] = useState(false);
+  const [positionModalOpen, setPositionModalOpen] = useState(false);
 
   // Optimized live data simulation with longer interval
   useEffect(() => {
@@ -240,7 +251,36 @@ export function TrendingSection() {
   }, []);
 
   return (
-    <section className="py-24 bg-secondary/20">
+    <>
+      <PoolDetailModal
+        open={poolModalOpen}
+        onOpenChange={setPoolModalOpen}
+        pool={selectedPool ? {
+          pair: selectedPool.pair,
+          protocol: selectedPool.protocol,
+          tvl: selectedPool.tvl,
+          apy: selectedPool.apy,
+          age: selectedPool.age,
+          volume24h: selectedPool.volume24h,
+        } : null}
+      />
+      <DAppDetailModal
+        open={dappModalOpen}
+        onOpenChange={setDappModalOpen}
+        dapp={selectedDApp}
+      />
+      <PositionDetailModal
+        open={positionModalOpen}
+        onOpenChange={setPositionModalOpen}
+        position={selectedPosition ? {
+          contract: selectedPosition.contract,
+          position: selectedPosition.position,
+          value: selectedPosition.value,
+          apy: selectedPosition.apy,
+          token: selectedPosition.token,
+        } : null}
+      />
+      <section className="py-24 bg-secondary/20">
       <div className="container mx-auto px-4">
         {/* Section Header with Search */}
         <div className="text-center max-w-2xl mx-auto mb-8 animate-fade-in">
@@ -297,7 +337,14 @@ export function TrendingSection() {
           </div>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
             {sorobanPositions.map((position) => (
-              <PositionCard key={position.id} position={position} />
+              <PositionCard 
+                key={position.id} 
+                position={position} 
+                onClick={() => {
+                  setSelectedPosition(position);
+                  setPositionModalOpen(true);
+                }}
+              />
             ))}
           </div>
         </div>
@@ -324,7 +371,14 @@ export function TrendingSection() {
             </div>
             <div className="card-elevated divide-y divide-border max-h-[400px] overflow-y-auto">
               {newLiquidityPools.map((pool) => (
-                <PoolRow key={pool.pair} pool={pool} />
+                <PoolRow 
+                  key={pool.pair} 
+                  pool={pool} 
+                  onClick={() => {
+                    setSelectedPool(pool);
+                    setPoolModalOpen(true);
+                  }}
+                />
               ))}
             </div>
           </div>
@@ -338,12 +392,20 @@ export function TrendingSection() {
           </div>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
             {emergingDApps.map((dapp) => (
-              <DAppCard key={dapp.name} dapp={dapp} />
+              <DAppCard 
+                key={dapp.name} 
+                dapp={dapp} 
+                onClick={() => {
+                  setSelectedDApp(dapp);
+                  setDappModalOpen(true);
+                }}
+              />
             ))}
           </div>
         </div>
       </div>
     </section>
+    </>
   );
 }
 
