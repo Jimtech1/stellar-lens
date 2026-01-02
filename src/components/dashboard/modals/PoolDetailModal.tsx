@@ -19,9 +19,9 @@ import {
 interface Pool {
   pair: string;
   protocol: string;
-  tvl: number;
+  tvl: number | string;
   apy: number;
-  age: string;
+  age?: string;
   volume24h: string;
 }
 
@@ -52,10 +52,12 @@ export const PoolDetailModal = memo(({ open, onOpenChange, pool }: PoolDetailMod
         <div className="space-y-4 mt-4">
           {/* Badges */}
           <div className="flex items-center gap-2">
-            <Badge variant="outline" className="text-xs">
-              <Clock className="w-3 h-3 mr-1" />
-              {pool.age} old
-            </Badge>
+            {pool.age && (
+              <Badge variant="outline" className="text-xs">
+                <Clock className="w-3 h-3 mr-1" />
+                {pool.age} old
+              </Badge>
+            )}
             <Badge variant="outline" className="bg-success/10 text-success border-success/20 text-xs">
               Active
             </Badge>
@@ -76,7 +78,7 @@ export const PoolDetailModal = memo(({ open, onOpenChange, pool }: PoolDetailMod
               <div className="text-right">
                 <p className="text-sm text-muted-foreground mb-1">TVL</p>
                 <p className="text-lg font-mono font-medium text-foreground">
-                  ${(pool.tvl / 1000000).toFixed(2)}M
+                  {typeof pool.tvl === 'number' ? `$${(pool.tvl / 1000000).toFixed(2)}M` : pool.tvl}
                 </p>
               </div>
             </div>
@@ -117,7 +119,7 @@ export const PoolDetailModal = memo(({ open, onOpenChange, pool }: PoolDetailMod
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Pool Age</span>
-                <span className="text-foreground">{pool.age}</span>
+                <span className="text-foreground">{pool.age || 'N/A'}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Fee Tier</span>

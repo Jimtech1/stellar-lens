@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { mockYieldOpportunities, YieldOpportunity } from "@/lib/mockData";
 import { InvestDialog } from "./forms/InvestDialog";
+import { ProtocolDetailModal } from "./modals/ProtocolDetailModal";
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -36,6 +37,13 @@ export function DiscoverView() {
   const [showFilters, setShowFilters] = useState(false);
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
   const [liveOpportunities, setLiveOpportunities] = useState(mockYieldOpportunities);
+  const [protocolModalOpen, setProtocolModalOpen] = useState(false);
+  const [selectedProtocol, setSelectedProtocol] = useState<YieldOpportunity | null>(null);
+  
+  const openProtocolDetail = (opp: YieldOpportunity) => {
+    setSelectedProtocol(opp);
+    setProtocolModalOpen(true);
+  };
 
   // Simulate live APY updates
   useEffect(() => {
@@ -108,6 +116,11 @@ export function DiscoverView() {
   return (
     <>
       <InvestDialog open={investOpen} onOpenChange={setInvestOpen} opportunity={selectedOpportunity} />
+      <ProtocolDetailModal 
+        open={protocolModalOpen} 
+        onOpenChange={setProtocolModalOpen} 
+        protocol={selectedProtocol}
+      />
       
       <motion.div
         variants={containerVariants}
@@ -353,9 +366,10 @@ export function DiscoverView() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95 }}
                 transition={{ delay: index * 0.03 }}
-                className={`card-elevated p-4 md:p-5 hover:shadow-card transition-shadow group ${
+                className={`card-elevated p-4 md:p-5 hover:shadow-card transition-shadow group cursor-pointer ${
                   viewMode === "list" ? "flex flex-col sm:flex-row sm:items-center gap-4" : ""
                 }`}
+                onClick={() => openProtocolDetail(opp)}
               >
                 {/* Header */}
                 <div className={`flex items-start justify-between ${viewMode === "list" ? "sm:flex-1" : "mb-4"}`}>

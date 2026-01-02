@@ -17,7 +17,7 @@ import {
 } from "lucide-react";
 
 interface Position {
-  id: string;
+  id?: string;
   contract: string;
   position: string;
   value: number;
