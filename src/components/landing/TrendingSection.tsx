@@ -5,6 +5,8 @@ import { Badge } from "@/components/ui/badge";
 import { PoolDetailModal } from "@/components/dashboard/modals/PoolDetailModal";
 import { DAppDetailModal } from "@/components/dashboard/modals/DAppDetailModal";
 import { PositionDetailModal } from "@/components/dashboard/modals/PositionDetailModal";
+import { AssetDetailModal } from "@/components/dashboard/modals/AssetDetailModal";
+import { Asset } from "@/lib/mockData";
 
 // Static data - moved outside component to prevent re-creation
 const initialSorobanPositions = [
@@ -114,8 +116,8 @@ const PositionCard = memo(({ position, onClick }: { position: typeof initialSoro
 
 PositionCard.displayName = "PositionCard";
 
-const AssetRow = memo(({ asset, index }: { asset: typeof initialTrendingAssets[0], index: number }) => (
-  <div className="p-4 flex items-center justify-between hover:bg-secondary/50 transition-colors">
+const AssetRow = memo(({ asset, index, onClick }: { asset: typeof initialTrendingAssets[0], index: number, onClick: () => void }) => (
+  <div className="p-4 flex items-center justify-between hover:bg-secondary/50 transition-colors cursor-pointer" onClick={onClick}>
     <div className="flex items-center gap-3">
       <span className="text-tiny text-muted-foreground w-4">{index + 1}</span>
       <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
@@ -204,9 +206,28 @@ export function TrendingSection() {
   const [selectedPool, setSelectedPool] = useState<typeof initialLiquidityPools[0] | null>(null);
   const [selectedDApp, setSelectedDApp] = useState<typeof emergingDApps[0] | null>(null);
   const [selectedPosition, setSelectedPosition] = useState<typeof initialSorobanPositions[0] | null>(null);
+  const [selectedAsset, setSelectedAsset] = useState<Asset | null>(null);
   const [poolModalOpen, setPoolModalOpen] = useState(false);
   const [dappModalOpen, setDappModalOpen] = useState(false);
   const [positionModalOpen, setPositionModalOpen] = useState(false);
+  const [assetModalOpen, setAssetModalOpen] = useState(false);
+
+  const handleAssetClick = useCallback((asset: typeof initialTrendingAssets[0]) => {
+    // Convert trending asset to Asset format for the modal
+    const assetData: Asset = {
+      id: asset.symbol,
+      name: asset.name,
+      symbol: asset.symbol,
+      logo: "⭐",
+      balance: 0,
+      value: 0,
+      price: asset.price,
+      change24h: asset.change,
+      chain: "Stellar",
+    };
+    setSelectedAsset(assetData);
+    setAssetModalOpen(true);
+  }, []);
 
   // Optimized live data simulation with longer interval
   useEffect(() => {
@@ -279,6 +300,11 @@ export function TrendingSection() {
           apy: selectedPosition.apy,
           token: selectedPosition.token,
         } : null}
+      />
+      <AssetDetailModal
+        open={assetModalOpen}
+        onOpenChange={setAssetModalOpen}
+        asset={selectedAsset}
       />
       <section className="py-24 bg-secondary/20">
       <div className="container mx-auto px-4">
@@ -358,7 +384,7 @@ export function TrendingSection() {
             </div>
             <div className="card-elevated divide-y divide-border max-h-[400px] overflow-y-auto">
               {trendingAssets.map((asset, i) => (
-                <AssetRow key={asset.symbol} asset={asset} index={i} />
+                <AssetRow key={asset.symbol} asset={asset} index={i} onClick={() => handleAssetClick(asset)} />
               ))}
             </div>
           </div>
