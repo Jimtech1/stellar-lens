@@ -19,6 +19,15 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+  PaginationEllipsis,
+} from "@/components/ui/pagination";
+import {
   ArrowDownLeft,
   ArrowUpRight,
   ArrowLeftRight,
@@ -212,12 +221,15 @@ const TransactionRow = memo(({ tx, onClick }: { tx: Transaction; onClick: () => 
 
 TransactionRow.displayName = "TransactionRow";
 
+const ITEMS_PER_PAGE = 5;
+
 export const TransactionHistoryView = memo(() => {
   const [searchQuery, setSearchQuery] = useState("");
   const [typeFilter, setTypeFilter] = useState<string>("all");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
   const [detailModalOpen, setDetailModalOpen] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
 
   const openTransactionDetail = (tx: Transaction) => {
     setSelectedTransaction(tx);
@@ -239,6 +251,18 @@ export const TransactionHistoryView = memo(() => {
     });
   }, [searchQuery, typeFilter, statusFilter]);
 
+  // Pagination logic
+  const totalPages = Math.ceil(filteredTransactions.length / ITEMS_PER_PAGE);
+  const paginatedTransactions = useMemo(() => {
+    const start = (currentPage - 1) * ITEMS_PER_PAGE;
+    return filteredTransactions.slice(start, start + ITEMS_PER_PAGE);
+  }, [filteredTransactions, currentPage]);
+
+  // Reset to page 1 when filters change
+  useMemo(() => {
+    setCurrentPage(1);
+  }, [searchQuery, typeFilter, statusFilter]);
+
   const stats = useMemo(() => {
     const total = mockTransactions.length;
     const completed = mockTransactions.filter((t) => t.status === "completed").length;
@@ -246,6 +270,22 @@ export const TransactionHistoryView = memo(() => {
     const totalVolume = mockTransactions.reduce((acc, t) => acc + t.value, 0);
     return { total, completed, pending, totalVolume };
   }, []);
+
+  const getPageNumbers = () => {
+    const pages: (number | 'ellipsis')[] = [];
+    if (totalPages <= 5) {
+      for (let i = 1; i <= totalPages; i++) pages.push(i);
+    } else {
+      if (currentPage <= 3) {
+        pages.push(1, 2, 3, 4, 'ellipsis', totalPages);
+      } else if (currentPage >= totalPages - 2) {
+        pages.push(1, 'ellipsis', totalPages - 3, totalPages - 2, totalPages - 1, totalPages);
+      } else {
+        pages.push(1, 'ellipsis', currentPage - 1, currentPage, currentPage + 1, 'ellipsis', totalPages);
+      }
+    }
+    return pages;
+  };
 
   return (
     <>
@@ -346,7 +386,7 @@ export const TransactionHistoryView = memo(() => {
           <CardTitle className="text-h3 font-medium">Recent Transactions</CardTitle>
         </CardHeader>
         <CardContent className="p-0">
-          {filteredTransactions.map((tx) => (
+          {paginatedTransactions.map((tx) => (
             <MobileTransactionCard key={tx.id} tx={tx} onClick={() => openTransactionDetail(tx)} />
           ))}
           {filteredTransactions.length === 0 && (
@@ -376,7 +416,7 @@ export const TransactionHistoryView = memo(() => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredTransactions.map((tx) => (
+              {paginatedTransactions.map((tx) => (
                 <TransactionRow key={tx.id} tx={tx} onClick={() => openTransactionDetail(tx)} />
               ))}
             </TableBody>
@@ -388,6 +428,46 @@ export const TransactionHistoryView = memo(() => {
           )}
         </CardContent>
       </Card>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+          <p className="text-sm text-muted-foreground">
+            Showing {(currentPage - 1) * ITEMS_PER_PAGE + 1} to {Math.min(currentPage * ITEMS_PER_PAGE, filteredTransactions.length)} of {filteredTransactions.length} transactions
+          </p>
+          <Pagination>
+            <PaginationContent>
+              <PaginationItem>
+                <PaginationPrevious 
+                  onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                  className={cn(currentPage === 1 && "pointer-events-none opacity-50", "cursor-pointer")}
+                />
+              </PaginationItem>
+              {getPageNumbers().map((page, i) => (
+                <PaginationItem key={i}>
+                  {page === 'ellipsis' ? (
+                    <PaginationEllipsis />
+                  ) : (
+                    <PaginationLink
+                      onClick={() => setCurrentPage(page)}
+                      isActive={currentPage === page}
+                      className="cursor-pointer"
+                    >
+                      {page}
+                    </PaginationLink>
+                  )}
+                </PaginationItem>
+              ))}
+              <PaginationItem>
+                <PaginationNext 
+                  onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                  className={cn(currentPage === totalPages && "pointer-events-none opacity-50", "cursor-pointer")}
+                />
+              </PaginationItem>
+            </PaginationContent>
+          </Pagination>
+        </div>
+      )}
     </div>
     </>
   );
