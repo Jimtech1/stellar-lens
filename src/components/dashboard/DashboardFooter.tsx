@@ -1,4 +1,5 @@
 import { Github, Twitter, MessageCircle } from "lucide-react";
+import { HoloLogo } from "@/components/HoloLogo";
 
 const socialLinks = [
   { icon: Twitter, href: "#", label: "Twitter" },
@@ -12,9 +13,7 @@ export function DashboardFooter() {
       <div className="flex flex-col md:flex-row items-center justify-between gap-4">
         {/* Left - Brand & Copyright */}
         <div className="flex items-center gap-3">
-          <div className="w-6 h-6 rounded-md bg-primary flex items-center justify-center">
-            <span className="text-primary-foreground font-bold text-xs">Y</span>
-          </div>
+          <HoloLogo size="sm" showText={false} />
           <span className="text-tiny text-muted-foreground">
             © 2024 Yielder. All rights reserved.
           </span>
