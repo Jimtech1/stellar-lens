@@ -64,11 +64,11 @@
     --chart-neutral: 224 100% 58%;
     --chart-muted: 0 0% 70%;
     
-    /* Holographic Colors */
-    --holo-blue: 224 100% 70%;
-    --holo-purple: 270 80% 70%;
-    --holo-cyan: 190 100% 70%;
-    --holo-pink: 330 80% 70%;
+    /* Holographic Colors - Vibrant */
+    --holo-blue: 210 100% 55%;
+    --holo-purple: 280 100% 65%;
+    --holo-cyan: 175 100% 50%;
+    --holo-pink: 320 100% 60%;
   }
 
   .dark {
@@ -120,11 +120,11 @@
     --chart-neutral: 224 100% 65%;
     --chart-muted: 0 0% 50%;
     
-    /* Holographic Colors - Dark Mode */
-    --holo-blue: 224 100% 60%;
-    --holo-purple: 270 80% 60%;
-    --holo-cyan: 190 100% 60%;
-    --holo-pink: 330 80% 60%;
+    /* Holographic Colors - Dark Mode Vibrant */
+    --holo-blue: 210 100% 60%;
+    --holo-purple: 280 100% 70%;
+    --holo-cyan: 175 100% 55%;
+    --holo-pink: 320 100% 65%;
   }
 }
 
@@ -343,6 +343,31 @@
 
 .animate-holo-shimmer {
   animation: holoShimmer 10s linear infinite;
+}
+
+/* Holographic Logo Animations */
+@keyframes holoGradient {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+@keyframes holoShimmerFast {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes holoTextGradient {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+@keyframes holoPulse {
+  0%, 100% { 
+    box-shadow: 0 0 16px 2px hsl(var(--holo-cyan) / 0.5), 0 0 32px 4px hsl(var(--holo-purple) / 0.3);
+  }
+  50% { 
+    box-shadow: 0 0 20px 4px hsl(var(--holo-pink) / 0.6), 0 0 40px 6px hsl(var(--holo-cyan) / 0.4);
+  }
 }
 
 /* Custom scrollbar */
