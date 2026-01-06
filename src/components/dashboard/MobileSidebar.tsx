@@ -7,11 +7,11 @@ import {
   Compass,
   BarChart3,
   Settings,
-  X,
   History,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { DashboardView } from "@/pages/Dashboard";
+import { HoloLogo } from "@/components/HoloLogo";
 
 interface MobileSidebarProps {
   open: boolean;
@@ -41,10 +41,7 @@ export function MobileSidebar({ open, onClose, activeView, onViewChange }: Mobil
       <SheetContent side="left" className="w-72 p-0 bg-card">
         <SheetHeader className="h-16 flex flex-row items-center justify-between px-4 border-b border-border">
           <Link to="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center shrink-0">
-              <span className="text-primary-foreground font-bold text-lg">Y</span>
-            </div>
-            <SheetTitle className="font-semibold text-foreground">Yielder</SheetTitle>
+            <HoloLogo size="sm" showText={true} />
           </Link>
         </SheetHeader>
 

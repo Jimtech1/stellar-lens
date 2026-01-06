@@ -8,26 +8,29 @@ interface HoloLogoProps {
 
 export function HoloLogo({ size = "md", showText = true, className }: HoloLogoProps) {
   const sizeClasses = {
-    sm: { container: "w-6 h-6", text: "text-xs", logoText: "text-base", glow: "shadow-[0_0_12px_2px]" },
-    md: { container: "w-8 h-8", text: "text-lg", logoText: "text-lg", glow: "shadow-[0_0_16px_3px]" },
-    lg: { container: "w-10 h-10", text: "text-xl", logoText: "text-xl", glow: "shadow-[0_0_20px_4px]" },
+    sm: { container: "w-7 h-7", text: "text-sm", logoText: "text-base", glow: "shadow-[0_0_15px_3px]" },
+    md: { container: "w-9 h-9", text: "text-lg", logoText: "text-xl", glow: "shadow-[0_0_20px_4px]" },
+    lg: { container: "w-11 h-11", text: "text-xl", logoText: "text-2xl", glow: "shadow-[0_0_25px_5px]" },
   };
 
   const config = sizeClasses[size];
 
   return (
-    <div className={cn("flex items-center gap-2", className)}>
+    <div className={cn("flex items-center gap-2.5", className)}>
       {/* Holographic Logo Icon */}
       <div
         className={cn(
           config.container,
-          config.glow,
-          "relative rounded-lg flex items-center justify-center overflow-hidden shrink-0",
-          "shadow-[hsl(var(--holo-purple))]",
+          "relative rounded-xl flex items-center justify-center overflow-hidden shrink-0",
           "animate-[holoPulse_2s_ease-in-out_infinite]"
         )}
         style={{
-          boxShadow: `0 0 16px 2px hsl(var(--holo-cyan) / 0.5), 0 0 32px 4px hsl(var(--holo-purple) / 0.3)`,
+          boxShadow: `
+            0 0 20px 4px hsl(var(--holo-cyan) / 0.6), 
+            0 0 40px 8px hsl(var(--holo-purple) / 0.4),
+            0 0 60px 12px hsl(var(--holo-pink) / 0.2),
+            inset 0 0 10px 2px hsl(var(--holo-cyan) / 0.3)
+          `,
         }}
       >
         {/* Animated holographic background */}
@@ -53,7 +56,7 @@ export function HoloLogo({ size = "md", showText = true, className }: HoloLogoPr
             background: `linear-gradient(
               120deg,
               transparent 0%,
-              rgba(255, 255, 255, 0.4) 50%,
+              rgba(255, 255, 255, 0.5) 50%,
               transparent 100%
             )`,
             backgroundSize: '200% 100%',
@@ -61,13 +64,13 @@ export function HoloLogo({ size = "md", showText = true, className }: HoloLogoPr
         />
         
         {/* Inner glow ring */}
-        <div className="absolute inset-[2px] rounded-md bg-gradient-to-br from-white/20 to-transparent" />
+        <div className="absolute inset-[2px] rounded-lg bg-gradient-to-br from-white/30 to-transparent" />
         
         {/* Letter */}
         <span 
           className={cn("relative z-10 font-bold text-white", config.text)}
           style={{
-            textShadow: '0 1px 2px rgba(0,0,0,0.3), 0 0 8px rgba(255,255,255,0.5)',
+            textShadow: '0 2px 4px rgba(0,0,0,0.4), 0 0 12px rgba(255,255,255,0.7)',
           }}
         >
           Y
@@ -95,6 +98,7 @@ export function HoloLogo({ size = "md", showText = true, className }: HoloLogoPr
             WebkitBackgroundClip: 'text',
             WebkitTextFillColor: 'transparent',
             backgroundClip: 'text',
+            filter: 'drop-shadow(0 0 8px hsl(var(--holo-cyan) / 0.5))',
           }}
         >
           Yielder

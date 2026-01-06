@@ -33,13 +33,13 @@ export function CTASection() {
             </p>
             
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Button asChild size="lg" variant="secondary" className="group">
+              <Button asChild size="lg" variant="secondary" className="group shadow-[0_0_20px_4px_hsl(var(--holo-cyan)/0.4),0_0_40px_8px_hsl(var(--holo-purple)/0.3)] hover:shadow-[0_0_25px_6px_hsl(var(--holo-cyan)/0.6),0_0_50px_10px_hsl(var(--holo-purple)/0.4)] transition-all duration-300">
                 <Link to="/dashboard">
                   Launch Dashboard
                   <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </Link>
               </Button>
-              <Button asChild size="lg" variant="ghost" className="text-primary-foreground hover:bg-white/10 hover:text-primary-foreground">
+              <Button asChild size="lg" variant="ghost" className="text-primary-foreground hover:bg-white/10 hover:text-primary-foreground border border-white/30 shadow-[0_0_15px_2px_hsl(var(--holo-pink)/0.3)] hover:shadow-[0_0_20px_4px_hsl(var(--holo-pink)/0.5)] transition-all duration-300">
                 <a href="#demo">View Demo</a>
               </Button>
             </div>
