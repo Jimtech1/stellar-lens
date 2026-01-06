@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Github, Twitter, MessageCircle } from "lucide-react";
+import { HoloLogo } from "@/components/HoloLogo";
 
 const footerLinks = {
   Product: [
@@ -34,11 +35,8 @@ export function FooterSection() {
         <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-12">
           {/* Brand & Newsletter */}
           <div className="lg:col-span-2">
-            <Link to="/" className="flex items-center gap-2 mb-4">
-              <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
-                <span className="text-primary-foreground font-bold text-lg">Y</span>
-              </div>
-              <span className="font-semibold text-lg text-foreground">Yielder</span>
+            <Link to="/" className="inline-block mb-4">
+              <HoloLogo size="md" />
             </Link>
             <p className="text-small text-muted-foreground mb-6 max-w-sm">
               The unified dashboard for Stellar and cross-chain DeFi. Track, bridge, and optimize your portfolio.

@@ -1,5 +1,4 @@
 import { Link } from "react-router-dom";
-import { Button } from "@/components/ui/button";
 import {
   LayoutDashboard,
   Wallet,
@@ -13,6 +12,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { DashboardView } from "@/pages/Dashboard";
+import { HoloLogo } from "@/components/HoloLogo";
 
 interface DashboardSidebarProps {
   collapsed: boolean;
@@ -43,11 +43,8 @@ export function DashboardSidebar({ collapsed, onToggle, activeView, onViewChange
     >
       {/* Logo */}
       <div className="h-16 flex items-center justify-between px-4 border-b border-border">
-        <Link to="/" className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center shrink-0">
-            <span className="text-primary-foreground font-bold text-lg">Y</span>
-          </div>
-          {!collapsed && <span className="font-semibold text-foreground">Yielder</span>}
+        <Link to="/">
+          <HoloLogo size="md" showText={!collapsed} />
         </Link>
         <button
           onClick={onToggle}
