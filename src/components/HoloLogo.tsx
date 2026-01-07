@@ -26,10 +26,10 @@ export function HoloLogo({ size = "md", showText = true, className }: HoloLogoPr
         )}
         style={{
           boxShadow: `
-            0 0 20px 4px hsl(var(--holo-cyan) / 0.6), 
-            0 0 40px 8px hsl(var(--holo-purple) / 0.4),
-            0 0 60px 12px hsl(var(--holo-pink) / 0.2),
-            inset 0 0 10px 2px hsl(var(--holo-cyan) / 0.3)
+            0 0 20px 4px hsl(var(--holo-blue) / 0.7), 
+            0 0 40px 8px hsl(var(--holo-cyan) / 0.5),
+            0 0 60px 12px hsl(var(--holo-blue) / 0.3),
+            inset 0 0 10px 2px hsl(var(--holo-cyan) / 0.4)
           `,
         }}
       >
@@ -39,11 +39,11 @@ export function HoloLogo({ size = "md", showText = true, className }: HoloLogoPr
           style={{
             background: `linear-gradient(
               135deg,
-              hsl(var(--holo-cyan)) 0%,
-              hsl(var(--holo-blue)) 25%,
-              hsl(var(--holo-purple)) 50%,
-              hsl(var(--holo-pink)) 75%,
-              hsl(var(--holo-cyan)) 100%
+              hsl(var(--holo-blue)) 0%,
+              hsl(var(--holo-cyan)) 25%,
+              hsl(var(--holo-blue)) 50%,
+              hsl(var(--holo-cyan)) 75%,
+              hsl(var(--holo-blue)) 100%
             )`,
             backgroundSize: '300% 300%',
           }}
@@ -87,18 +87,17 @@ export function HoloLogo({ size = "md", showText = true, className }: HoloLogoPr
           style={{
             background: `linear-gradient(
               90deg,
-              hsl(var(--holo-cyan)) 0%,
-              hsl(var(--holo-blue)) 20%,
-              hsl(var(--holo-purple)) 40%,
-              hsl(var(--holo-pink)) 60%,
-              hsl(var(--holo-purple)) 80%,
-              hsl(var(--holo-cyan)) 100%
+              hsl(var(--holo-blue)) 0%,
+              hsl(var(--holo-cyan)) 25%,
+              hsl(var(--holo-blue)) 50%,
+              hsl(var(--holo-cyan)) 75%,
+              hsl(var(--holo-blue)) 100%
             )`,
             backgroundSize: '200% 100%',
             WebkitBackgroundClip: 'text',
             WebkitTextFillColor: 'transparent',
             backgroundClip: 'text',
-            filter: 'drop-shadow(0 0 8px hsl(var(--holo-cyan) / 0.5))',
+            filter: 'drop-shadow(0 0 10px hsl(var(--holo-blue) / 0.6))',
           }}
         >
           Yielder
