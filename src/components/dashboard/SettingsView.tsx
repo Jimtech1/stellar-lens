@@ -60,7 +60,7 @@ export function SettingsView() {
   };
 
   return (
-    <div className="space-y-4 md:space-y-6 max-w-4xl">
+    <div className="space-y-4 md:space-y-6 w-full max-w-4xl overflow-hidden">
       {/* Header */}
       <div>
         <h1 className="text-xl md:text-2xl font-semibold text-foreground">Settings</h1>
@@ -69,35 +69,35 @@ export function SettingsView() {
         </p>
       </div>
 
-      <Tabs defaultValue="profile" className="space-y-4 md:space-y-6">
-        <TabsList className="bg-muted/50 h-auto w-full grid grid-cols-4 p-1">
-          <TabsTrigger value="profile" className="gap-1.5 md:gap-2 text-xs md:text-sm px-2 py-2">
-            <User className="w-4 h-4" />
+      <Tabs defaultValue="profile" className="space-y-4 md:space-y-6 w-full">
+        <TabsList className="bg-muted/50 h-auto w-full grid grid-cols-4 p-1 gap-1">
+          <TabsTrigger value="profile" className="gap-1 text-xs md:text-sm px-1.5 sm:px-2 py-2 flex items-center justify-center">
+            <User className="w-4 h-4 shrink-0" />
             <span className="hidden sm:inline">Profile</span>
           </TabsTrigger>
-          <TabsTrigger value="notifications" className="gap-1.5 md:gap-2 text-xs md:text-sm px-2 py-2">
-            <Bell className="w-4 h-4" />
+          <TabsTrigger value="notifications" className="gap-1 text-xs md:text-sm px-1.5 sm:px-2 py-2 flex items-center justify-center">
+            <Bell className="w-4 h-4 shrink-0" />
             <span className="hidden sm:inline">Notifications</span>
           </TabsTrigger>
-          <TabsTrigger value="security" className="gap-1.5 md:gap-2 text-xs md:text-sm px-2 py-2">
-            <Shield className="w-4 h-4" />
+          <TabsTrigger value="security" className="gap-1 text-xs md:text-sm px-1.5 sm:px-2 py-2 flex items-center justify-center">
+            <Shield className="w-4 h-4 shrink-0" />
             <span className="hidden sm:inline">Security</span>
           </TabsTrigger>
-          <TabsTrigger value="preferences" className="gap-1.5 md:gap-2 text-xs md:text-sm px-2 py-2">
-            <Palette className="w-4 h-4" />
+          <TabsTrigger value="preferences" className="gap-1 text-xs md:text-sm px-1.5 sm:px-2 py-2 flex items-center justify-center">
+            <Palette className="w-4 h-4 shrink-0" />
             <span className="hidden sm:inline">Preferences</span>
           </TabsTrigger>
         </TabsList>
 
         {/* Profile Tab */}
-        <TabsContent value="profile" className="space-y-6">
-          <Card>
-            <CardHeader>
+        <TabsContent value="profile" className="space-y-4 md:space-y-6">
+          <Card className="overflow-hidden">
+            <CardHeader className="p-4 sm:p-6">
               <CardTitle className="text-base">Profile Information</CardTitle>
               <CardDescription>Update your profile details</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <CardContent className="p-4 pt-0 sm:p-6 sm:pt-0 space-y-4">
+              <div className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="displayName">Display Name</Label>
                   <Input id="displayName" placeholder="Enter display name" defaultValue="Stellar User" />
@@ -114,37 +114,35 @@ export function SettingsView() {
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader>
+          <Card className="overflow-hidden">
+            <CardHeader className="p-4 sm:p-6">
               <CardTitle className="text-base">Connected Wallet</CardTitle>
               <CardDescription>Your connected Stellar wallet</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="p-3 sm:p-4 bg-muted/50 rounded-lg space-y-3 sm:space-y-0">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                    <Wallet className="w-5 h-5 text-primary" />
+            <CardContent className="p-4 pt-0 sm:p-6 sm:pt-0">
+              <div className="p-3 bg-muted/50 rounded-lg space-y-3">
+                <div className="flex items-center gap-2 sm:gap-3">
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                    <Wallet className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
                   </div>
                   <div className="min-w-0 flex-1">
                     <p className="text-sm font-medium text-foreground">Stellar Wallet</p>
                     <p className="text-xs font-mono text-muted-foreground truncate">{walletAddress}</p>
                   </div>
-                  <Button variant="ghost" size="icon" className="shrink-0" onClick={handleCopyAddress}>
+                  <Button variant="ghost" size="icon" className="shrink-0 h-8 w-8" onClick={handleCopyAddress}>
                     {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
                   </Button>
                 </div>
-                <div className="flex sm:justify-end">
-                  <Button variant="outline" size="sm" className="w-full sm:w-auto">
-                    <LogOut className="w-4 h-4 mr-2" />
-                    Disconnect
-                  </Button>
-                </div>
+                <Button variant="outline" size="sm" className="w-full">
+                  <LogOut className="w-4 h-4 mr-2" />
+                  Disconnect
+                </Button>
               </div>
             </CardContent>
           </Card>
 
-          <div className="flex justify-end">
-            <Button onClick={handleSave}>Save Changes</Button>
+          <div className="flex justify-end pb-4">
+            <Button onClick={handleSave} className="w-full sm:w-auto">Save Changes</Button>
           </div>
         </TabsContent>
 
