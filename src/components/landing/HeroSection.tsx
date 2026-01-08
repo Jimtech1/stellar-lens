@@ -26,7 +26,7 @@ export function HeroSection() {
               className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 text-primary text-xs sm:text-small font-medium mb-4 md:mb-6"
             >
               <span className="w-2 h-2 rounded-full bg-success animate-pulse" />
-              Live on Stellar Mainnet
+              Live on Stellar Testnet
             </motion.div>
 
             <motion.h1
