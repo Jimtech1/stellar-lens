@@ -14,7 +14,7 @@ const TestimonialsSection = lazy(() => import("@/components/landing/Testimonials
 const TechStackSection = lazy(() => import("@/components/landing/TechStackSection").then(m => ({ default: m.TechStackSection })));
 const CTASection = lazy(() => import("@/components/landing/CTASection").then(m => ({ default: m.CTASection })));
 const FooterSection = lazy(() => import("@/components/landing/FooterSection").then(m => ({ default: m.FooterSection })));
-const LiveStats = lazy(() => import("@/components/landing/LiveStats"));
+const TrustedTechSection = lazy(() => import("@/components/landing/TrustedTechSection").then(m => ({ default: m.TrustedTechSection })));
 const SecurityBadges = lazy(() => import("@/components/landing/SecurityBadges"));
 
 // Section loader placeholder
@@ -53,7 +53,7 @@ const Index = () => {
         <HeroSection />
         
         <Suspense fallback={<SectionLoader />}>
-          <LiveStats />
+          <TrustedTechSection />
         </Suspense>
         
         <Suspense fallback={<SectionLoader />}>
