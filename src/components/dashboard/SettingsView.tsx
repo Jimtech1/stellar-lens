@@ -90,59 +90,59 @@ export function SettingsView() {
         </TabsList>
 
         {/* Profile Tab */}
-        <TabsContent value="profile" className="space-y-4 md:space-y-6">
-          <Card className="overflow-hidden">
-            <CardHeader className="p-4 sm:p-6">
-              <CardTitle className="text-base">Profile Information</CardTitle>
-              <CardDescription>Update your profile details</CardDescription>
+        <TabsContent value="profile" className="space-y-4">
+          <Card className="overflow-hidden border-border/50">
+            <CardHeader className="px-3 py-4 sm:px-6 sm:py-5">
+              <CardTitle className="text-base sm:text-lg">Profile Information</CardTitle>
+              <CardDescription className="text-xs sm:text-sm">Update your profile details</CardDescription>
             </CardHeader>
-            <CardContent className="p-4 pt-0 sm:p-6 sm:pt-0 space-y-4">
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="displayName">Display Name</Label>
-                  <Input id="displayName" placeholder="Enter display name" defaultValue="Stellar User" />
+            <CardContent className="px-3 pb-4 sm:px-6 sm:pb-6 space-y-3 sm:space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                <div className="space-y-1.5 sm:space-y-2">
+                  <Label htmlFor="displayName" className="text-xs sm:text-sm">Display Name</Label>
+                  <Input id="displayName" placeholder="Enter display name" defaultValue="Stellar User" className="h-9 sm:h-10 text-sm" />
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email Address</Label>
-                  <Input id="email" type="email" placeholder="Enter email" defaultValue="user@example.com" />
+                <div className="space-y-1.5 sm:space-y-2">
+                  <Label htmlFor="email" className="text-xs sm:text-sm">Email Address</Label>
+                  <Input id="email" type="email" placeholder="Enter email" defaultValue="user@example.com" className="h-9 sm:h-10 text-sm" />
                 </div>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="bio">Bio</Label>
-                <Input id="bio" placeholder="Tell us about yourself" />
+              <div className="space-y-1.5 sm:space-y-2">
+                <Label htmlFor="bio" className="text-xs sm:text-sm">Bio</Label>
+                <Input id="bio" placeholder="Tell us about yourself" className="h-9 sm:h-10 text-sm" />
               </div>
             </CardContent>
           </Card>
 
-          <Card className="overflow-hidden">
-            <CardHeader className="p-4 sm:p-6">
-              <CardTitle className="text-base">Connected Wallet</CardTitle>
-              <CardDescription>Your connected Stellar wallet</CardDescription>
+          <Card className="overflow-hidden border-border/50">
+            <CardHeader className="px-3 py-4 sm:px-6 sm:py-5">
+              <CardTitle className="text-base sm:text-lg">Connected Wallet</CardTitle>
+              <CardDescription className="text-xs sm:text-sm">Your connected Stellar wallet</CardDescription>
             </CardHeader>
-            <CardContent className="p-4 pt-0 sm:p-6 sm:pt-0">
-              <div className="p-3 bg-muted/50 rounded-lg space-y-3">
+            <CardContent className="px-3 pb-4 sm:px-6 sm:pb-6">
+              <div className="p-2.5 sm:p-3 bg-muted/50 rounded-lg space-y-2.5 sm:space-y-3">
                 <div className="flex items-center gap-2 sm:gap-3">
                   <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
                     <Wallet className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="text-sm font-medium text-foreground">Stellar Wallet</p>
-                    <p className="text-xs font-mono text-muted-foreground truncate">{walletAddress}</p>
+                    <p className="text-xs sm:text-sm font-medium text-foreground">Stellar Wallet</p>
+                    <p className="text-[10px] sm:text-xs font-mono text-muted-foreground truncate">{walletAddress}</p>
                   </div>
-                  <Button variant="ghost" size="icon" className="shrink-0 h-8 w-8" onClick={handleCopyAddress}>
-                    {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                  <Button variant="ghost" size="icon" className="shrink-0 h-7 w-7 sm:h-8 sm:w-8" onClick={handleCopyAddress}>
+                    {copied ? <Check className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> : <Copy className="w-3.5 h-3.5 sm:w-4 sm:h-4" />}
                   </Button>
                 </div>
-                <Button variant="outline" size="sm" className="w-full">
-                  <LogOut className="w-4 h-4 mr-2" />
+                <Button variant="outline" size="sm" className="w-full h-8 sm:h-9 text-xs sm:text-sm">
+                  <LogOut className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" />
                   Disconnect
                 </Button>
               </div>
             </CardContent>
           </Card>
 
-          <div className="flex justify-end pb-4">
-            <Button onClick={handleSave} className="w-full sm:w-auto">Save Changes</Button>
+          <div className="flex justify-end pb-2 sm:pb-4">
+            <Button onClick={handleSave} className="w-full sm:w-auto h-9 sm:h-10 text-sm">Save Changes</Button>
           </div>
         </TabsContent>
 
