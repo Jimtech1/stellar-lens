@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DAppDetailModal } from "@/components/dashboard/modals/DAppDetailModal";
+import { FooterSection } from "@/components/landing/FooterSection";
 
 const allDApps = [
   { id: '1', name: 'Blend Protocol', category: 'Lending', users: '12.5K', growth: 45, logo: '🔷', tvl: '$15.2M', description: 'Decentralized lending and borrowing on Stellar' },
@@ -57,7 +58,7 @@ export default function EmergingDApps() {
   const avgGrowth = allDApps.reduce((sum, d) => sum + d.growth, 0) / allDApps.length;
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background flex flex-col">
       <DAppDetailModal
         open={modalOpen}
         onOpenChange={setModalOpen}
@@ -66,69 +67,69 @@ export default function EmergingDApps() {
 
       {/* Header */}
       <header className="sticky top-0 z-50 bg-background/95 backdrop-blur border-b border-border">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
+        <div className="container mx-auto px-4 py-3 sm:py-4">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div className="flex items-center gap-2 sm:gap-4">
               <Link to="/">
-                <Button variant="ghost" size="sm">
-                  <ArrowLeft className="w-4 h-4 mr-2" />
-                  Back
+                <Button variant="ghost" size="sm" className="h-8 px-2 sm:px-3">
+                  <ArrowLeft className="w-4 h-4 sm:mr-2" />
+                  <span className="hidden sm:inline">Back</span>
                 </Button>
               </Link>
               <div className="flex items-center gap-2">
-                <Boxes className="w-6 h-6 text-primary" />
-                <h1 className="text-xl font-bold text-foreground">Emerging dApps</h1>
+                <Boxes className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
+                <h1 className="text-base sm:text-xl font-bold text-foreground">Emerging dApps</h1>
               </div>
             </div>
             <Link to="/dashboard">
-              <Button>Launch Dashboard</Button>
+              <Button size="sm" className="w-full sm:w-auto">Launch Dashboard</Button>
             </Link>
           </div>
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-8">
+      <main className="container mx-auto px-4 py-4 sm:py-8 flex-1">
         {/* Stats Overview */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-          <div className="card-elevated p-4">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">
+          <div className="card-elevated p-3 sm:p-4">
             <p className="text-tiny text-muted-foreground">Total dApps</p>
-            <p className="text-h2 font-bold text-foreground">{allDApps.length}</p>
+            <p className="text-lg sm:text-h2 font-bold text-foreground">{allDApps.length}</p>
           </div>
-          <div className="card-elevated p-4">
+          <div className="card-elevated p-3 sm:p-4">
             <p className="text-tiny text-muted-foreground">Total Users</p>
-            <p className="text-h2 font-bold text-foreground">{totalUsers.toFixed(0)}K</p>
+            <p className="text-lg sm:text-h2 font-bold text-foreground">{totalUsers.toFixed(0)}K</p>
           </div>
-          <div className="card-elevated p-4">
+          <div className="card-elevated p-3 sm:p-4">
             <p className="text-tiny text-muted-foreground">Avg. Growth</p>
-            <p className="text-h2 font-bold text-success">+{avgGrowth.toFixed(0)}%</p>
+            <p className="text-lg sm:text-h2 font-bold text-success">+{avgGrowth.toFixed(0)}%</p>
           </div>
-          <div className="card-elevated p-4">
+          <div className="card-elevated p-3 sm:p-4">
             <p className="text-tiny text-muted-foreground">Categories</p>
-            <p className="text-h2 font-bold text-foreground">{categories.length}</p>
+            <p className="text-lg sm:text-h2 font-bold text-foreground">{categories.length}</p>
           </div>
         </div>
 
         {/* Fastest Growing */}
-        <div className="card-elevated p-4 mb-8">
-          <div className="flex items-center gap-2 mb-4">
-            <TrendingUp className="w-5 h-5 text-success" />
-            <h3 className="font-semibold text-foreground">Fastest Growing dApps</h3>
+        <div className="card-elevated p-3 sm:p-4 mb-6 sm:mb-8">
+          <div className="flex items-center gap-2 mb-3 sm:mb-4">
+            <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-success" />
+            <h3 className="font-semibold text-foreground text-sm sm:text-base">Fastest Growing dApps</h3>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-4">
             {[...allDApps].sort((a, b) => b.growth - a.growth).slice(0, 5).map((dapp) => (
               <div 
                 key={dapp.id} 
-                className="p-3 bg-secondary/50 rounded-lg cursor-pointer hover:bg-secondary transition-colors"
+                className="p-2 sm:p-3 bg-secondary/50 rounded-lg cursor-pointer hover:bg-secondary transition-colors"
                 onClick={() => {
                   setSelectedDApp(dapp);
                   setModalOpen(true);
                 }}
               >
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="text-2xl">{dapp.logo}</span>
-                  <span className="font-medium text-foreground">{dapp.name}</span>
+                <div className="flex items-center gap-2 mb-1 sm:mb-2">
+                  <span className="text-xl sm:text-2xl">{dapp.logo}</span>
+                  <span className="font-medium text-foreground text-sm truncate">{dapp.name}</span>
                 </div>
-                <p className="text-success font-mono">+{dapp.growth}%</p>
+                <p className="text-success font-mono text-sm sm:text-base">+{dapp.growth}%</p>
                 <p className="text-tiny text-muted-foreground">{dapp.category}</p>
               </div>
             ))}
@@ -136,8 +137,8 @@ export default function EmergingDApps() {
         </div>
 
         {/* Filters */}
-        <div className="flex flex-col md:flex-row gap-4 mb-6">
-          <div className="relative flex-1">
+        <div className="flex flex-col gap-3 sm:gap-4 mb-4 sm:mb-6">
+          <div className="relative w-full">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder="Search dApps..."
@@ -146,49 +147,51 @@ export default function EmergingDApps() {
               className="pl-10"
             />
           </div>
-          <Select value={sortBy} onValueChange={setSortBy}>
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Sort by" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="users">Users (High to Low)</SelectItem>
-              <SelectItem value="growth">Growth (High to Low)</SelectItem>
-              <SelectItem value="name">Name (A-Z)</SelectItem>
-            </SelectContent>
-          </Select>
-          <Select value={filterCategory} onValueChange={setFilterCategory}>
-            <SelectTrigger className="w-[180px]">
-              <Filter className="w-4 h-4 mr-2" />
-              <SelectValue placeholder="Category" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Categories</SelectItem>
-              {categories.map(category => (
-                <SelectItem key={category} value={category}>{category}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <div className="grid grid-cols-2 gap-3">
+            <Select value={sortBy} onValueChange={setSortBy}>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Sort by" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="users">Users (High to Low)</SelectItem>
+                <SelectItem value="growth">Growth (High to Low)</SelectItem>
+                <SelectItem value="name">Name (A-Z)</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select value={filterCategory} onValueChange={setFilterCategory}>
+              <SelectTrigger className="w-full">
+                <Filter className="w-4 h-4 mr-2 shrink-0" />
+                <SelectValue placeholder="Category" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Categories</SelectItem>
+                {categories.map(category => (
+                  <SelectItem key={category} value={category}>{category}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
 
         {/* dApps Grid */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
           {filteredDApps.map((dapp) => (
             <div
               key={dapp.id}
-              className="card-elevated p-4 hover:shadow-card transition-all cursor-pointer"
+              className="card-elevated p-3 sm:p-4 hover:shadow-card transition-all cursor-pointer"
               onClick={() => {
                 setSelectedDApp(dapp);
                 setModalOpen(true);
               }}
             >
-              <div className="flex items-center gap-3 mb-3">
-                <span className="text-3xl">{dapp.logo}</span>
-                <div>
-                  <p className="font-medium text-foreground">{dapp.name}</p>
+              <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
+                <span className="text-2xl sm:text-3xl">{dapp.logo}</span>
+                <div className="min-w-0 flex-1">
+                  <p className="font-medium text-foreground text-sm sm:text-base truncate">{dapp.name}</p>
                   <Badge variant="outline" className="text-tiny">{dapp.category}</Badge>
                 </div>
               </div>
-              <p className="text-tiny text-muted-foreground mb-3 line-clamp-2">{dapp.description}</p>
+              <p className="text-tiny text-muted-foreground mb-2 sm:mb-3 line-clamp-2">{dapp.description}</p>
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-1">
                   <Users className="w-3 h-3 text-muted-foreground" />
@@ -198,7 +201,9 @@ export default function EmergingDApps() {
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-tiny text-muted-foreground">TVL: {dapp.tvl}</span>
-                <ExternalLink className="w-4 h-4 text-primary" />
+                <span className="text-tiny text-primary flex items-center gap-1">
+                  View <ExternalLink className="w-3 h-3" />
+                </span>
               </div>
             </div>
           ))}
@@ -210,6 +215,8 @@ export default function EmergingDApps() {
           </div>
         )}
       </main>
+
+      <FooterSection />
     </div>
   );
 }

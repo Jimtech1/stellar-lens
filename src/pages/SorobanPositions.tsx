@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { PositionDetailModal } from "@/components/dashboard/modals/PositionDetailModal";
+import { FooterSection } from "@/components/landing/FooterSection";
 
 const allPositions = [
   { id: '1', contract: 'Blend Protocol', position: 'Lending', value: 12450.00, apy: 8.5, token: 'XLM-USDC', risk: 'Low', chain: 'Stellar' },
@@ -55,7 +56,7 @@ export default function SorobanPositions() {
   const avgApy = allPositions.reduce((sum, pos) => sum + pos.apy, 0) / allPositions.length;
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background flex flex-col">
       <PositionDetailModal
         open={modalOpen}
         onOpenChange={setModalOpen}
@@ -70,51 +71,51 @@ export default function SorobanPositions() {
 
       {/* Header */}
       <header className="sticky top-0 z-50 bg-background/95 backdrop-blur border-b border-border">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
+        <div className="container mx-auto px-4 py-3 sm:py-4">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div className="flex items-center gap-2 sm:gap-4">
               <Link to="/">
-                <Button variant="ghost" size="sm">
-                  <ArrowLeft className="w-4 h-4 mr-2" />
-                  Back
+                <Button variant="ghost" size="sm" className="h-8 px-2 sm:px-3">
+                  <ArrowLeft className="w-4 h-4 sm:mr-2" />
+                  <span className="hidden sm:inline">Back</span>
                 </Button>
               </Link>
               <div className="flex items-center gap-2">
-                <Coins className="w-6 h-6 text-primary" />
-                <h1 className="text-xl font-bold text-foreground">Soroban Smart Contract Positions</h1>
+                <Coins className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
+                <h1 className="text-base sm:text-xl font-bold text-foreground">Soroban Positions</h1>
               </div>
             </div>
             <Link to="/dashboard">
-              <Button>Launch Dashboard</Button>
+              <Button size="sm" className="w-full sm:w-auto">Launch Dashboard</Button>
             </Link>
           </div>
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-8">
+      <main className="container mx-auto px-4 py-4 sm:py-8 flex-1">
         {/* Stats Overview */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-          <div className="card-elevated p-4">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">
+          <div className="card-elevated p-3 sm:p-4">
             <p className="text-tiny text-muted-foreground">Total Positions</p>
-            <p className="text-h2 font-bold text-foreground">{allPositions.length}</p>
+            <p className="text-lg sm:text-h2 font-bold text-foreground">{allPositions.length}</p>
           </div>
-          <div className="card-elevated p-4">
+          <div className="card-elevated p-3 sm:p-4">
             <p className="text-tiny text-muted-foreground">Total Value Locked</p>
-            <p className="text-h2 font-bold text-foreground">${(totalValue / 1000).toFixed(1)}K</p>
+            <p className="text-lg sm:text-h2 font-bold text-foreground">${(totalValue / 1000).toFixed(1)}K</p>
           </div>
-          <div className="card-elevated p-4">
+          <div className="card-elevated p-3 sm:p-4">
             <p className="text-tiny text-muted-foreground">Average APY</p>
-            <p className="text-h2 font-bold text-success">{avgApy.toFixed(1)}%</p>
+            <p className="text-lg sm:text-h2 font-bold text-success">{avgApy.toFixed(1)}%</p>
           </div>
-          <div className="card-elevated p-4">
+          <div className="card-elevated p-3 sm:p-4">
             <p className="text-tiny text-muted-foreground">Active Contracts</p>
-            <p className="text-h2 font-bold text-foreground">{allPositions.length}</p>
+            <p className="text-lg sm:text-h2 font-bold text-foreground">{allPositions.length}</p>
           </div>
         </div>
 
         {/* Filters */}
-        <div className="flex flex-col md:flex-row gap-4 mb-6">
-          <div className="relative flex-1">
+        <div className="flex flex-col gap-3 sm:gap-4 mb-4 sm:mb-6">
+          <div className="relative w-full">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder="Search positions..."
@@ -123,46 +124,48 @@ export default function SorobanPositions() {
               className="pl-10"
             />
           </div>
-          <Select value={sortBy} onValueChange={setSortBy}>
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Sort by" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="value">Value (High to Low)</SelectItem>
-              <SelectItem value="apy">APY (High to Low)</SelectItem>
-              <SelectItem value="name">Name (A-Z)</SelectItem>
-            </SelectContent>
-          </Select>
-          <Select value={filterRisk} onValueChange={setFilterRisk}>
-            <SelectTrigger className="w-[150px]">
-              <Filter className="w-4 h-4 mr-2" />
-              <SelectValue placeholder="Risk Level" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Risks</SelectItem>
-              <SelectItem value="low">Low Risk</SelectItem>
-              <SelectItem value="medium">Medium Risk</SelectItem>
-              <SelectItem value="high">High Risk</SelectItem>
-            </SelectContent>
-          </Select>
+          <div className="grid grid-cols-2 gap-3">
+            <Select value={sortBy} onValueChange={setSortBy}>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Sort by" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="value">Value (High to Low)</SelectItem>
+                <SelectItem value="apy">APY (High to Low)</SelectItem>
+                <SelectItem value="name">Name (A-Z)</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select value={filterRisk} onValueChange={setFilterRisk}>
+              <SelectTrigger className="w-full">
+                <Filter className="w-4 h-4 mr-2 shrink-0" />
+                <SelectValue placeholder="Risk Level" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Risks</SelectItem>
+                <SelectItem value="low">Low Risk</SelectItem>
+                <SelectItem value="medium">Medium Risk</SelectItem>
+                <SelectItem value="high">High Risk</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
 
         {/* Positions Grid */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
           {filteredPositions.map((position) => (
             <div
               key={position.id}
-              className="card-elevated p-4 hover:shadow-card transition-all cursor-pointer"
+              className="card-elevated p-3 sm:p-4 hover:shadow-card transition-all cursor-pointer"
               onClick={() => {
                 setSelectedPosition(position);
                 setModalOpen(true);
               }}
             >
-              <div className="flex items-center justify-between mb-3">
-                <span className="text-small font-medium text-foreground">{position.contract}</span>
-                <Badge variant="outline" className="text-tiny">{position.position}</Badge>
+              <div className="flex items-center justify-between mb-2 sm:mb-3">
+                <span className="text-small font-medium text-foreground truncate mr-2">{position.contract}</span>
+                <Badge variant="outline" className="text-tiny shrink-0">{position.position}</Badge>
               </div>
-              <p className="text-h3 font-bold font-mono text-foreground mb-2">
+              <p className="text-lg sm:text-h3 font-bold font-mono text-foreground mb-2">
                 ${position.value.toLocaleString(undefined, { maximumFractionDigits: 0 })}
               </p>
               <div className="flex items-center justify-between mb-2">
@@ -193,6 +196,8 @@ export default function SorobanPositions() {
           </div>
         )}
       </main>
+
+      <FooterSection />
     </div>
   );
 }

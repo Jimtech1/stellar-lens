@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { PoolDetailModal } from "@/components/dashboard/modals/PoolDetailModal";
+import { FooterSection } from "@/components/landing/FooterSection";
 
 const allPools = [
   { id: '1', pair: 'XLM/USDC', protocol: 'Aquarius', tvl: 45000000, apy: 14.5, age: '2d', volume24h: '$890K', fees24h: '$2.67K' },
@@ -57,7 +58,7 @@ export default function LiquidityPools() {
   const avgApy = allPools.reduce((sum, pool) => sum + pool.apy, 0) / allPools.length;
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background flex flex-col">
       <PoolDetailModal
         open={modalOpen}
         onOpenChange={setModalOpen}
@@ -73,75 +74,75 @@ export default function LiquidityPools() {
 
       {/* Header */}
       <header className="sticky top-0 z-50 bg-background/95 backdrop-blur border-b border-border">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
+        <div className="container mx-auto px-4 py-3 sm:py-4">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div className="flex items-center gap-2 sm:gap-4">
               <Link to="/">
-                <Button variant="ghost" size="sm">
-                  <ArrowLeft className="w-4 h-4 mr-2" />
-                  Back
+                <Button variant="ghost" size="sm" className="h-8 px-2 sm:px-3">
+                  <ArrowLeft className="w-4 h-4 sm:mr-2" />
+                  <span className="hidden sm:inline">Back</span>
                 </Button>
               </Link>
               <div className="flex items-center gap-2">
-                <Droplets className="w-6 h-6 text-primary" />
-                <h1 className="text-xl font-bold text-foreground">Liquidity Pools</h1>
+                <Droplets className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
+                <h1 className="text-base sm:text-xl font-bold text-foreground">Liquidity Pools</h1>
               </div>
             </div>
             <Link to="/dashboard">
-              <Button>Launch Dashboard</Button>
+              <Button size="sm" className="w-full sm:w-auto">Launch Dashboard</Button>
             </Link>
           </div>
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-8">
+      <main className="container mx-auto px-4 py-4 sm:py-8 flex-1">
         {/* Stats Overview */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-          <div className="card-elevated p-4">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">
+          <div className="card-elevated p-3 sm:p-4">
             <p className="text-tiny text-muted-foreground">Total Pools</p>
-            <p className="text-h2 font-bold text-foreground">{allPools.length}</p>
+            <p className="text-lg sm:text-h2 font-bold text-foreground">{allPools.length}</p>
           </div>
-          <div className="card-elevated p-4">
+          <div className="card-elevated p-3 sm:p-4">
             <p className="text-tiny text-muted-foreground">Total TVL</p>
-            <p className="text-h2 font-bold text-foreground">${(totalTvl / 1000000).toFixed(1)}M</p>
+            <p className="text-lg sm:text-h2 font-bold text-foreground">${(totalTvl / 1000000).toFixed(1)}M</p>
           </div>
-          <div className="card-elevated p-4">
+          <div className="card-elevated p-3 sm:p-4">
             <p className="text-tiny text-muted-foreground">Average APY</p>
-            <p className="text-h2 font-bold text-success">{avgApy.toFixed(1)}%</p>
+            <p className="text-lg sm:text-h2 font-bold text-success">{avgApy.toFixed(1)}%</p>
           </div>
-          <div className="card-elevated p-4">
+          <div className="card-elevated p-3 sm:p-4">
             <p className="text-tiny text-muted-foreground">Protocols</p>
-            <p className="text-h2 font-bold text-foreground">{protocols.length}</p>
+            <p className="text-lg sm:text-h2 font-bold text-foreground">{protocols.length}</p>
           </div>
         </div>
 
         {/* Top Pools by APY */}
-        <div className="card-elevated p-4 mb-8">
-          <div className="flex items-center gap-2 mb-4">
-            <TrendingUp className="w-5 h-5 text-success" />
-            <h3 className="font-semibold text-foreground">Highest APY Pools</h3>
+        <div className="card-elevated p-3 sm:p-4 mb-6 sm:mb-8">
+          <div className="flex items-center gap-2 mb-3 sm:mb-4">
+            <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-success" />
+            <h3 className="font-semibold text-foreground text-sm sm:text-base">Highest APY Pools</h3>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-4">
             {[...allPools].sort((a, b) => b.apy - a.apy).slice(0, 5).map((pool) => (
               <div 
                 key={pool.id} 
-                className="p-3 bg-secondary/50 rounded-lg cursor-pointer hover:bg-secondary transition-colors"
+                className="p-2 sm:p-3 bg-secondary/50 rounded-lg cursor-pointer hover:bg-secondary transition-colors"
                 onClick={() => {
                   setSelectedPool(pool);
                   setModalOpen(true);
                 }}
               >
-                <p className="font-medium text-foreground">{pool.pair}</p>
-                <p className="text-success font-mono text-lg">{pool.apy.toFixed(1)}%</p>
-                <p className="text-tiny text-muted-foreground">{pool.protocol}</p>
+                <p className="font-medium text-foreground text-sm sm:text-base truncate">{pool.pair}</p>
+                <p className="text-success font-mono text-base sm:text-lg">{pool.apy.toFixed(1)}%</p>
+                <p className="text-tiny text-muted-foreground truncate">{pool.protocol}</p>
               </div>
             ))}
           </div>
         </div>
 
         {/* Filters */}
-        <div className="flex flex-col md:flex-row gap-4 mb-6">
-          <div className="relative flex-1">
+        <div className="flex flex-col gap-3 sm:gap-4 mb-4 sm:mb-6">
+          <div className="relative w-full">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder="Search pools..."
@@ -150,32 +151,75 @@ export default function LiquidityPools() {
               className="pl-10"
             />
           </div>
-          <Select value={sortBy} onValueChange={setSortBy}>
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Sort by" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="tvl">TVL (High to Low)</SelectItem>
-              <SelectItem value="apy">APY (High to Low)</SelectItem>
-              <SelectItem value="volume">Volume (24h)</SelectItem>
-            </SelectContent>
-          </Select>
-          <Select value={filterProtocol} onValueChange={setFilterProtocol}>
-            <SelectTrigger className="w-[180px]">
-              <Filter className="w-4 h-4 mr-2" />
-              <SelectValue placeholder="Protocol" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Protocols</SelectItem>
-              {protocols.map(protocol => (
-                <SelectItem key={protocol} value={protocol}>{protocol}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <div className="grid grid-cols-2 gap-3">
+            <Select value={sortBy} onValueChange={setSortBy}>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Sort by" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="tvl">TVL (High to Low)</SelectItem>
+                <SelectItem value="apy">APY (High to Low)</SelectItem>
+                <SelectItem value="volume">Volume (24h)</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select value={filterProtocol} onValueChange={setFilterProtocol}>
+              <SelectTrigger className="w-full">
+                <Filter className="w-4 h-4 mr-2 shrink-0" />
+                <SelectValue placeholder="Protocol" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Protocols</SelectItem>
+                {protocols.map(protocol => (
+                  <SelectItem key={protocol} value={protocol}>{protocol}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
 
-        {/* Pools Table */}
-        <div className="card-elevated overflow-hidden">
+        {/* Pools - Mobile Cards */}
+        <div className="block md:hidden space-y-3">
+          {filteredPools.map((pool) => (
+            <div 
+              key={pool.id} 
+              className="card-elevated p-3 cursor-pointer hover:shadow-card transition-all"
+              onClick={() => {
+                setSelectedPool(pool);
+                setModalOpen(true);
+              }}
+            >
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                    <Droplets className="w-4 h-4 text-primary" />
+                  </div>
+                  <div>
+                    <p className="font-medium text-foreground">{pool.pair}</p>
+                    <Badge variant="outline" className="text-tiny">{pool.protocol}</Badge>
+                  </div>
+                </div>
+                <ArrowUpRight className="w-4 h-4 text-primary" />
+              </div>
+              <div className="grid grid-cols-3 gap-2 mt-3">
+                <div>
+                  <p className="text-tiny text-muted-foreground">APY</p>
+                  <p className="text-success font-mono font-medium">{pool.apy.toFixed(1)}%</p>
+                </div>
+                <div>
+                  <p className="text-tiny text-muted-foreground">TVL</p>
+                  <p className="font-mono text-foreground">${(pool.tvl / 1000000).toFixed(1)}M</p>
+                </div>
+                <div>
+                  <p className="text-tiny text-muted-foreground">Volume</p>
+                  <p className="text-muted-foreground">{pool.volume24h}</p>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Pools Table - Desktop */}
+        <div className="hidden md:block card-elevated overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead className="bg-secondary/50">
@@ -184,7 +228,7 @@ export default function LiquidityPools() {
                   <th className="text-left p-4 text-tiny font-medium text-muted-foreground">Protocol</th>
                   <th className="text-right p-4 text-tiny font-medium text-muted-foreground">APY</th>
                   <th className="text-right p-4 text-tiny font-medium text-muted-foreground">TVL</th>
-                  <th className="text-right p-4 text-tiny font-medium text-muted-foreground hidden md:table-cell">Volume (24h)</th>
+                  <th className="text-right p-4 text-tiny font-medium text-muted-foreground">Volume (24h)</th>
                   <th className="text-right p-4 text-tiny font-medium text-muted-foreground hidden lg:table-cell">Fees (24h)</th>
                   <th className="text-right p-4 text-tiny font-medium text-muted-foreground hidden lg:table-cell">Age</th>
                   <th className="text-right p-4 text-tiny font-medium text-muted-foreground"></th>
@@ -209,19 +253,17 @@ export default function LiquidityPools() {
                       </div>
                     </td>
                     <td className="p-4">
-                      <Badge variant="secondary">{pool.protocol}</Badge>
+                      <Badge variant="outline">{pool.protocol}</Badge>
                     </td>
                     <td className="p-4 text-right">
-                      <span className="text-success font-mono font-medium">{pool.apy.toFixed(1)}%</span>
+                      <span className="text-success font-mono">{pool.apy.toFixed(1)}%</span>
                     </td>
                     <td className="p-4 text-right font-mono text-foreground">
                       ${(pool.tvl / 1000000).toFixed(1)}M
                     </td>
-                    <td className="p-4 text-right text-muted-foreground hidden md:table-cell">{pool.volume24h}</td>
+                    <td className="p-4 text-right text-muted-foreground">{pool.volume24h}</td>
                     <td className="p-4 text-right text-muted-foreground hidden lg:table-cell">{pool.fees24h}</td>
-                    <td className="p-4 text-right hidden lg:table-cell">
-                      <Badge variant="outline">{pool.age}</Badge>
-                    </td>
+                    <td className="p-4 text-right text-muted-foreground hidden lg:table-cell">{pool.age}</td>
                     <td className="p-4 text-right">
                       <ArrowUpRight className="w-4 h-4 text-primary inline" />
                     </td>
@@ -231,7 +273,15 @@ export default function LiquidityPools() {
             </table>
           </div>
         </div>
+
+        {filteredPools.length === 0 && (
+          <div className="text-center py-12">
+            <p className="text-muted-foreground">No pools found matching your criteria.</p>
+          </div>
+        )}
       </main>
+
+      <FooterSection />
     </div>
   );
 }
