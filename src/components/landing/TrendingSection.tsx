@@ -1,7 +1,9 @@
 import { memo, useState, useEffect, useCallback } from "react";
-import { TrendingUp, Droplets, Boxes, ArrowUpRight, Search, Activity, Zap, Shield, Globe, Layers, Users, Coins, Star } from "lucide-react";
+import { Link } from "react-router-dom";
+import { TrendingUp, Droplets, Boxes, ArrowUpRight, Search, Activity, Zap, Shield, Globe, Layers, Users, Coins, Star, ChevronRight } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { PoolDetailModal } from "@/components/dashboard/modals/PoolDetailModal";
 import { DAppDetailModal } from "@/components/dashboard/modals/DAppDetailModal";
 import { PositionDetailModal } from "@/components/dashboard/modals/PositionDetailModal";
@@ -356,13 +358,20 @@ export function TrendingSection() {
 
         {/* Soroban Positions */}
         <div className="mb-8">
-          <div className="flex items-center gap-2 mb-4">
-            <Coins className="w-5 h-5 text-primary" />
-            <h3 className="text-h3 font-semibold text-foreground">Soroban Smart Contract Positions</h3>
-            <Badge variant="secondary" className="text-tiny">Live</Badge>
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <Coins className="w-5 h-5 text-primary" />
+              <h3 className="text-h3 font-semibold text-foreground">Soroban Smart Contract Positions</h3>
+              <Badge variant="secondary" className="text-tiny">Live</Badge>
+            </div>
+            <Link to="/soroban-positions">
+              <Button variant="ghost" size="sm" className="text-primary hover:text-primary/80">
+                View All <ChevronRight className="w-4 h-4 ml-1" />
+              </Button>
+            </Link>
           </div>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {sorobanPositions.map((position) => (
+            {sorobanPositions.slice(0, 4).map((position) => (
               <PositionCard 
                 key={position.id} 
                 position={position} 
@@ -378,12 +387,19 @@ export function TrendingSection() {
         <div className="grid lg:grid-cols-2 gap-8">
           {/* Trending Assets */}
           <div>
-            <div className="flex items-center gap-2 mb-4">
-              <TrendingUp className="w-5 h-5 text-success" />
-              <h3 className="text-h3 font-semibold text-foreground">Trending Assets</h3>
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <TrendingUp className="w-5 h-5 text-success" />
+                <h3 className="text-h3 font-semibold text-foreground">Trending Assets</h3>
+              </div>
+              <Link to="/trending-assets">
+                <Button variant="ghost" size="sm" className="text-primary hover:text-primary/80">
+                  View All <ChevronRight className="w-4 h-4 ml-1" />
+                </Button>
+              </Link>
             </div>
             <div className="card-elevated divide-y divide-border max-h-[400px] overflow-y-auto">
-              {trendingAssets.map((asset, i) => (
+              {trendingAssets.slice(0, 5).map((asset, i) => (
                 <AssetRow key={asset.symbol} asset={asset} index={i} onClick={() => handleAssetClick(asset)} />
               ))}
             </div>
@@ -391,12 +407,19 @@ export function TrendingSection() {
 
           {/* New Liquidity Pools */}
           <div>
-            <div className="flex items-center gap-2 mb-4">
-              <Droplets className="w-5 h-5 text-primary" />
-              <h3 className="text-h3 font-semibold text-foreground">New Liquidity Pools</h3>
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <Droplets className="w-5 h-5 text-primary" />
+                <h3 className="text-h3 font-semibold text-foreground">New Liquidity Pools</h3>
+              </div>
+              <Link to="/liquidity-pools">
+                <Button variant="ghost" size="sm" className="text-primary hover:text-primary/80">
+                  View All <ChevronRight className="w-4 h-4 ml-1" />
+                </Button>
+              </Link>
             </div>
             <div className="card-elevated divide-y divide-border max-h-[400px] overflow-y-auto">
-              {newLiquidityPools.map((pool) => (
+              {newLiquidityPools.slice(0, 5).map((pool) => (
                 <PoolRow 
                   key={pool.pair} 
                   pool={pool} 
@@ -412,12 +435,19 @@ export function TrendingSection() {
 
         {/* Emerging dApps */}
         <div className="mt-8">
-          <div className="flex items-center gap-2 mb-4">
-            <Boxes className="w-5 h-5 text-primary" />
-            <h3 className="text-h3 font-semibold text-foreground">Emerging dApps</h3>
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <Boxes className="w-5 h-5 text-primary" />
+              <h3 className="text-h3 font-semibold text-foreground">Emerging dApps</h3>
+            </div>
+            <Link to="/emerging-dapps">
+              <Button variant="ghost" size="sm" className="text-primary hover:text-primary/80">
+                View All <ChevronRight className="w-4 h-4 ml-1" />
+              </Button>
+            </Link>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-            {emergingDApps.map((dapp) => (
+            {emergingDApps.slice(0, 5).map((dapp) => (
               <DAppCard 
                 key={dapp.name} 
                 dapp={dapp} 
