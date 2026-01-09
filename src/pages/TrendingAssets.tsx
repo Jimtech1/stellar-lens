@@ -3,10 +3,10 @@ import { Link } from "react-router-dom";
 import { ArrowLeft, TrendingUp, Search, Star, ArrowUpRight, ArrowDownRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AssetDetailModal } from "@/components/dashboard/modals/AssetDetailModal";
 import { Asset } from "@/lib/mockData";
+import { FooterSection } from "@/components/landing/FooterSection";
 
 const allAssets = [
   { symbol: 'XLM', name: 'Stellar Lumens', price: 0.124, change: 5.24, volume: '2.4B', marketCap: '$3.8B', rank: 1 },
@@ -75,7 +75,7 @@ export default function TrendingAssets() {
   const losers = allAssets.filter(a => a.change < 0).sort((a, b) => a.change - b.change).slice(0, 5);
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background flex flex-col">
       <AssetDetailModal
         open={modalOpen}
         onOpenChange={setModalOpen}
@@ -84,62 +84,62 @@ export default function TrendingAssets() {
 
       {/* Header */}
       <header className="sticky top-0 z-50 bg-background/95 backdrop-blur border-b border-border">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
+        <div className="container mx-auto px-4 py-3 sm:py-4">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div className="flex items-center gap-2 sm:gap-4">
               <Link to="/">
-                <Button variant="ghost" size="sm">
-                  <ArrowLeft className="w-4 h-4 mr-2" />
-                  Back
+                <Button variant="ghost" size="sm" className="h-8 px-2 sm:px-3">
+                  <ArrowLeft className="w-4 h-4 sm:mr-2" />
+                  <span className="hidden sm:inline">Back</span>
                 </Button>
               </Link>
               <div className="flex items-center gap-2">
-                <TrendingUp className="w-6 h-6 text-success" />
-                <h1 className="text-xl font-bold text-foreground">Trending Assets</h1>
+                <TrendingUp className="w-5 h-5 sm:w-6 sm:h-6 text-success" />
+                <h1 className="text-base sm:text-xl font-bold text-foreground">Trending Assets</h1>
               </div>
             </div>
             <Link to="/dashboard">
-              <Button>Launch Dashboard</Button>
+              <Button size="sm" className="w-full sm:w-auto">Launch Dashboard</Button>
             </Link>
           </div>
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-8">
+      <main className="container mx-auto px-4 py-4 sm:py-8 flex-1">
         {/* Top Movers */}
-        <div className="grid md:grid-cols-2 gap-6 mb-8">
-          <div className="card-elevated p-4">
-            <div className="flex items-center gap-2 mb-4">
-              <ArrowUpRight className="w-5 h-5 text-success" />
-              <h3 className="font-semibold text-foreground">Top Gainers (24h)</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 mb-6 sm:mb-8">
+          <div className="card-elevated p-3 sm:p-4">
+            <div className="flex items-center gap-2 mb-3 sm:mb-4">
+              <ArrowUpRight className="w-4 h-4 sm:w-5 sm:h-5 text-success" />
+              <h3 className="font-semibold text-foreground text-sm sm:text-base">Top Gainers (24h)</h3>
             </div>
-            <div className="space-y-3">
+            <div className="space-y-2 sm:space-y-3">
               {gainers.map((asset, i) => (
                 <div key={asset.symbol} className="flex items-center justify-between p-2 hover:bg-secondary/50 rounded-lg cursor-pointer" onClick={() => handleAssetClick(asset)}>
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2 sm:gap-3">
                     <span className="text-tiny text-muted-foreground w-4">{i + 1}</span>
-                    <Star className="w-4 h-4 text-primary" />
-                    <span className="font-medium">{asset.symbol}</span>
+                    <Star className="w-3 h-3 sm:w-4 sm:h-4 text-primary" />
+                    <span className="font-medium text-sm">{asset.symbol}</span>
                   </div>
-                  <span className="text-success font-mono">+{asset.change.toFixed(2)}%</span>
+                  <span className="text-success font-mono text-sm">+{asset.change.toFixed(2)}%</span>
                 </div>
               ))}
             </div>
           </div>
-          <div className="card-elevated p-4">
-            <div className="flex items-center gap-2 mb-4">
-              <ArrowDownRight className="w-5 h-5 text-destructive" />
-              <h3 className="font-semibold text-foreground">Top Losers (24h)</h3>
+          <div className="card-elevated p-3 sm:p-4">
+            <div className="flex items-center gap-2 mb-3 sm:mb-4">
+              <ArrowDownRight className="w-4 h-4 sm:w-5 sm:h-5 text-destructive" />
+              <h3 className="font-semibold text-foreground text-sm sm:text-base">Top Losers (24h)</h3>
             </div>
-            <div className="space-y-3">
+            <div className="space-y-2 sm:space-y-3">
               {losers.map((asset, i) => (
                 <div key={asset.symbol} className="flex items-center justify-between p-2 hover:bg-secondary/50 rounded-lg cursor-pointer" onClick={() => handleAssetClick(asset)}>
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2 sm:gap-3">
                     <span className="text-tiny text-muted-foreground w-4">{i + 1}</span>
-                    <Star className="w-4 h-4 text-primary" />
-                    <span className="font-medium">{asset.symbol}</span>
+                    <Star className="w-3 h-3 sm:w-4 sm:h-4 text-primary" />
+                    <span className="font-medium text-sm">{asset.symbol}</span>
                   </div>
-                  <span className="text-destructive font-mono">{asset.change.toFixed(2)}%</span>
+                  <span className="text-destructive font-mono text-sm">{asset.change.toFixed(2)}%</span>
                 </div>
               ))}
             </div>
@@ -147,7 +147,7 @@ export default function TrendingAssets() {
         </div>
 
         {/* Filters */}
-        <div className="flex flex-col md:flex-row gap-4 mb-6">
+        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-4 sm:mb-6">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
@@ -158,7 +158,7 @@ export default function TrendingAssets() {
             />
           </div>
           <Select value={sortBy} onValueChange={setSortBy}>
-            <SelectTrigger className="w-[180px]">
+            <SelectTrigger className="w-full sm:w-[180px]">
               <SelectValue placeholder="Sort by" />
             </SelectTrigger>
             <SelectContent>
@@ -170,8 +170,44 @@ export default function TrendingAssets() {
           </Select>
         </div>
 
-        {/* Assets Table */}
-        <div className="card-elevated overflow-hidden">
+        {/* Assets - Mobile Cards */}
+        <div className="block md:hidden space-y-3">
+          {filteredAssets.map((asset) => (
+            <div 
+              key={asset.symbol} 
+              className="card-elevated p-3 cursor-pointer hover:shadow-card transition-all"
+              onClick={() => handleAssetClick(asset)}
+            >
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-3">
+                  <span className="text-tiny text-muted-foreground w-4">#{asset.rank}</span>
+                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                    <Star className="w-4 h-4 text-primary" />
+                  </div>
+                  <div>
+                    <p className="font-medium text-foreground">{asset.symbol}</p>
+                    <p className="text-tiny text-muted-foreground">{asset.name}</p>
+                  </div>
+                </div>
+                <ArrowUpRight className="w-4 h-4 text-primary" />
+              </div>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="font-mono font-medium text-foreground">
+                    ${asset.price < 1 ? asset.price.toFixed(4) : asset.price.toLocaleString()}
+                  </p>
+                  <p className="text-tiny text-muted-foreground">Vol: {asset.volume}</p>
+                </div>
+                <span className={`font-mono text-sm ${asset.change >= 0 ? 'text-success' : 'text-destructive'}`}>
+                  {asset.change >= 0 ? '+' : ''}{asset.change.toFixed(2)}%
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Assets Table - Desktop */}
+        <div className="hidden md:block card-elevated overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead className="bg-secondary/50">
@@ -180,7 +216,7 @@ export default function TrendingAssets() {
                   <th className="text-left p-4 text-tiny font-medium text-muted-foreground">Asset</th>
                   <th className="text-right p-4 text-tiny font-medium text-muted-foreground">Price</th>
                   <th className="text-right p-4 text-tiny font-medium text-muted-foreground">24h Change</th>
-                  <th className="text-right p-4 text-tiny font-medium text-muted-foreground hidden md:table-cell">Volume</th>
+                  <th className="text-right p-4 text-tiny font-medium text-muted-foreground">Volume</th>
                   <th className="text-right p-4 text-tiny font-medium text-muted-foreground hidden lg:table-cell">Market Cap</th>
                   <th className="text-right p-4 text-tiny font-medium text-muted-foreground"></th>
                 </tr>
@@ -205,14 +241,14 @@ export default function TrendingAssets() {
                       </div>
                     </td>
                     <td className="p-4 text-right font-mono text-foreground">
-                      ${asset.price.toFixed(asset.price < 1 ? 4 : 2)}
+                      ${asset.price < 1 ? asset.price.toFixed(4) : asset.price.toLocaleString()}
                     </td>
                     <td className="p-4 text-right">
-                      <Badge variant={asset.change >= 0 ? "default" : "destructive"} className="font-mono">
+                      <span className={`font-mono ${asset.change >= 0 ? 'text-success' : 'text-destructive'}`}>
                         {asset.change >= 0 ? '+' : ''}{asset.change.toFixed(2)}%
-                      </Badge>
+                      </span>
                     </td>
-                    <td className="p-4 text-right text-muted-foreground hidden md:table-cell">{asset.volume}</td>
+                    <td className="p-4 text-right text-muted-foreground">{asset.volume}</td>
                     <td className="p-4 text-right text-muted-foreground hidden lg:table-cell">{asset.marketCap}</td>
                     <td className="p-4 text-right">
                       <ArrowUpRight className="w-4 h-4 text-primary inline" />
@@ -223,7 +259,15 @@ export default function TrendingAssets() {
             </table>
           </div>
         </div>
+
+        {filteredAssets.length === 0 && (
+          <div className="text-center py-12">
+            <p className="text-muted-foreground">No assets found matching your criteria.</p>
+          </div>
+        )}
       </main>
+
+      <FooterSection />
     </div>
   );
 }
