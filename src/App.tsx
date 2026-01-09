@@ -11,6 +11,10 @@ import { Skeleton } from "@/components/ui/skeleton";
 const Index = lazy(() => import("./pages/Index"));
 const Dashboard = lazy(() => import("./pages/Dashboard"));
 const NotFound = lazy(() => import("./pages/NotFound"));
+const SorobanPositions = lazy(() => import("./pages/SorobanPositions"));
+const TrendingAssets = lazy(() => import("./pages/TrendingAssets"));
+const LiquidityPools = lazy(() => import("./pages/LiquidityPools"));
+const EmergingDApps = lazy(() => import("./pages/EmergingDApps"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -47,6 +51,10 @@ const App = () => (
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/soroban-positions" element={<SorobanPositions />} />
+              <Route path="/trending-assets" element={<TrendingAssets />} />
+              <Route path="/liquidity-pools" element={<LiquidityPools />} />
+              <Route path="/emerging-dapps" element={<EmergingDApps />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
