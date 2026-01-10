@@ -1,12 +1,21 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
-import { ArrowLeft, Droplets, Search, Filter, ArrowUpRight, TrendingUp } from "lucide-react";
+import { ArrowLeft, Droplets, Search, Filter, ArrowUpRight, TrendingUp, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { PoolDetailModal } from "@/components/dashboard/modals/PoolDetailModal";
 import { FooterSection } from "@/components/landing/FooterSection";
+import { useFavorites } from "@/hooks/useFavorites";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 
 const allPools = [
   { id: '1', pair: 'XLM/USDC', protocol: 'Aquarius', tvl: 45000000, apy: 14.5, age: '2d', volume24h: '$890K', fees24h: '$2.67K' },
@@ -31,28 +40,43 @@ const allPools = [
   { id: '20', pair: 'NEX/XLM', protocol: 'Nexus', tvl: 5600000, apy: 14.2, age: '1w', volume24h: '$290K', fees24h: '$870' },
 ];
 
+const ITEMS_PER_PAGE = 8;
+
 export default function LiquidityPools() {
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState('tvl');
   const [filterProtocol, setFilterProtocol] = useState('all');
+  const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
   const [selectedPool, setSelectedPool] = useState<typeof allPools[0] | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const { favorites, toggleFavorite, isFavorite } = useFavorites('pools');
 
   const protocols = [...new Set(allPools.map(p => p.protocol))];
 
-  const filteredPools = allPools
-    .filter(pool => {
-      const matchesSearch = pool.pair.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        pool.protocol.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesProtocol = filterProtocol === 'all' || pool.protocol === filterProtocol;
-      return matchesSearch && matchesProtocol;
-    })
-    .sort((a, b) => {
-      if (sortBy === 'tvl') return b.tvl - a.tvl;
-      if (sortBy === 'apy') return b.apy - a.apy;
-      if (sortBy === 'volume') return parseFloat(b.volume24h.replace(/[^0-9.]/g, '')) - parseFloat(a.volume24h.replace(/[^0-9.]/g, ''));
-      return 0;
-    });
+  const filteredPools = useMemo(() => {
+    return allPools
+      .filter(pool => {
+        const matchesSearch = pool.pair.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          pool.protocol.toLowerCase().includes(searchQuery.toLowerCase());
+        const matchesProtocol = filterProtocol === 'all' || pool.protocol === filterProtocol;
+        const matchesFavorites = !showFavoritesOnly || isFavorite(pool.id);
+        return matchesSearch && matchesProtocol && matchesFavorites;
+      })
+      .sort((a, b) => {
+        if (sortBy === 'tvl') return b.tvl - a.tvl;
+        if (sortBy === 'apy') return b.apy - a.apy;
+        if (sortBy === 'volume') return parseFloat(b.volume24h.replace(/[^0-9.]/g, '')) - parseFloat(a.volume24h.replace(/[^0-9.]/g, ''));
+        return 0;
+      });
+  }, [searchQuery, filterProtocol, sortBy, showFavoritesOnly, isFavorite]);
+
+  const totalPages = Math.ceil(filteredPools.length / ITEMS_PER_PAGE);
+  const paginatedPools = filteredPools.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
 
   const totalTvl = allPools.reduce((sum, pool) => sum + pool.tvl, 0);
   const avgApy = allPools.reduce((sum, pool) => sum + pool.apy, 0) / allPools.length;
@@ -111,8 +135,8 @@ export default function LiquidityPools() {
             <p className="text-lg sm:text-h2 font-bold text-success">{avgApy.toFixed(1)}%</p>
           </div>
           <div className="card-elevated p-3 sm:p-4">
-            <p className="text-tiny text-muted-foreground">Protocols</p>
-            <p className="text-lg sm:text-h2 font-bold text-foreground">{protocols.length}</p>
+            <p className="text-tiny text-muted-foreground">Watchlist</p>
+            <p className="text-lg sm:text-h2 font-bold text-primary">{favorites.length}</p>
           </div>
         </div>
 
@@ -147,12 +171,12 @@ export default function LiquidityPools() {
             <Input
               placeholder="Search pools..."
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
               className="pl-10"
             />
           </div>
-          <div className="grid grid-cols-2 gap-3">
-            <Select value={sortBy} onValueChange={setSortBy}>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            <Select value={sortBy} onValueChange={(v) => { setSortBy(v); setCurrentPage(1); }}>
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Sort by" />
               </SelectTrigger>
@@ -162,7 +186,7 @@ export default function LiquidityPools() {
                 <SelectItem value="volume">Volume (24h)</SelectItem>
               </SelectContent>
             </Select>
-            <Select value={filterProtocol} onValueChange={setFilterProtocol}>
+            <Select value={filterProtocol} onValueChange={(v) => { setFilterProtocol(v); setCurrentPage(1); }}>
               <SelectTrigger className="w-full">
                 <Filter className="w-4 h-4 mr-2 shrink-0" />
                 <SelectValue placeholder="Protocol" />
@@ -174,21 +198,38 @@ export default function LiquidityPools() {
                 ))}
               </SelectContent>
             </Select>
+            <Button
+              variant={showFavoritesOnly ? "default" : "outline"}
+              onClick={() => { setShowFavoritesOnly(!showFavoritesOnly); setCurrentPage(1); }}
+              className="w-full col-span-2 sm:col-span-1"
+            >
+              <Heart className={`w-4 h-4 mr-2 ${showFavoritesOnly ? 'fill-current' : ''}`} />
+              Watchlist
+            </Button>
           </div>
         </div>
 
         {/* Pools - Mobile Cards */}
         <div className="block md:hidden space-y-3">
-          {filteredPools.map((pool) => (
+          {paginatedPools.map((pool) => (
             <div 
               key={pool.id} 
-              className="card-elevated p-3 cursor-pointer hover:shadow-card transition-all"
+              className="card-elevated p-3 cursor-pointer hover:shadow-card transition-all relative"
               onClick={() => {
                 setSelectedPool(pool);
                 setModalOpen(true);
               }}
             >
-              <div className="flex items-center justify-between mb-2">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  toggleFavorite(pool.id);
+                }}
+                className="absolute top-3 right-3 p-1.5 rounded-full hover:bg-secondary transition-colors"
+              >
+                <Heart className={`w-4 h-4 ${isFavorite(pool.id) ? 'fill-primary text-primary' : 'text-muted-foreground'}`} />
+              </button>
+              <div className="flex items-center justify-between mb-2 pr-8">
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
                     <Droplets className="w-4 h-4 text-primary" />
@@ -198,7 +239,6 @@ export default function LiquidityPools() {
                     <Badge variant="outline" className="text-tiny">{pool.protocol}</Badge>
                   </div>
                 </div>
-                <ArrowUpRight className="w-4 h-4 text-primary" />
               </div>
               <div className="grid grid-cols-3 gap-2 mt-3">
                 <div>
@@ -224,6 +264,7 @@ export default function LiquidityPools() {
             <table className="w-full">
               <thead className="bg-secondary/50">
                 <tr>
+                  <th className="text-left p-4 text-tiny font-medium text-muted-foreground w-10"></th>
                   <th className="text-left p-4 text-tiny font-medium text-muted-foreground">Pool</th>
                   <th className="text-left p-4 text-tiny font-medium text-muted-foreground">Protocol</th>
                   <th className="text-right p-4 text-tiny font-medium text-muted-foreground">APY</th>
@@ -235,7 +276,7 @@ export default function LiquidityPools() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
-                {filteredPools.map((pool) => (
+                {paginatedPools.map((pool) => (
                   <tr 
                     key={pool.id} 
                     className="hover:bg-secondary/30 cursor-pointer transition-colors"
@@ -244,6 +285,17 @@ export default function LiquidityPools() {
                       setModalOpen(true);
                     }}
                   >
+                    <td className="p-4">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleFavorite(pool.id);
+                        }}
+                        className="p-1 rounded hover:bg-secondary transition-colors"
+                      >
+                        <Heart className={`w-4 h-4 ${isFavorite(pool.id) ? 'fill-primary text-primary' : 'text-muted-foreground'}`} />
+                      </button>
+                    </td>
                     <td className="p-4">
                       <div className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
@@ -276,7 +328,47 @@ export default function LiquidityPools() {
 
         {filteredPools.length === 0 && (
           <div className="text-center py-12">
-            <p className="text-muted-foreground">No pools found matching your criteria.</p>
+            <p className="text-muted-foreground">
+              {showFavoritesOnly ? "No pools in your watchlist yet." : "No pools found matching your criteria."}
+            </p>
+          </div>
+        )}
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="mt-6 sm:mt-8">
+            <Pagination>
+              <PaginationContent>
+                <PaginationItem>
+                  <PaginationPrevious 
+                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                    className={currentPage === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                  />
+                </PaginationItem>
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                  <PaginationItem key={page} className="hidden sm:block">
+                    <PaginationLink 
+                      onClick={() => setCurrentPage(page)}
+                      isActive={currentPage === page}
+                      className="cursor-pointer"
+                    >
+                      {page}
+                    </PaginationLink>
+                  </PaginationItem>
+                ))}
+                <PaginationItem className="sm:hidden">
+                  <span className="px-3 py-2 text-sm text-muted-foreground">
+                    {currentPage} / {totalPages}
+                  </span>
+                </PaginationItem>
+                <PaginationItem>
+                  <PaginationNext 
+                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                    className={currentPage === totalPages ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                  />
+                </PaginationItem>
+              </PaginationContent>
+            </Pagination>
           </div>
         )}
       </main>

@@ -1,12 +1,21 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
-import { ArrowLeft, Coins, Search, Filter, TrendingUp, ArrowUpRight } from "lucide-react";
+import { ArrowLeft, Coins, Search, Filter, TrendingUp, ArrowUpRight, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { PositionDetailModal } from "@/components/dashboard/modals/PositionDetailModal";
 import { FooterSection } from "@/components/landing/FooterSection";
+import { useFavorites } from "@/hooks/useFavorites";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 
 const allPositions = [
   { id: '1', contract: 'Blend Protocol', position: 'Lending', value: 12450.00, apy: 8.5, token: 'XLM-USDC', risk: 'Low', chain: 'Stellar' },
@@ -31,26 +40,47 @@ const allPositions = [
   { id: '20', contract: 'Delta Labs', position: 'Perpetuals', value: 6200.00, apy: 24.1, token: 'DLT', risk: 'High', chain: 'Stellar' },
 ];
 
+const ITEMS_PER_PAGE = 8;
+
 export default function SorobanPositions() {
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState('value');
   const [filterRisk, setFilterRisk] = useState('all');
+  const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
   const [selectedPosition, setSelectedPosition] = useState<typeof allPositions[0] | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  
+  const { favorites, toggleFavorite, isFavorite } = useFavorites('positions');
 
-  const filteredPositions = allPositions
-    .filter(pos => {
-      const matchesSearch = pos.contract.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        pos.token.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesRisk = filterRisk === 'all' || pos.risk.toLowerCase() === filterRisk;
-      return matchesSearch && matchesRisk;
-    })
-    .sort((a, b) => {
-      if (sortBy === 'value') return b.value - a.value;
-      if (sortBy === 'apy') return b.apy - a.apy;
-      if (sortBy === 'name') return a.contract.localeCompare(b.contract);
-      return 0;
-    });
+  const filteredPositions = useMemo(() => {
+    return allPositions
+      .filter(pos => {
+        const matchesSearch = pos.contract.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          pos.token.toLowerCase().includes(searchQuery.toLowerCase());
+        const matchesRisk = filterRisk === 'all' || pos.risk.toLowerCase() === filterRisk;
+        const matchesFavorites = !showFavoritesOnly || isFavorite(pos.id);
+        return matchesSearch && matchesRisk && matchesFavorites;
+      })
+      .sort((a, b) => {
+        if (sortBy === 'value') return b.value - a.value;
+        if (sortBy === 'apy') return b.apy - a.apy;
+        if (sortBy === 'name') return a.contract.localeCompare(b.contract);
+        return 0;
+      });
+  }, [searchQuery, filterRisk, sortBy, showFavoritesOnly, isFavorite]);
+
+  const totalPages = Math.ceil(filteredPositions.length / ITEMS_PER_PAGE);
+  const paginatedPositions = filteredPositions.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
+
+  // Reset to page 1 when filters change
+  const handleFilterChange = (setter: (val: string) => void, value: string) => {
+    setter(value);
+    setCurrentPage(1);
+  };
 
   const totalValue = allPositions.reduce((sum, pos) => sum + pos.value, 0);
   const avgApy = allPositions.reduce((sum, pos) => sum + pos.apy, 0) / allPositions.length;
@@ -108,8 +138,8 @@ export default function SorobanPositions() {
             <p className="text-lg sm:text-h2 font-bold text-success">{avgApy.toFixed(1)}%</p>
           </div>
           <div className="card-elevated p-3 sm:p-4">
-            <p className="text-tiny text-muted-foreground">Active Contracts</p>
-            <p className="text-lg sm:text-h2 font-bold text-foreground">{allPositions.length}</p>
+            <p className="text-tiny text-muted-foreground">Watchlist</p>
+            <p className="text-lg sm:text-h2 font-bold text-primary">{favorites.length}</p>
           </div>
         </div>
 
@@ -120,12 +150,12 @@ export default function SorobanPositions() {
             <Input
               placeholder="Search positions..."
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
               className="pl-10"
             />
           </div>
-          <div className="grid grid-cols-2 gap-3">
-            <Select value={sortBy} onValueChange={setSortBy}>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            <Select value={sortBy} onValueChange={(v) => handleFilterChange(setSortBy, v)}>
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Sort by" />
               </SelectTrigger>
@@ -135,7 +165,7 @@ export default function SorobanPositions() {
                 <SelectItem value="name">Name (A-Z)</SelectItem>
               </SelectContent>
             </Select>
-            <Select value={filterRisk} onValueChange={setFilterRisk}>
+            <Select value={filterRisk} onValueChange={(v) => handleFilterChange(setFilterRisk, v)}>
               <SelectTrigger className="w-full">
                 <Filter className="w-4 h-4 mr-2 shrink-0" />
                 <SelectValue placeholder="Risk Level" />
@@ -147,21 +177,38 @@ export default function SorobanPositions() {
                 <SelectItem value="high">High Risk</SelectItem>
               </SelectContent>
             </Select>
+            <Button
+              variant={showFavoritesOnly ? "default" : "outline"}
+              onClick={() => { setShowFavoritesOnly(!showFavoritesOnly); setCurrentPage(1); }}
+              className="w-full col-span-2 sm:col-span-1"
+            >
+              <Heart className={`w-4 h-4 mr-2 ${showFavoritesOnly ? 'fill-current' : ''}`} />
+              Watchlist
+            </Button>
           </div>
         </div>
 
         {/* Positions Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
-          {filteredPositions.map((position) => (
+          {paginatedPositions.map((position) => (
             <div
               key={position.id}
-              className="card-elevated p-3 sm:p-4 hover:shadow-card transition-all cursor-pointer"
+              className="card-elevated p-3 sm:p-4 hover:shadow-card transition-all cursor-pointer relative"
               onClick={() => {
                 setSelectedPosition(position);
                 setModalOpen(true);
               }}
             >
-              <div className="flex items-center justify-between mb-2 sm:mb-3">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  toggleFavorite(position.id);
+                }}
+                className="absolute top-2 right-2 p-1.5 rounded-full hover:bg-secondary transition-colors"
+              >
+                <Heart className={`w-4 h-4 ${isFavorite(position.id) ? 'fill-primary text-primary' : 'text-muted-foreground'}`} />
+              </button>
+              <div className="flex items-center justify-between mb-2 sm:mb-3 pr-8">
                 <span className="text-small font-medium text-foreground truncate mr-2">{position.contract}</span>
                 <Badge variant="outline" className="text-tiny shrink-0">{position.position}</Badge>
               </div>
@@ -192,7 +239,47 @@ export default function SorobanPositions() {
 
         {filteredPositions.length === 0 && (
           <div className="text-center py-12">
-            <p className="text-muted-foreground">No positions found matching your criteria.</p>
+            <p className="text-muted-foreground">
+              {showFavoritesOnly ? "No positions in your watchlist yet." : "No positions found matching your criteria."}
+            </p>
+          </div>
+        )}
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="mt-6 sm:mt-8">
+            <Pagination>
+              <PaginationContent>
+                <PaginationItem>
+                  <PaginationPrevious 
+                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                    className={currentPage === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                  />
+                </PaginationItem>
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                  <PaginationItem key={page} className="hidden sm:block">
+                    <PaginationLink 
+                      onClick={() => setCurrentPage(page)}
+                      isActive={currentPage === page}
+                      className="cursor-pointer"
+                    >
+                      {page}
+                    </PaginationLink>
+                  </PaginationItem>
+                ))}
+                <PaginationItem className="sm:hidden">
+                  <span className="px-3 py-2 text-sm text-muted-foreground">
+                    {currentPage} / {totalPages}
+                  </span>
+                </PaginationItem>
+                <PaginationItem>
+                  <PaginationNext 
+                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                    className={currentPage === totalPages ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                  />
+                </PaginationItem>
+              </PaginationContent>
+            </Pagination>
           </div>
         )}
       </main>

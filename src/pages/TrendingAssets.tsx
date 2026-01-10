@@ -1,12 +1,21 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
-import { ArrowLeft, TrendingUp, Search, Star, ArrowUpRight, ArrowDownRight } from "lucide-react";
+import { ArrowLeft, TrendingUp, Search, Star, ArrowUpRight, ArrowDownRight, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AssetDetailModal } from "@/components/dashboard/modals/AssetDetailModal";
 import { Asset } from "@/lib/mockData";
 import { FooterSection } from "@/components/landing/FooterSection";
+import { useFavorites } from "@/hooks/useFavorites";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 
 const allAssets = [
   { symbol: 'XLM', name: 'Stellar Lumens', price: 0.124, change: 5.24, volume: '2.4B', marketCap: '$3.8B', rank: 1 },
@@ -36,24 +45,40 @@ const allAssets = [
   { symbol: 'MOBI', name: 'Mobius', price: 0.0015, change: -3.2, volume: '280K', marketCap: '$2.8M', rank: 25 },
 ];
 
+const ITEMS_PER_PAGE = 10;
+
 export default function TrendingAssets() {
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState('rank');
+  const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
   const [selectedAsset, setSelectedAsset] = useState<Asset | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
 
-  const filteredAssets = allAssets
-    .filter(asset => 
-      asset.symbol.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      asset.name.toLowerCase().includes(searchQuery.toLowerCase())
-    )
-    .sort((a, b) => {
-      if (sortBy === 'rank') return a.rank - b.rank;
-      if (sortBy === 'price') return b.price - a.price;
-      if (sortBy === 'change') return b.change - a.change;
-      if (sortBy === 'volume') return parseFloat(b.volume.replace(/[^0-9.]/g, '')) - parseFloat(a.volume.replace(/[^0-9.]/g, ''));
-      return 0;
-    });
+  const { favorites, toggleFavorite, isFavorite } = useFavorites('assets');
+
+  const filteredAssets = useMemo(() => {
+    return allAssets
+      .filter(asset => {
+        const matchesSearch = asset.symbol.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          asset.name.toLowerCase().includes(searchQuery.toLowerCase());
+        const matchesFavorites = !showFavoritesOnly || isFavorite(asset.symbol);
+        return matchesSearch && matchesFavorites;
+      })
+      .sort((a, b) => {
+        if (sortBy === 'rank') return a.rank - b.rank;
+        if (sortBy === 'price') return b.price - a.price;
+        if (sortBy === 'change') return b.change - a.change;
+        if (sortBy === 'volume') return parseFloat(b.volume.replace(/[^0-9.]/g, '')) - parseFloat(a.volume.replace(/[^0-9.]/g, ''));
+        return 0;
+      });
+  }, [searchQuery, sortBy, showFavoritesOnly, isFavorite]);
+
+  const totalPages = Math.ceil(filteredAssets.length / ITEMS_PER_PAGE);
+  const paginatedAssets = filteredAssets.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
 
   const handleAssetClick = (asset: typeof allAssets[0]) => {
     const assetData: Asset = {
@@ -146,6 +171,17 @@ export default function TrendingAssets() {
           </div>
         </div>
 
+        {/* Watchlist Stats */}
+        <div className="card-elevated p-3 sm:p-4 mb-6 sm:mb-8">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Heart className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
+              <h3 className="font-semibold text-foreground text-sm sm:text-base">Your Watchlist</h3>
+            </div>
+            <span className="text-muted-foreground text-sm">{favorites.length} assets</span>
+          </div>
+        </div>
+
         {/* Filters */}
         <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-4 sm:mb-6">
           <div className="relative flex-1">
@@ -153,11 +189,11 @@ export default function TrendingAssets() {
             <Input
               placeholder="Search assets..."
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
               className="pl-10"
             />
           </div>
-          <Select value={sortBy} onValueChange={setSortBy}>
+          <Select value={sortBy} onValueChange={(v) => { setSortBy(v); setCurrentPage(1); }}>
             <SelectTrigger className="w-full sm:w-[180px]">
               <SelectValue placeholder="Sort by" />
             </SelectTrigger>
@@ -168,17 +204,34 @@ export default function TrendingAssets() {
               <SelectItem value="volume">Volume</SelectItem>
             </SelectContent>
           </Select>
+          <Button
+            variant={showFavoritesOnly ? "default" : "outline"}
+            onClick={() => { setShowFavoritesOnly(!showFavoritesOnly); setCurrentPage(1); }}
+            className="w-full sm:w-auto"
+          >
+            <Heart className={`w-4 h-4 mr-2 ${showFavoritesOnly ? 'fill-current' : ''}`} />
+            Watchlist
+          </Button>
         </div>
 
         {/* Assets - Mobile Cards */}
         <div className="block md:hidden space-y-3">
-          {filteredAssets.map((asset) => (
+          {paginatedAssets.map((asset) => (
             <div 
               key={asset.symbol} 
-              className="card-elevated p-3 cursor-pointer hover:shadow-card transition-all"
+              className="card-elevated p-3 cursor-pointer hover:shadow-card transition-all relative"
               onClick={() => handleAssetClick(asset)}
             >
-              <div className="flex items-center justify-between mb-2">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  toggleFavorite(asset.symbol);
+                }}
+                className="absolute top-3 right-3 p-1.5 rounded-full hover:bg-secondary transition-colors"
+              >
+                <Heart className={`w-4 h-4 ${isFavorite(asset.symbol) ? 'fill-primary text-primary' : 'text-muted-foreground'}`} />
+              </button>
+              <div className="flex items-center justify-between mb-2 pr-8">
                 <div className="flex items-center gap-3">
                   <span className="text-tiny text-muted-foreground w-4">#{asset.rank}</span>
                   <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
@@ -189,7 +242,6 @@ export default function TrendingAssets() {
                     <p className="text-tiny text-muted-foreground">{asset.name}</p>
                   </div>
                 </div>
-                <ArrowUpRight className="w-4 h-4 text-primary" />
               </div>
               <div className="flex items-center justify-between">
                 <div>
@@ -212,6 +264,7 @@ export default function TrendingAssets() {
             <table className="w-full">
               <thead className="bg-secondary/50">
                 <tr>
+                  <th className="text-left p-4 text-tiny font-medium text-muted-foreground w-10"></th>
                   <th className="text-left p-4 text-tiny font-medium text-muted-foreground">#</th>
                   <th className="text-left p-4 text-tiny font-medium text-muted-foreground">Asset</th>
                   <th className="text-right p-4 text-tiny font-medium text-muted-foreground">Price</th>
@@ -222,12 +275,23 @@ export default function TrendingAssets() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
-                {filteredAssets.map((asset) => (
+                {paginatedAssets.map((asset) => (
                   <tr 
                     key={asset.symbol} 
                     className="hover:bg-secondary/30 cursor-pointer transition-colors"
                     onClick={() => handleAssetClick(asset)}
                   >
+                    <td className="p-4">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleFavorite(asset.symbol);
+                        }}
+                        className="p-1 rounded hover:bg-secondary transition-colors"
+                      >
+                        <Heart className={`w-4 h-4 ${isFavorite(asset.symbol) ? 'fill-primary text-primary' : 'text-muted-foreground'}`} />
+                      </button>
+                    </td>
                     <td className="p-4 text-tiny text-muted-foreground">{asset.rank}</td>
                     <td className="p-4">
                       <div className="flex items-center gap-3">
@@ -262,7 +326,47 @@ export default function TrendingAssets() {
 
         {filteredAssets.length === 0 && (
           <div className="text-center py-12">
-            <p className="text-muted-foreground">No assets found matching your criteria.</p>
+            <p className="text-muted-foreground">
+              {showFavoritesOnly ? "No assets in your watchlist yet." : "No assets found matching your criteria."}
+            </p>
+          </div>
+        )}
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="mt-6 sm:mt-8">
+            <Pagination>
+              <PaginationContent>
+                <PaginationItem>
+                  <PaginationPrevious 
+                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                    className={currentPage === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                  />
+                </PaginationItem>
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                  <PaginationItem key={page} className="hidden sm:block">
+                    <PaginationLink 
+                      onClick={() => setCurrentPage(page)}
+                      isActive={currentPage === page}
+                      className="cursor-pointer"
+                    >
+                      {page}
+                    </PaginationLink>
+                  </PaginationItem>
+                ))}
+                <PaginationItem className="sm:hidden">
+                  <span className="px-3 py-2 text-sm text-muted-foreground">
+                    {currentPage} / {totalPages}
+                  </span>
+                </PaginationItem>
+                <PaginationItem>
+                  <PaginationNext 
+                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                    className={currentPage === totalPages ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                  />
+                </PaginationItem>
+              </PaginationContent>
+            </Pagination>
           </div>
         )}
       </main>
