@@ -1,12 +1,21 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
-import { ArrowLeft, Boxes, Search, Filter, Users, TrendingUp, ExternalLink } from "lucide-react";
+import { ArrowLeft, Boxes, Search, Filter, Users, TrendingUp, ExternalLink, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DAppDetailModal } from "@/components/dashboard/modals/DAppDetailModal";
 import { FooterSection } from "@/components/landing/FooterSection";
+import { useFavorites } from "@/hooks/useFavorites";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 
 const allDApps = [
   { id: '1', name: 'Blend Protocol', category: 'Lending', users: '12.5K', growth: 45, logo: '🔷', tvl: '$15.2M', description: 'Decentralized lending and borrowing on Stellar' },
@@ -31,28 +40,43 @@ const allDApps = [
   { id: '20', name: 'Scopuly', category: 'DEX', users: '12K', growth: 32, logo: '🔭', tvl: '$2.8M', description: 'Decentralized exchange with staking' },
 ];
 
+const ITEMS_PER_PAGE = 8;
+
 export default function EmergingDApps() {
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState('users');
   const [filterCategory, setFilterCategory] = useState('all');
+  const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
   const [selectedDApp, setSelectedDApp] = useState<typeof allDApps[0] | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const { favorites, toggleFavorite, isFavorite } = useFavorites('dapps');
 
   const categories = [...new Set(allDApps.map(d => d.category))];
 
-  const filteredDApps = allDApps
-    .filter(dapp => {
-      const matchesSearch = dapp.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        dapp.category.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesCategory = filterCategory === 'all' || dapp.category === filterCategory;
-      return matchesSearch && matchesCategory;
-    })
-    .sort((a, b) => {
-      if (sortBy === 'users') return parseFloat(b.users.replace(/[^0-9.]/g, '')) - parseFloat(a.users.replace(/[^0-9.]/g, ''));
-      if (sortBy === 'growth') return b.growth - a.growth;
-      if (sortBy === 'name') return a.name.localeCompare(b.name);
-      return 0;
-    });
+  const filteredDApps = useMemo(() => {
+    return allDApps
+      .filter(dapp => {
+        const matchesSearch = dapp.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          dapp.category.toLowerCase().includes(searchQuery.toLowerCase());
+        const matchesCategory = filterCategory === 'all' || dapp.category === filterCategory;
+        const matchesFavorites = !showFavoritesOnly || isFavorite(dapp.id);
+        return matchesSearch && matchesCategory && matchesFavorites;
+      })
+      .sort((a, b) => {
+        if (sortBy === 'users') return parseFloat(b.users.replace(/[^0-9.]/g, '')) - parseFloat(a.users.replace(/[^0-9.]/g, ''));
+        if (sortBy === 'growth') return b.growth - a.growth;
+        if (sortBy === 'name') return a.name.localeCompare(b.name);
+        return 0;
+      });
+  }, [searchQuery, filterCategory, sortBy, showFavoritesOnly, isFavorite]);
+
+  const totalPages = Math.ceil(filteredDApps.length / ITEMS_PER_PAGE);
+  const paginatedDApps = filteredDApps.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
 
   const totalUsers = allDApps.reduce((sum, d) => sum + parseFloat(d.users.replace(/[^0-9.]/g, '')), 0);
   const avgGrowth = allDApps.reduce((sum, d) => sum + d.growth, 0) / allDApps.length;
@@ -104,8 +128,8 @@ export default function EmergingDApps() {
             <p className="text-lg sm:text-h2 font-bold text-success">+{avgGrowth.toFixed(0)}%</p>
           </div>
           <div className="card-elevated p-3 sm:p-4">
-            <p className="text-tiny text-muted-foreground">Categories</p>
-            <p className="text-lg sm:text-h2 font-bold text-foreground">{categories.length}</p>
+            <p className="text-tiny text-muted-foreground">Watchlist</p>
+            <p className="text-lg sm:text-h2 font-bold text-primary">{favorites.length}</p>
           </div>
         </div>
 
@@ -143,12 +167,12 @@ export default function EmergingDApps() {
             <Input
               placeholder="Search dApps..."
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
               className="pl-10"
             />
           </div>
-          <div className="grid grid-cols-2 gap-3">
-            <Select value={sortBy} onValueChange={setSortBy}>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            <Select value={sortBy} onValueChange={(v) => { setSortBy(v); setCurrentPage(1); }}>
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Sort by" />
               </SelectTrigger>
@@ -158,7 +182,7 @@ export default function EmergingDApps() {
                 <SelectItem value="name">Name (A-Z)</SelectItem>
               </SelectContent>
             </Select>
-            <Select value={filterCategory} onValueChange={setFilterCategory}>
+            <Select value={filterCategory} onValueChange={(v) => { setFilterCategory(v); setCurrentPage(1); }}>
               <SelectTrigger className="w-full">
                 <Filter className="w-4 h-4 mr-2 shrink-0" />
                 <SelectValue placeholder="Category" />
@@ -170,21 +194,38 @@ export default function EmergingDApps() {
                 ))}
               </SelectContent>
             </Select>
+            <Button
+              variant={showFavoritesOnly ? "default" : "outline"}
+              onClick={() => { setShowFavoritesOnly(!showFavoritesOnly); setCurrentPage(1); }}
+              className="w-full col-span-2 sm:col-span-1"
+            >
+              <Heart className={`w-4 h-4 mr-2 ${showFavoritesOnly ? 'fill-current' : ''}`} />
+              Watchlist
+            </Button>
           </div>
         </div>
 
         {/* dApps Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
-          {filteredDApps.map((dapp) => (
+          {paginatedDApps.map((dapp) => (
             <div
               key={dapp.id}
-              className="card-elevated p-3 sm:p-4 hover:shadow-card transition-all cursor-pointer"
+              className="card-elevated p-3 sm:p-4 hover:shadow-card transition-all cursor-pointer relative"
               onClick={() => {
                 setSelectedDApp(dapp);
                 setModalOpen(true);
               }}
             >
-              <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  toggleFavorite(dapp.id);
+                }}
+                className="absolute top-2 right-2 p-1.5 rounded-full hover:bg-secondary transition-colors"
+              >
+                <Heart className={`w-4 h-4 ${isFavorite(dapp.id) ? 'fill-primary text-primary' : 'text-muted-foreground'}`} />
+              </button>
+              <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3 pr-8">
                 <span className="text-2xl sm:text-3xl">{dapp.logo}</span>
                 <div className="min-w-0 flex-1">
                   <p className="font-medium text-foreground text-sm sm:text-base truncate">{dapp.name}</p>
@@ -211,7 +252,47 @@ export default function EmergingDApps() {
 
         {filteredDApps.length === 0 && (
           <div className="text-center py-12">
-            <p className="text-muted-foreground">No dApps found matching your criteria.</p>
+            <p className="text-muted-foreground">
+              {showFavoritesOnly ? "No dApps in your watchlist yet." : "No dApps found matching your criteria."}
+            </p>
+          </div>
+        )}
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="mt-6 sm:mt-8">
+            <Pagination>
+              <PaginationContent>
+                <PaginationItem>
+                  <PaginationPrevious 
+                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                    className={currentPage === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                  />
+                </PaginationItem>
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                  <PaginationItem key={page} className="hidden sm:block">
+                    <PaginationLink 
+                      onClick={() => setCurrentPage(page)}
+                      isActive={currentPage === page}
+                      className="cursor-pointer"
+                    >
+                      {page}
+                    </PaginationLink>
+                  </PaginationItem>
+                ))}
+                <PaginationItem className="sm:hidden">
+                  <span className="px-3 py-2 text-sm text-muted-foreground">
+                    {currentPage} / {totalPages}
+                  </span>
+                </PaginationItem>
+                <PaginationItem>
+                  <PaginationNext 
+                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                    className={currentPage === totalPages ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                  />
+                </PaginationItem>
+              </PaginationContent>
+            </Pagination>
           </div>
         )}
       </main>
