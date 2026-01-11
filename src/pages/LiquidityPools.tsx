@@ -18,27 +18,35 @@ import {
 } from "@/components/ui/pagination";
 
 const allPools = [
-  { id: '1', pair: 'XLM/USDC', protocol: 'Aquarius', tvl: 45000000, apy: 14.5, age: '2d', volume24h: '$890K', fees24h: '$2.67K' },
-  { id: '2', pair: 'AQUA/XLM', protocol: 'StellarSwap', tvl: 12000000, apy: 22.3, age: '5d', volume24h: '$420K', fees24h: '$1.26K' },
-  { id: '3', pair: 'yXLM/USDC', protocol: 'Blend', tvl: 8500000, apy: 18.7, age: '1w', volume24h: '$650K', fees24h: '$1.95K' },
-  { id: '4', pair: 'ETH/XLM', protocol: 'Lumenswap', tvl: 6200000, apy: 12.1, age: '3d', volume24h: '$180K', fees24h: '$540' },
-  { id: '5', pair: 'BLND/XLM', protocol: 'Blend', tvl: 4800000, apy: 24.5, age: '4d', volume24h: '$520K', fees24h: '$1.56K' },
-  { id: '6', pair: 'PHO/USDC', protocol: 'Phoenix', tvl: 2100000, apy: 32.2, age: '1d', volume24h: '$95K', fees24h: '$285' },
-  { id: '7', pair: 'BTC/XLM', protocol: 'StellarX', tvl: 15600000, apy: 5.2, age: '2w', volume24h: '$1.2M', fees24h: '$3.6K' },
-  { id: '8', pair: 'EURC/USDC', protocol: 'Circle', tvl: 28900000, apy: 4.1, age: '1w', volume24h: '$2.1M', fees24h: '$6.3K' },
-  { id: '9', pair: 'XLM/AQUA', protocol: 'Soroswap', tvl: 9800000, apy: 19.8, age: '3d', volume24h: '$380K', fees24h: '$1.14K' },
-  { id: '10', pair: 'USDC/EURC', protocol: 'Aquarius', tvl: 18500000, apy: 3.8, age: '2w', volume24h: '$1.8M', fees24h: '$5.4K' },
-  { id: '11', pair: 'yBTC/BTC', protocol: 'Ultra Capital', tvl: 12400000, apy: 6.5, age: '1w', volume24h: '$890K', fees24h: '$2.67K' },
-  { id: '12', pair: 'ETH/USDC', protocol: 'Lumenswap', tvl: 8900000, apy: 11.2, age: '5d', volume24h: '$560K', fees24h: '$1.68K' },
-  { id: '13', pair: 'SHX/XLM', protocol: 'Stronghold', tvl: 3200000, apy: 28.5, age: '2d', volume24h: '$145K', fees24h: '$435' },
-  { id: '14', pair: 'GRAT/XLM', protocol: 'Community', tvl: 890000, apy: 45.2, age: '1d', volume24h: '$42K', fees24h: '$126' },
-  { id: '15', pair: 'RMT/USDC', protocol: 'SureRemit', tvl: 1500000, apy: 15.8, age: '1w', volume24h: '$78K', fees24h: '$234' },
-  { id: '16', pair: 'ARST/XLM', protocol: 'ARS', tvl: 2800000, apy: 12.4, age: '4d', volume24h: '$120K', fees24h: '$360' },
-  { id: '17', pair: 'NOVA/USDC', protocol: 'Nova Swap', tvl: 4200000, apy: 21.3, age: '3d', volume24h: '$210K', fees24h: '$630' },
-  { id: '18', pair: 'ORB/XLM', protocol: 'Orbit', tvl: 1800000, apy: 35.8, age: '1d', volume24h: '$95K', fees24h: '$285' },
-  { id: '19', pair: 'DLT/USDC', protocol: 'Delta', tvl: 3500000, apy: 18.9, age: '5d', volume24h: '$180K', fees24h: '$540' },
-  { id: '20', pair: 'NEX/XLM', protocol: 'Nexus', tvl: 5600000, apy: 14.2, age: '1w', volume24h: '$290K', fees24h: '$870' },
+  { id: '1', pair: 'XLM/USDC', protocol: 'Aquarius', tvl: 45000000, apy: 14.5, age: '2d', volume24h: '$890K', fees24h: '$2.67K', risk: 'Low' as const },
+  { id: '2', pair: 'AQUA/XLM', protocol: 'StellarSwap', tvl: 12000000, apy: 22.3, age: '5d', volume24h: '$420K', fees24h: '$1.26K', risk: 'Medium' as const },
+  { id: '3', pair: 'yXLM/USDC', protocol: 'Blend', tvl: 8500000, apy: 18.7, age: '1w', volume24h: '$650K', fees24h: '$1.95K', risk: 'Low' as const },
+  { id: '4', pair: 'ETH/XLM', protocol: 'Lumenswap', tvl: 6200000, apy: 12.1, age: '3d', volume24h: '$180K', fees24h: '$540', risk: 'Medium' as const },
+  { id: '5', pair: 'BLND/XLM', protocol: 'Blend', tvl: 4800000, apy: 24.5, age: '4d', volume24h: '$520K', fees24h: '$1.56K', risk: 'Medium' as const },
+  { id: '6', pair: 'PHO/USDC', protocol: 'Phoenix', tvl: 2100000, apy: 32.2, age: '1d', volume24h: '$95K', fees24h: '$285', risk: 'High' as const },
+  { id: '7', pair: 'BTC/XLM', protocol: 'StellarX', tvl: 15600000, apy: 5.2, age: '2w', volume24h: '$1.2M', fees24h: '$3.6K', risk: 'Low' as const },
+  { id: '8', pair: 'EURC/USDC', protocol: 'Circle', tvl: 28900000, apy: 4.1, age: '1w', volume24h: '$2.1M', fees24h: '$6.3K', risk: 'Low' as const },
+  { id: '9', pair: 'XLM/AQUA', protocol: 'Soroswap', tvl: 9800000, apy: 19.8, age: '3d', volume24h: '$380K', fees24h: '$1.14K', risk: 'Medium' as const },
+  { id: '10', pair: 'USDC/EURC', protocol: 'Aquarius', tvl: 18500000, apy: 3.8, age: '2w', volume24h: '$1.8M', fees24h: '$5.4K', risk: 'Low' as const },
+  { id: '11', pair: 'yBTC/BTC', protocol: 'Ultra Capital', tvl: 12400000, apy: 6.5, age: '1w', volume24h: '$890K', fees24h: '$2.67K', risk: 'Low' as const },
+  { id: '12', pair: 'ETH/USDC', protocol: 'Lumenswap', tvl: 8900000, apy: 11.2, age: '5d', volume24h: '$560K', fees24h: '$1.68K', risk: 'Low' as const },
+  { id: '13', pair: 'SHX/XLM', protocol: 'Stronghold', tvl: 3200000, apy: 28.5, age: '2d', volume24h: '$145K', fees24h: '$435', risk: 'High' as const },
+  { id: '14', pair: 'GRAT/XLM', protocol: 'Community', tvl: 890000, apy: 45.2, age: '1d', volume24h: '$42K', fees24h: '$126', risk: 'High' as const },
+  { id: '15', pair: 'RMT/USDC', protocol: 'SureRemit', tvl: 1500000, apy: 15.8, age: '1w', volume24h: '$78K', fees24h: '$234', risk: 'Medium' as const },
+  { id: '16', pair: 'ARST/XLM', protocol: 'ARS', tvl: 2800000, apy: 12.4, age: '4d', volume24h: '$120K', fees24h: '$360', risk: 'Medium' as const },
+  { id: '17', pair: 'NOVA/USDC', protocol: 'Nova Swap', tvl: 4200000, apy: 21.3, age: '3d', volume24h: '$210K', fees24h: '$630', risk: 'Medium' as const },
+  { id: '18', pair: 'ORB/XLM', protocol: 'Orbit', tvl: 1800000, apy: 35.8, age: '1d', volume24h: '$95K', fees24h: '$285', risk: 'High' as const },
+  { id: '19', pair: 'DLT/USDC', protocol: 'Delta', tvl: 3500000, apy: 18.9, age: '5d', volume24h: '$180K', fees24h: '$540', risk: 'Medium' as const },
+  { id: '20', pair: 'NEX/XLM', protocol: 'Nexus', tvl: 5600000, apy: 14.2, age: '1w', volume24h: '$290K', fees24h: '$870', risk: 'Low' as const },
 ];
+
+const getRiskColor = (risk: 'Low' | 'Medium' | 'High') => {
+  switch (risk) {
+    case 'Low': return 'bg-success/10 text-success border-success/30';
+    case 'Medium': return 'bg-warning/10 text-warning border-warning/30';
+    case 'High': return 'bg-destructive/10 text-destructive border-destructive/30';
+  }
+};
 
 const ITEMS_PER_PAGE = 8;
 
@@ -240,7 +248,7 @@ export default function LiquidityPools() {
                   </div>
                 </div>
               </div>
-              <div className="grid grid-cols-3 gap-2 mt-3">
+              <div className="grid grid-cols-4 gap-2 mt-3">
                 <div>
                   <p className="text-tiny text-muted-foreground">APY</p>
                   <p className="text-success font-mono font-medium">{pool.apy.toFixed(1)}%</p>
@@ -252,6 +260,10 @@ export default function LiquidityPools() {
                 <div>
                   <p className="text-tiny text-muted-foreground">Volume</p>
                   <p className="text-muted-foreground">{pool.volume24h}</p>
+                </div>
+                <div>
+                  <p className="text-tiny text-muted-foreground">Risk</p>
+                  <Badge variant="outline" className={`text-tiny ${getRiskColor(pool.risk)}`}>{pool.risk}</Badge>
                 </div>
               </div>
             </div>
@@ -269,6 +281,7 @@ export default function LiquidityPools() {
                   <th className="text-left p-4 text-tiny font-medium text-muted-foreground">Protocol</th>
                   <th className="text-right p-4 text-tiny font-medium text-muted-foreground">APY</th>
                   <th className="text-right p-4 text-tiny font-medium text-muted-foreground">TVL</th>
+                  <th className="text-center p-4 text-tiny font-medium text-muted-foreground">Risk</th>
                   <th className="text-right p-4 text-tiny font-medium text-muted-foreground">Volume (24h)</th>
                   <th className="text-right p-4 text-tiny font-medium text-muted-foreground hidden lg:table-cell">Fees (24h)</th>
                   <th className="text-right p-4 text-tiny font-medium text-muted-foreground hidden lg:table-cell">Age</th>
@@ -312,6 +325,9 @@ export default function LiquidityPools() {
                     </td>
                     <td className="p-4 text-right font-mono text-foreground">
                       ${(pool.tvl / 1000000).toFixed(1)}M
+                    </td>
+                    <td className="p-4 text-center">
+                      <Badge variant="outline" className={getRiskColor(pool.risk)}>{pool.risk}</Badge>
                     </td>
                     <td className="p-4 text-right text-muted-foreground">{pool.volume24h}</td>
                     <td className="p-4 text-right text-muted-foreground hidden lg:table-cell">{pool.fees24h}</td>
