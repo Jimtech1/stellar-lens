@@ -15,7 +15,7 @@ export function DashboardFooter() {
         <div className="flex items-center gap-3">
           <HoloLogo size="sm" showText={false} />
           <span className="text-tiny text-muted-foreground">
-            © 2024 Yielder. All rights reserved.
+            © 2026 Yielder. All rights reserved.
           </span>
         </div>
 
