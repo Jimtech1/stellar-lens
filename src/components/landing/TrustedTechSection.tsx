@@ -9,7 +9,7 @@ const technologies = [
   },
   {
     icon: ArrowLeftRight,
-    name: "Axelar Bridge",
+    name: "Axelar SDK",
     description: "Cross-chain messaging",
   },
   {
@@ -29,8 +29,8 @@ const technologies = [
   },
   {
     icon: Code2,
-    name: "Open Source",
-    description: "Transparent code",
+    name: "Stellar and EVM Wallet Kit",
+    description: "Multi-chain wallet support",
   },
 ];
 

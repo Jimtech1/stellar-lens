@@ -1,6 +1,7 @@
 import { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { ArrowLeft, Boxes, Search, Filter, Users, TrendingUp, ExternalLink, Heart } from "lucide-react";
+import { HoloLogo } from "@/components/HoloLogo";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -95,10 +96,7 @@ export default function EmergingDApps() {
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div className="flex items-center gap-2 sm:gap-4">
               <Link to="/">
-                <Button variant="ghost" size="sm" className="h-8 px-2 sm:px-3">
-                  <ArrowLeft className="w-4 h-4 sm:mr-2" />
-                  <span className="hidden sm:inline">Back</span>
-                </Button>
+                <HoloLogo size="sm" />
               </Link>
               <div className="flex items-center gap-2">
                 <Boxes className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
