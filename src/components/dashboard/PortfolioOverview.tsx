@@ -1,13 +1,144 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { TrendingUp, TrendingDown, DollarSign, Percent, Shield, PieChart, ArrowUpDown, Filter, Sparkles } from "lucide-react";
-import { AreaChart, Area, ResponsiveContainer, XAxis, YAxis, Tooltip } from "recharts";
+import { 
+  TrendingUp, TrendingDown, DollarSign, Percent, Shield, PieChart, ArrowUpDown, Filter, Sparkles,
+  Layers, Gift, AlertTriangle, CheckCircle, Bell, Target, Activity, Lock, Droplets, Building2, Users, ChevronRight
+} from "lucide-react";
+import { AreaChart, Area, ResponsiveContainer, XAxis, YAxis, Tooltip, PieChart as RechartsPie, Pie, Cell } from "recharts";
 import { portfolioHistory, portfolioStats, mockTransactions } from "@/lib/mockData";
 import { DepositWithdrawDialog } from "./forms/DepositWithdrawDialog";
 import { SwapDialog } from "./forms/SwapDialog";
 import { EarnDialog } from "./forms/EarnDialog";
 import { useLivePortfolio, useAnimatedCounter } from "@/hooks/useLiveData";
+import { Progress } from "@/components/ui/progress";
+import { Badge } from "@/components/ui/badge";
 
+// Mock Soroban positions data
+const sorobanPositions = [
+  {
+    id: "soroswap-xlm-usdc",
+    protocol: "Soroswap",
+    type: "LP" as const,
+    pool: "XLM/USDC",
+    value: 4258.47,
+    change24h: 2.3,
+    share: 0.45,
+    lpTokens: 124.78,
+    tokenA: { symbol: "XLM", amount: 5240.78, value: 512.43 },
+    tokenB: { symbol: "USDC", amount: 3745.92, value: 3746.01 },
+    apr: 24.7,
+    dailyRewards: 2.89,
+    fees7d: 15.23,
+    impermanentLoss: -0.8,
+    risk: 3,
+    audited: true,
+    trending: true
+  },
+  {
+    id: "blend-usdc-lending",
+    protocol: "Blend",
+    type: "Lending" as const,
+    pool: "USDC Lending",
+    value: 12450.00,
+    change24h: 0.8,
+    supplied: 15000.00,
+    borrowed: 2550.00,
+    utilization: 17,
+    supplyApy: 3.2,
+    dailyYield: 1.31,
+    healthFactor: 2.8,
+    borrowApr: 5.7,
+    borrowLimit: 8500,
+    netApy: 1.8,
+    dailyNet: 0.74,
+    liquidationThreshold: 12750,
+    risk: 2,
+    audited: true,
+    trending: false
+  },
+  {
+    id: "aqua-staking",
+    protocol: "AQUA",
+    type: "Staking" as const,
+    pool: "AQUA Staking",
+    value: 8450.00,
+    change24h: 5.2,
+    staked: 125000,
+    votingPower: 1200000,
+    apr: 18.4,
+    dailyRewards: 4.26,
+    claimable: { amount: 2450, value: 98 },
+    activeVotes: 3,
+    votingRank: 245,
+    lockPeriod: 30,
+    unlocksIn: 12,
+    risk: 1,
+    audited: true,
+    trending: true
+  }
+];
+
+// Yield distribution data
+const yieldDistribution = [
+  { name: "Soroswap LP", value: 42, color: "#2962FF" },
+  { name: "Blend Lending", value: 28, color: "#00C853" },
+  { name: "AQUA Staking", value: 18, color: "#FF6D00" },
+  { name: "Other", value: 12, color: "#7C4DFF" }
+];
+
+// Risk exposure data
+const riskExposure = {
+  protocol: { high: 15, medium: 45, low: 40 },
+  assets: [
+    { name: "USDC", percentage: 40 },
+    { name: "XLM", percentage: 35 },
+    { name: "AQUA", percentage: 15 },
+    { name: "Other", percentage: 10 }
+  ]
+};
+
+// Protocol health data
+const protocolHealth = [
+  { name: "Soroswap", status: "operational" as const, detail: "Last block: 2s ago" },
+  { name: "Blend", status: "operational" as const, detail: "Utilization: 67%" },
+  { name: "AQUA", status: "warning" as const, detail: "Token: -8.2% (24h)" }
+];
+
+// Active alerts
+const activeAlerts = [
+  { id: 1, message: "APY dropped >5% on XLM/USDC pool", type: "warning" },
+  { id: 2, message: "Claimable rewards >$100", type: "info" }
+];
+
+// Helper functions
+const getRiskColor = (risk: number) => {
+  if (risk <= 2) return "text-success";
+  if (risk <= 3) return "text-warning";
+  return "text-destructive";
+};
+
+const getRiskLabel = (risk: number) => {
+  if (risk <= 2) return "Low";
+  if (risk <= 3) return "Medium";
+  return "High";
+};
+
+const getStatusIcon = (status: string) => {
+  if (status === "operational") return <CheckCircle className="w-3.5 h-3.5 text-success" />;
+  if (status === "warning") return <AlertTriangle className="w-3.5 h-3.5 text-warning" />;
+  return <Activity className="w-3.5 h-3.5 text-muted-foreground" />;
+};
+
+// Calculate totals
+const totalClaimable = sorobanPositions.reduce((acc, pos) => {
+  if (pos.type === "Staking" && pos.claimable) {
+    return acc + pos.claimable.value;
+  }
+  return acc;
+}, 0) + 325.87;
+
+const averageApy = sorobanPositions.reduce((acc, pos) => acc + (pos.apr || pos.supplyApy || 0), 0) / sorobanPositions.length;
+const monthlyYield = 423.87;
 const containerVariants = {
   hidden: { opacity: 0 },
   visible: {
@@ -341,6 +472,199 @@ export function PortfolioOverview() {
                   <p className="text-[10px] sm:text-xs md:text-small text-muted-foreground">No {activityFilter} transactions</p>
                 </div>
               )}
+            </div>
+          </motion.div>
+        </div>
+
+        {/* Claimable Rewards Banner */}
+        <motion.div variants={itemVariants} className="card-elevated p-3 sm:p-4 bg-gradient-to-r from-warning/10 via-transparent to-warning/10 border-warning/30">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-warning/20 flex items-center justify-center">
+                <Gift className="w-5 h-5 text-warning" />
+              </div>
+              <div>
+                <p className="font-medium text-foreground text-sm">Claimable Rewards Available</p>
+                <p className="text-xs text-muted-foreground">${totalClaimable.toFixed(2)} across {sorobanPositions.length} protocols</p>
+              </div>
+            </div>
+            <button className="px-4 py-2 bg-warning text-warning-foreground rounded-lg text-sm font-medium hover:bg-warning/90 transition-colors flex items-center gap-2">
+              <Gift className="w-4 h-4" />
+              Claim All
+            </button>
+          </div>
+        </motion.div>
+
+        {/* Soroban Protocol Positions */}
+        <motion.div variants={itemVariants} className="card-elevated p-3 sm:p-4 md:p-5">
+          <div className="flex items-center justify-between mb-3 md:mb-4">
+            <h3 className="text-xs sm:text-sm md:text-h3 font-semibold text-foreground flex items-center gap-2">
+              <Layers className="w-4 h-4 text-primary" />
+              Soroban Protocol Positions
+            </h3>
+            <div className="flex items-center gap-2">
+              <Badge variant="outline" className="text-[10px] bg-primary/10 text-primary border-primary/20">
+                {sorobanPositions.length} Active
+              </Badge>
+              <span className="text-xs text-muted-foreground">Avg APY: <span className="text-success font-medium">{averageApy.toFixed(1)}%</span></span>
+            </div>
+          </div>
+          
+          <div className="space-y-3">
+            {sorobanPositions.map((position) => (
+              <div key={position.id} className="p-3 rounded-xl border border-border/50 bg-background/50 hover:border-primary/30 transition-all">
+                {/* Protocol Header */}
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                      {position.type === "LP" && <Droplets className="w-4 h-4 text-primary" />}
+                      {position.type === "Lending" && <Building2 className="w-4 h-4 text-primary" />}
+                      {position.type === "Staking" && <Lock className="w-4 h-4 text-primary" />}
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-1.5">
+                        <span className="font-semibold text-sm text-foreground">{position.protocol}</span>
+                        {position.audited && <Badge variant="outline" className="text-[9px] px-1 py-0 bg-success/10 text-success border-success/20">🛡️</Badge>}
+                        {position.trending && <Badge variant="outline" className="text-[9px] px-1 py-0 bg-warning/10 text-warning border-warning/20">🔥</Badge>}
+                      </div>
+                      <span className="text-xs text-muted-foreground">{position.pool}</span>
+                    </div>
+                  </div>
+                  <Badge variant="outline" className={`text-[10px] ${getRiskColor(position.risk)}`}>
+                    {getRiskLabel(position.risk)} Risk
+                  </Badge>
+                </div>
+
+                {/* Position Details Grid */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-2">
+                  <div>
+                    <p className="text-[10px] text-muted-foreground">Value</p>
+                    <p className="text-sm font-bold font-mono">${position.value.toLocaleString()}</p>
+                    <span className={`text-[10px] ${position.change24h >= 0 ? 'text-success' : 'text-destructive'}`}>
+                      {position.change24h >= 0 ? '+' : ''}{position.change24h}%
+                    </span>
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-muted-foreground">{position.type === "Lending" ? "Net APY" : "APR"}</p>
+                    <p className="text-sm font-bold text-success">{position.type === "Lending" ? position.netApy : position.apr}%</p>
+                    <span className="text-[10px] text-muted-foreground">~${position.dailyRewards || position.dailyNet || position.dailyYield}/day</span>
+                  </div>
+                  {position.type === "LP" && (
+                    <>
+                      <div>
+                        <p className="text-[10px] text-muted-foreground">Pool Share</p>
+                        <p className="text-sm font-bold">{position.share}%</p>
+                        <span className="text-[10px] text-muted-foreground">Fees: ${position.fees7d}</span>
+                      </div>
+                      <div>
+                        <p className="text-[10px] text-muted-foreground">IL</p>
+                        <p className={`text-sm font-bold ${position.impermanentLoss < 0 ? 'text-destructive' : 'text-success'}`}>{position.impermanentLoss}%</p>
+                      </div>
+                    </>
+                  )}
+                  {position.type === "Lending" && (
+                    <>
+                      <div>
+                        <p className="text-[10px] text-muted-foreground">Health Factor</p>
+                        <p className={`text-sm font-bold ${position.healthFactor >= 2 ? 'text-success' : 'text-warning'}`}>{position.healthFactor}</p>
+                      </div>
+                      <div>
+                        <p className="text-[10px] text-muted-foreground">Utilization</p>
+                        <p className="text-sm font-bold">{position.utilization}%</p>
+                      </div>
+                    </>
+                  )}
+                  {position.type === "Staking" && (
+                    <>
+                      <div>
+                        <p className="text-[10px] text-muted-foreground">Claimable</p>
+                        <p className="text-sm font-bold text-warning">${position.claimable?.value}</p>
+                      </div>
+                      <div>
+                        <p className="text-[10px] text-muted-foreground">Unlocks</p>
+                        <p className="text-sm font-bold">{position.unlocksIn}d</p>
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </motion.div>
+
+        {/* Yield & Risk Row */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4 md:gap-6">
+          {/* Yield Distribution */}
+          <motion.div variants={itemVariants} className="card-elevated p-3 sm:p-4 md:p-5">
+            <h3 className="text-xs sm:text-sm md:text-h3 font-semibold text-foreground mb-3 flex items-center gap-2">
+              <PieChart className="w-4 h-4 text-primary" />
+              Yield Distribution
+            </h3>
+            <div className="flex items-center gap-4">
+              <div className="w-24 h-24 sm:w-28 sm:h-28">
+                <ResponsiveContainer width="100%" height="100%">
+                  <RechartsPie>
+                    <Pie data={yieldDistribution} cx="50%" cy="50%" innerRadius={25} outerRadius={45} paddingAngle={2} dataKey="value">
+                      {yieldDistribution.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Pie>
+                  </RechartsPie>
+                </ResponsiveContainer>
+              </div>
+              <div className="flex-1 space-y-1.5">
+                {yieldDistribution.map((item) => (
+                  <div key={item.name} className="flex items-center justify-between text-xs">
+                    <div className="flex items-center gap-1.5">
+                      <div className="w-2 h-2 rounded-full" style={{ backgroundColor: item.color }} />
+                      <span className="text-muted-foreground">{item.name}</span>
+                    </div>
+                    <span className="font-medium">{item.value}%</span>
+                  </div>
+                ))}
+                <div className="pt-1.5 border-t border-border/50 flex justify-between text-xs">
+                  <span className="text-muted-foreground">Monthly</span>
+                  <span className="font-bold text-success">${monthlyYield}</span>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Protocol Health */}
+          <motion.div variants={itemVariants} className="card-elevated p-3 sm:p-4 md:p-5">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-xs sm:text-sm md:text-h3 font-semibold text-foreground flex items-center gap-2">
+                <Activity className="w-4 h-4 text-primary" />
+                Protocol Health
+              </h3>
+              <Badge variant="outline" className="text-[10px] bg-warning/10 text-warning border-warning/20">
+                <Bell className="w-3 h-3 mr-1" />
+                {activeAlerts.length}
+              </Badge>
+            </div>
+            <div className="space-y-2">
+              {protocolHealth.map((protocol) => (
+                <div key={protocol.name} className="flex items-center justify-between p-2 rounded-lg bg-background/50 border border-border/30">
+                  <div className="flex items-center gap-2">
+                    {getStatusIcon(protocol.status)}
+                    <div>
+                      <p className="text-xs font-medium">{protocol.name}</p>
+                      <p className="text-[10px] text-muted-foreground">{protocol.detail}</p>
+                    </div>
+                  </div>
+                  <Badge variant="outline" className={`text-[9px] ${protocol.status === "operational" ? "bg-success/10 text-success border-success/20" : "bg-warning/10 text-warning border-warning/20"}`}>
+                    {protocol.status === "operational" ? "OK" : "Alert"}
+                  </Badge>
+                </div>
+              ))}
+            </div>
+            <div className="mt-2 pt-2 border-t border-border/50 space-y-1">
+              {activeAlerts.slice(0, 2).map((alert) => (
+                <div key={alert.id} className="flex items-start gap-1.5 text-[10px] text-muted-foreground">
+                  <AlertTriangle className="w-3 h-3 text-warning mt-0.5 flex-shrink-0" />
+                  <span>{alert.message}</span>
+                </div>
+              ))}
             </div>
           </motion.div>
         </div>
