@@ -15,33 +15,36 @@ import {
   Users,
   Wallet,
   Star,
+  Layers,
 } from "lucide-react";
 import { YieldOpportunity } from "@/lib/mockData";
+
+// Soroban Protocol type for ecosystem protocols
+export interface SorobanProtocol {
+  id: string;
+  name: string;
+  category: string;
+  tvl: number;
+  apy: number;
+  token: string;
+  audited: boolean;
+  users: string;
+  logo: string;
+}
+
+type ProtocolType = SorobanProtocol | YieldOpportunity;
 
 interface ProtocolDetailModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  protocol: YieldOpportunity | null;
+  protocol: ProtocolType | null;
   onInvest?: () => void;
 }
 
-const getRiskColor = (score: number) => {
-  if (score < 30) return "text-success";
-  if (score < 60) return "text-warning";
-  return "text-destructive";
-};
-
-const getRiskLabel = (score: number) => {
-  if (score < 30) return "Low";
-  if (score < 60) return "Medium";
-  return "High";
-};
-
-const getRiskBgColor = (score: number) => {
-  if (score < 30) return "bg-success/10 border-success/20";
-  if (score < 60) return "bg-warning/10 border-warning/20";
-  return "bg-destructive/10 border-destructive/20";
-};
+// Type guard to check if protocol is SorobanProtocol
+function isSorobanProtocol(protocol: ProtocolType): protocol is SorobanProtocol {
+  return 'name' in protocol && 'audited' in protocol && 'logo' in protocol;
+}
 
 export const ProtocolDetailModal = memo(({ 
   open, 
@@ -51,17 +54,28 @@ export const ProtocolDetailModal = memo(({
 }: ProtocolDetailModalProps) => {
   if (!protocol) return null;
 
+  const isSoroban = isSorobanProtocol(protocol);
+  
+  // Normalize data based on type
+  const displayName = isSoroban ? protocol.name : protocol.protocol;
+  const displayLogo = isSoroban ? protocol.logo : protocol.protocolLogo;
+  const displayCategory = protocol.category;
+  const displayToken = isSoroban ? protocol.token : protocol.asset;
+  const displayAudited = isSoroban ? protocol.audited : true;
+  const displayUsers = isSoroban ? protocol.users : '12.5K';
+  const displayChain = isSoroban ? 'Stellar / Soroban' : protocol.chain;
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-3">
             <div className="w-12 h-12 rounded-xl bg-secondary flex items-center justify-center text-2xl">
-              {protocol.protocolLogo}
+              {displayLogo}
             </div>
             <div>
-              <span>{protocol.protocol}</span>
-              <p className="text-sm text-muted-foreground font-normal capitalize">{protocol.category}</p>
+              <span>{displayName}</span>
+              <p className="text-sm text-muted-foreground font-normal capitalize">{displayCategory}</p>
             </div>
           </DialogTitle>
         </DialogHeader>
@@ -69,31 +83,43 @@ export const ProtocolDetailModal = memo(({
         <div className="space-y-4 mt-4">
           {/* Badges */}
           <div className="flex items-center gap-2 flex-wrap">
-            <Badge variant="outline" className="text-xs">{protocol.chain}</Badge>
-            <Badge variant="outline" className={`text-xs ${getRiskBgColor(protocol.riskScore)} ${getRiskColor(protocol.riskScore)}`}>
-              <Shield className="w-3 h-3 mr-1" />
-              {getRiskLabel(protocol.riskScore)} Risk
-            </Badge>
+            <Badge variant="outline" className="text-xs">{displayToken}</Badge>
+            {isSoroban && (
+              <Badge variant="secondary" className="text-xs">
+                <Layers className="w-3 h-3 mr-1" />
+                Soroban
+              </Badge>
+            )}
+            {displayAudited && (
+              <Badge variant="outline" className="text-xs bg-success/10 border-success/20 text-success">
+                <Shield className="w-3 h-3 mr-1" />
+                Audited
+              </Badge>
+            )}
           </div>
 
           {/* APY Card */}
-          <div className="p-4 bg-gradient-to-r from-success/10 to-success/5 rounded-lg border border-success/20">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground mb-1">Current APY</p>
-                <div className="flex items-center gap-2">
-                  <TrendingUp className="w-5 h-5 text-success" />
-                  <p className="text-3xl font-bold text-success">
-                    {protocol.apy.toFixed(1)}%
+          {protocol.apy > 0 && (
+            <div className="p-4 bg-gradient-to-r from-success/10 to-success/5 rounded-lg border border-success/20">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-muted-foreground mb-1">Current APY</p>
+                  <div className="flex items-center gap-2">
+                    <TrendingUp className="w-5 h-5 text-success" />
+                    <p className="text-3xl font-bold text-success">
+                      {protocol.apy.toFixed(1)}%
+                    </p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <p className="text-sm text-muted-foreground mb-1">Est. Daily ($10K)</p>
+                  <p className="text-lg font-mono font-medium text-success">
+                    +${((10000 * protocol.apy / 100) / 365).toFixed(2)}
                   </p>
                 </div>
               </div>
-              <div className="text-right">
-                <p className="text-sm text-muted-foreground mb-1">Asset</p>
-                <p className="text-lg font-medium text-foreground">{protocol.asset}</p>
-              </div>
             </div>
-          </div>
+          )}
 
           {/* Stats Grid */}
           <div className="grid grid-cols-2 gap-4">
@@ -103,7 +129,7 @@ export const ProtocolDetailModal = memo(({
                 <p className="text-xs text-muted-foreground">Total Value Locked</p>
               </div>
               <p className="text-lg font-mono font-medium text-foreground">
-                ${(protocol.tvl / 1000000).toFixed(1)}M
+                {protocol.tvl > 0 ? `$${(protocol.tvl / 1000000).toFixed(1)}M` : 'N/A'}
               </p>
             </div>
             <div className="p-3 bg-secondary/30 rounded-lg">
@@ -112,7 +138,7 @@ export const ProtocolDetailModal = memo(({
                 <p className="text-xs text-muted-foreground">Active Users</p>
               </div>
               <p className="text-lg font-mono font-medium text-foreground">
-                12.5K
+                {displayUsers}
               </p>
             </div>
           </div>
@@ -126,19 +152,21 @@ export const ProtocolDetailModal = memo(({
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Category</span>
-                <span className="capitalize text-foreground">{protocol.category}</span>
+                <span className="capitalize text-foreground">{displayCategory}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Asset/Token</span>
+                <span className="text-foreground">{displayToken}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Network</span>
-                <span className="text-foreground">{protocol.chain}</span>
+                <span className="text-foreground">{displayChain}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Risk Score</span>
-                <span className={getRiskColor(protocol.riskScore)}>{protocol.riskScore}/100</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Audit Status</span>
-                <span className="text-success">Verified</span>
+                <span className="text-muted-foreground">Security</span>
+                <span className={displayAudited ? "text-success" : "text-warning"}>
+                  {displayAudited ? "Audited ✓" : "Unaudited"}
+                </span>
               </div>
             </div>
           </div>
@@ -154,9 +182,11 @@ export const ProtocolDetailModal = memo(({
                 Visit Protocol
               </a>
             </Button>
-            <Button className="flex-1" onClick={() => { onInvest?.(); onOpenChange(false); }}>
-              Invest Now
-            </Button>
+            {protocol.apy > 0 && (
+              <Button className="flex-1" onClick={() => { onInvest?.(); onOpenChange(false); }}>
+                Invest Now
+              </Button>
+            )}
           </div>
         </div>
       </DialogContent>
