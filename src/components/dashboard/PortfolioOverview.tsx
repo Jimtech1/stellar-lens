@@ -2,9 +2,10 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   TrendingUp, TrendingDown, DollarSign, Percent, Shield, PieChart, ArrowUpDown, Filter, Sparkles,
-  Layers, Gift, AlertTriangle, CheckCircle, Bell, Target, Activity, Lock, Droplets, Building2, Users, ChevronRight
+  Layers, Gift, AlertTriangle, CheckCircle, Bell, Target, Activity, Lock, Droplets, Building2, Users, ChevronRight, BarChart3, Trophy
 } from "lucide-react";
 import { AreaChart, Area, ResponsiveContainer, XAxis, YAxis, Tooltip, PieChart as RechartsPie, Pie, Cell } from "recharts";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { portfolioHistory, portfolioStats, mockTransactions } from "@/lib/mockData";
 import { DepositWithdrawDialog } from "./forms/DepositWithdrawDialog";
 import { SwapDialog } from "./forms/SwapDialog";
@@ -108,6 +109,20 @@ const protocolHealth = [
 const activeAlerts = [
   { id: 1, message: "APY dropped >5% on XLM/USDC pool", type: "warning" },
   { id: 2, message: "Claimable rewards >$100", type: "info" }
+];
+
+// Performance comparison data
+const performanceComparison = [
+  { protocol: "Soroswap", type: "LP", yourApy: 24.7, avgApy: 22.3, rank: "Top 15%", rankColor: "text-success" },
+  { protocol: "Blend", type: "Supply", yourApy: 3.2, avgApy: 3.5, rank: "Average", rankColor: "text-muted-foreground" },
+  { protocol: "Blend", type: "Borrow", yourApy: 5.7, avgApy: 5.2, rank: "Top 25%", rankColor: "text-success" },
+  { protocol: "AQUA", type: "Stake", yourApy: 18.4, avgApy: 16.8, rank: "Top 10%", rankColor: "text-success" }
+];
+
+// Optimization opportunities
+const optimizationOpportunities = [
+  "Increase Blend supply for +0.8% APY boost",
+  "Rebalance XLM/USDC pool for +1.2% IL reduction"
 ];
 
 // Helper functions
@@ -668,6 +683,191 @@ export function PortfolioOverview() {
             </div>
           </motion.div>
         </div>
+
+        {/* Performance Comparison Table */}
+        <motion.div variants={itemVariants} className="card-elevated p-3 sm:p-4 md:p-5">
+          <div className="flex items-center justify-between mb-3 md:mb-4">
+            <h3 className="text-xs sm:text-sm md:text-h3 font-semibold text-foreground flex items-center gap-2">
+              <BarChart3 className="w-4 h-4 text-primary" />
+              Performance Comparison
+            </h3>
+            <Badge variant="outline" className="text-[10px] bg-primary/10 text-primary border-primary/20">
+              vs Market Average
+            </Badge>
+          </div>
+
+          {/* Desktop Table */}
+          <div className="hidden md:block overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow className="border-border/50">
+                  <TableHead className="text-xs text-muted-foreground h-10">Protocol</TableHead>
+                  <TableHead className="text-xs text-muted-foreground h-10">Type</TableHead>
+                  <TableHead className="text-xs text-muted-foreground h-10 text-right">Your APY</TableHead>
+                  <TableHead className="text-xs text-muted-foreground h-10 text-right">Avg APY</TableHead>
+                  <TableHead className="text-xs text-muted-foreground h-10 text-right">Rank</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {performanceComparison.map((item, index) => (
+                  <TableRow key={index} className="border-border/30 hover:bg-muted/30">
+                    <TableCell className="py-3 text-sm font-medium">{item.protocol}</TableCell>
+                    <TableCell className="py-3 text-sm text-muted-foreground">{item.type}</TableCell>
+                    <TableCell className="py-3 text-sm font-mono text-right text-success font-medium">{item.yourApy}%</TableCell>
+                    <TableCell className="py-3 text-sm font-mono text-right text-muted-foreground">{item.avgApy}%</TableCell>
+                    <TableCell className="py-3 text-right">
+                      <div className="flex items-center justify-end gap-1">
+                        {item.rank.includes("Top") && <Trophy className="w-3 h-3 text-warning" />}
+                        <span className={`text-sm font-medium ${item.rankColor}`}>{item.rank}</span>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+
+          {/* Mobile Cards */}
+          <div className="md:hidden space-y-2">
+            {performanceComparison.map((item, index) => (
+              <div key={index} className="p-3 rounded-lg bg-background/50 border border-border/30">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    <span className="font-medium text-sm">{item.protocol}</span>
+                    <Badge variant="outline" className="text-[9px]">{item.type}</Badge>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    {item.rank.includes("Top") && <Trophy className="w-3 h-3 text-warning" />}
+                    <span className={`text-xs font-medium ${item.rankColor}`}>{item.rank}</span>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between text-xs">
+                  <div>
+                    <span className="text-muted-foreground">Your APY: </span>
+                    <span className="font-mono text-success font-medium">{item.yourApy}%</span>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">Avg: </span>
+                    <span className="font-mono text-muted-foreground">{item.avgApy}%</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Optimization Opportunities */}
+          <div className="mt-3 pt-3 border-t border-border/50">
+            <div className="flex items-center gap-2 mb-2">
+              <Target className="w-3.5 h-3.5 text-primary" />
+              <span className="text-xs font-medium text-foreground">Optimization Opportunities</span>
+            </div>
+            <div className="space-y-1.5">
+              {optimizationOpportunities.map((opp, index) => (
+                <div key={index} className="flex items-start gap-2 text-[11px] text-muted-foreground">
+                  <ChevronRight className="w-3 h-3 text-primary mt-0.5 flex-shrink-0" />
+                  <span>{opp}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Risk Exposure Matrix */}
+        <motion.div variants={itemVariants} className="card-elevated p-3 sm:p-4 md:p-5">
+          <div className="flex items-center justify-between mb-3 md:mb-4">
+            <h3 className="text-xs sm:text-sm md:text-h3 font-semibold text-foreground flex items-center gap-2">
+              <Shield className="w-4 h-4 text-primary" />
+              Risk Exposure Matrix
+            </h3>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Protocol Risk Distribution */}
+            <div className="p-3 rounded-xl bg-background/50 border border-border/30">
+              <h4 className="text-xs font-medium text-foreground mb-3 flex items-center gap-2">
+                <AlertTriangle className="w-3.5 h-3.5 text-warning" />
+                Protocol Risk Distribution
+              </h4>
+              <div className="space-y-3">
+                <div>
+                  <div className="flex items-center justify-between text-xs mb-1">
+                    <span className="text-destructive font-medium">High Risk</span>
+                    <span className="font-mono">{riskExposure.protocol.high}%</span>
+                  </div>
+                  <Progress value={riskExposure.protocol.high} className="h-2 bg-muted" />
+                </div>
+                <div>
+                  <div className="flex items-center justify-between text-xs mb-1">
+                    <span className="text-warning font-medium">Medium Risk</span>
+                    <span className="font-mono">{riskExposure.protocol.medium}%</span>
+                  </div>
+                  <Progress value={riskExposure.protocol.medium} className="h-2 bg-muted" />
+                </div>
+                <div>
+                  <div className="flex items-center justify-between text-xs mb-1">
+                    <span className="text-success font-medium">Low Risk</span>
+                    <span className="font-mono">{riskExposure.protocol.low}%</span>
+                  </div>
+                  <Progress value={riskExposure.protocol.low} className="h-2 bg-muted" />
+                </div>
+              </div>
+              
+              {/* Smart Contract Exposure */}
+              <div className="mt-4 pt-3 border-t border-border/50">
+                <h5 className="text-[10px] text-muted-foreground uppercase tracking-wide mb-2">Smart Contract Exposure</h5>
+                <div className="flex items-center justify-between text-xs">
+                  <div className="flex items-center gap-1.5">
+                    <CheckCircle className="w-3 h-3 text-success" />
+                    <span>Audited</span>
+                  </div>
+                  <span className="font-mono text-success">92%</span>
+                </div>
+                <div className="flex items-center justify-between text-xs mt-1">
+                  <div className="flex items-center gap-1.5">
+                    <AlertTriangle className="w-3 h-3 text-warning" />
+                    <span>Beta</span>
+                  </div>
+                  <span className="font-mono text-warning">8%</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Asset Concentration */}
+            <div className="p-3 rounded-xl bg-background/50 border border-border/30">
+              <h4 className="text-xs font-medium text-foreground mb-3 flex items-center gap-2">
+                <PieChart className="w-3.5 h-3.5 text-primary" />
+                Asset Concentration
+              </h4>
+              <div className="space-y-2.5">
+                {riskExposure.assets.map((asset) => (
+                  <div key={asset.name}>
+                    <div className="flex items-center justify-between text-xs mb-1">
+                      <span className="font-medium">{asset.name}</span>
+                      <span className="font-mono text-muted-foreground">{asset.percentage}%</span>
+                    </div>
+                    <div className="h-2 bg-muted rounded-full overflow-hidden">
+                      <div 
+                        className="h-full bg-gradient-to-r from-primary to-primary/60 rounded-full transition-all"
+                        style={{ width: `${asset.percentage}%` }}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Concentration Warning */}
+              <div className="mt-4 pt-3 border-t border-border/50">
+                <div className="flex items-start gap-2 p-2 rounded-lg bg-warning/10 border border-warning/20">
+                  <AlertTriangle className="w-3.5 h-3.5 text-warning mt-0.5 flex-shrink-0" />
+                  <div>
+                    <p className="text-[10px] font-medium text-warning">Concentration Alert</p>
+                    <p className="text-[10px] text-muted-foreground">USDC exposure at 40% - consider diversifying</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </motion.div>
       </motion.div>
     </>
   );
