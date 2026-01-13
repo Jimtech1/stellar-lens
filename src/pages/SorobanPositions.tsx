@@ -110,7 +110,7 @@ export default function SorobanPositions() {
               </Link>
               <div className="flex items-center gap-2">
                 <Coins className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
-                <h1 className="text-base sm:text-xl font-bold text-foreground">Soroban Positions</h1>
+                <h1 className="text-base sm:text-xl font-bold text-foreground">Soroban Protocols</h1>
               </div>
             </div>
             <Link to="/dashboard">
@@ -146,7 +146,7 @@ export default function SorobanPositions() {
           <div className="relative w-full">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Search positions..."
+              placeholder="Search protocols..."
               value={searchQuery}
               onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
               className="pl-10"

@@ -361,7 +361,7 @@ export function TrendingSection() {
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <Coins className="w-5 h-5 text-primary" />
-              <h3 className="text-h3 font-semibold text-foreground">Soroban Smart Contract Positions</h3>
+              <h3 className="text-h3 font-semibold text-foreground">Soroban Smart Contract Protocols</h3>
               <Badge variant="secondary" className="text-tiny">Live</Badge>
             </div>
             <Link to="/soroban-positions">
