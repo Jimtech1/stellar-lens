@@ -6,20 +6,20 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { PoolDetailModal } from "@/components/dashboard/modals/PoolDetailModal";
 import { DAppDetailModal } from "@/components/dashboard/modals/DAppDetailModal";
-import { PositionDetailModal } from "@/components/dashboard/modals/PositionDetailModal";
+import { ProtocolDetailModal, SorobanProtocol } from "@/components/dashboard/modals/ProtocolDetailModal";
 import { AssetDetailModal } from "@/components/dashboard/modals/AssetDetailModal";
 import { Asset } from "@/lib/mockData";
 
 // Static data - moved outside component to prevent re-creation
-const initialSorobanPositions = [
-  { id: '1', contract: 'Blend Protocol', position: 'Lending', value: 12450.00, apy: 8.5, token: 'XLM-USDC' },
-  { id: '2', contract: 'Aquarius AMM', position: 'LP Provider', value: 8200.00, apy: 12.3, token: 'XLM-AQUA' },
-  { id: '3', contract: 'StellarSwap', position: 'Staking', value: 5600.00, apy: 6.8, token: 'SWAP' },
-  { id: '4', contract: 'Lumenswap Pool', position: 'LP Token Holder', value: 3890.00, apy: 15.2, token: 'LSP' },
-  { id: '5', contract: 'Ultra Capital', position: 'Lending', value: 7650.00, apy: 5.4, token: 'yUSDC' },
-  { id: '6', contract: 'Phoenix DeFi', position: 'Yield Farming', value: 4500.00, apy: 22.3, token: 'PHO' },
-  { id: '7', contract: 'Soroswap', position: 'Liquidity', value: 6780.00, apy: 11.8, token: 'SORO' },
-  { id: '8', contract: 'Mercury Indexer', position: 'Data Provider', value: 2100.00, apy: 4.2, token: 'MERC' },
+const sorobanProtocols = [
+  { id: '1', name: 'Blend Protocol', category: 'Lending', tvl: 15200000, apy: 8.5, token: 'BLND', audited: true, users: '12.5K', logo: '🔷' },
+  { id: '2', name: 'Aquarius', category: 'AMM/DEX', tvl: 45000000, apy: 12.3, token: 'AQUA', audited: true, users: '45.2K', logo: '🌊' },
+  { id: '3', name: 'Soroswap', category: 'AMM', tvl: 8500000, apy: 18.7, token: 'SORO', audited: true, users: '8.9K', logo: '⚡' },
+  { id: '4', name: 'Phoenix DeFi', category: 'Yield', tvl: 4200000, apy: 22.3, token: 'PHO', audited: false, users: '5.6K', logo: '🔥' },
+  { id: '5', name: 'Ultra Capital', category: 'Lending', tvl: 9400000, apy: 5.4, token: 'yUSDC', audited: true, users: '18K', logo: '💎' },
+  { id: '6', name: 'Mercury', category: 'Indexer', tvl: 0, apy: 0, token: 'MERC', audited: true, users: '8K', logo: '📊' },
+  { id: '7', name: 'Lumenswap', category: 'AMM', tvl: 6800000, apy: 15.2, token: 'LSP', audited: true, users: '32K', logo: '💧' },
+  { id: '8', name: 'StellarX', category: 'DEX', tvl: 12500000, apy: 5.8, token: 'XLM', audited: true, users: '85K', logo: '🌟' },
 ];
 
 const initialTrendingAssets = [
@@ -98,25 +98,40 @@ const NetworkAggregateCard = memo(({ item, formatValue }: { item: typeof initial
 
 NetworkAggregateCard.displayName = "NetworkAggregateCard";
 
-const PositionCard = memo(({ position, onClick }: { position: typeof initialSorobanPositions[0]; onClick: () => void }) => (
+const ProtocolCard = memo(({ protocol, onClick }: { protocol: typeof sorobanProtocols[0]; onClick: () => void }) => (
   <div className="card-elevated p-4 hover:shadow-card transition-all cursor-pointer" onClick={onClick}>
-    <div className="flex items-center justify-between mb-3">
-      <span className="text-small font-medium text-foreground">{position.contract}</span>
-      <Badge variant="outline" className="text-tiny">{position.position}</Badge>
+    <div className="flex items-center gap-3 mb-3">
+      <span className="text-2xl">{protocol.logo}</span>
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2">
+          <span className="text-small font-medium text-foreground truncate">{protocol.name}</span>
+          {protocol.audited && <Badge variant="secondary" className="text-tiny shrink-0">🛡️ Audited</Badge>}
+        </div>
+        <Badge variant="outline" className="text-tiny mt-1">{protocol.category}</Badge>
+      </div>
     </div>
-    <p className="text-h3 font-bold font-mono text-foreground mb-1">
-      ${position.value.toLocaleString(undefined, { maximumFractionDigits: 0 })}
-    </p>
-    <div className="flex items-center justify-between">
-      <span className="text-tiny text-muted-foreground">{position.token}</span>
-      <span className="text-tiny text-success">
-        {position.apy.toFixed(1)}% APY
-      </span>
+    <div className="grid grid-cols-2 gap-2 text-tiny">
+      <div>
+        <p className="text-muted-foreground">TVL</p>
+        <p className="font-mono font-medium text-foreground">
+          {protocol.tvl > 0 ? `$${(protocol.tvl / 1000000).toFixed(1)}M` : 'N/A'}
+        </p>
+      </div>
+      <div className="text-right">
+        <p className="text-muted-foreground">APY</p>
+        <p className="font-mono font-medium text-success">
+          {protocol.apy > 0 ? `${protocol.apy.toFixed(1)}%` : 'N/A'}
+        </p>
+      </div>
+    </div>
+    <div className="flex items-center justify-between mt-2 pt-2 border-t border-border">
+      <span className="text-tiny text-muted-foreground">{protocol.users} users</span>
+      <span className="text-tiny text-primary">{protocol.token}</span>
     </div>
   </div>
 ));
 
-PositionCard.displayName = "PositionCard";
+ProtocolCard.displayName = "ProtocolCard";
 
 const AssetRow = memo(({ asset, index, onClick }: { asset: typeof initialTrendingAssets[0], index: number, onClick: () => void }) => (
   <div className="p-4 flex items-center justify-between hover:bg-secondary/50 transition-colors cursor-pointer" onClick={onClick}>
@@ -199,7 +214,7 @@ DAppCard.displayName = "DAppCard";
 
 export function TrendingSection() {
   const [searchQuery, setSearchQuery] = useState('');
-  const [sorobanPositions, setSorobanPositions] = useState(initialSorobanPositions);
+  const [protocols, setProtocols] = useState(sorobanProtocols);
   const [trendingAssets, setTrendingAssets] = useState(initialTrendingAssets);
   const [newLiquidityPools, setNewLiquidityPools] = useState(initialLiquidityPools);
   const [networkAggregates, setNetworkAggregates] = useState(initialNetworkAggregates);
@@ -207,11 +222,11 @@ export function TrendingSection() {
   // Modal states
   const [selectedPool, setSelectedPool] = useState<typeof initialLiquidityPools[0] | null>(null);
   const [selectedDApp, setSelectedDApp] = useState<typeof emergingDApps[0] | null>(null);
-  const [selectedPosition, setSelectedPosition] = useState<typeof initialSorobanPositions[0] | null>(null);
+  const [selectedProtocol, setSelectedProtocol] = useState<SorobanProtocol | null>(null);
   const [selectedAsset, setSelectedAsset] = useState<Asset | null>(null);
   const [poolModalOpen, setPoolModalOpen] = useState(false);
   const [dappModalOpen, setDappModalOpen] = useState(false);
-  const [positionModalOpen, setPositionModalOpen] = useState(false);
+  const [protocolModalOpen, setProtocolModalOpen] = useState(false);
   const [assetModalOpen, setAssetModalOpen] = useState(false);
 
   const handleAssetClick = useCallback((asset: typeof initialTrendingAssets[0]) => {
@@ -234,10 +249,10 @@ export function TrendingSection() {
   // Optimized live data simulation with longer interval
   useEffect(() => {
     const interval = setInterval(() => {
-      setSorobanPositions(prev => prev.map(pos => ({
-        ...pos,
-        value: pos.value * (1 + (Math.random() - 0.48) * 0.02),
-        apy: Math.max(1, pos.apy + (Math.random() - 0.5) * 0.3)
+      setProtocols(prev => prev.map(protocol => ({
+        ...protocol,
+        tvl: protocol.tvl > 0 ? protocol.tvl * (1 + (Math.random() - 0.48) * 0.02) : 0,
+        apy: protocol.apy > 0 ? Math.max(1, protocol.apy + (Math.random() - 0.5) * 0.3) : 0
       })));
 
       setTrendingAssets(prev => prev.map(asset => ({
@@ -292,16 +307,10 @@ export function TrendingSection() {
         onOpenChange={setDappModalOpen}
         dapp={selectedDApp}
       />
-      <PositionDetailModal
-        open={positionModalOpen}
-        onOpenChange={setPositionModalOpen}
-        position={selectedPosition ? {
-          contract: selectedPosition.contract,
-          position: selectedPosition.position,
-          value: selectedPosition.value,
-          apy: selectedPosition.apy,
-          token: selectedPosition.token,
-        } : null}
+      <ProtocolDetailModal
+        open={protocolModalOpen}
+        onOpenChange={setProtocolModalOpen}
+        protocol={selectedProtocol}
       />
       <AssetDetailModal
         open={assetModalOpen}
@@ -371,13 +380,13 @@ export function TrendingSection() {
             </Link>
           </div>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {sorobanPositions.slice(0, 4).map((position) => (
-              <PositionCard 
-                key={position.id} 
-                position={position} 
+            {protocols.slice(0, 4).map((protocol) => (
+              <ProtocolCard 
+                key={protocol.id} 
+                protocol={protocol} 
                 onClick={() => {
-                  setSelectedPosition(position);
-                  setPositionModalOpen(true);
+                  setSelectedProtocol(protocol);
+                  setProtocolModalOpen(true);
                 }}
               />
             ))}

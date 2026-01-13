@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 
-type FavoriteType = 'positions' | 'assets' | 'pools' | 'dapps';
+type FavoriteType = 'positions' | 'protocols' | 'assets' | 'pools' | 'dapps';
 
 interface UseFavoritesReturn {
   favorites: string[];

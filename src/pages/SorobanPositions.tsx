@@ -1,12 +1,12 @@
 import { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
-import { ArrowLeft, Coins, Search, Filter, TrendingUp, ArrowUpRight, Heart } from "lucide-react";
+import { ArrowLeft, Coins, Search, Filter, TrendingUp, ArrowUpRight, Heart, Shield, Users } from "lucide-react";
 import { HoloLogo } from "@/components/HoloLogo";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { PositionDetailModal } from "@/components/dashboard/modals/PositionDetailModal";
+import { ProtocolDetailModal, SorobanProtocol } from "@/components/dashboard/modals/ProtocolDetailModal";
 import { FooterSection } from "@/components/landing/FooterSection";
 import { useFavorites } from "@/hooks/useFavorites";
 import {
@@ -18,86 +18,90 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination";
 
-const allPositions = [
-  { id: '1', contract: 'Blend Protocol', position: 'Lending', value: 12450.00, apy: 8.5, token: 'XLM-USDC', risk: 'Low', chain: 'Stellar' },
-  { id: '2', contract: 'Aquarius AMM', position: 'LP Provider', value: 8200.00, apy: 12.3, token: 'XLM-AQUA', risk: 'Medium', chain: 'Stellar' },
-  { id: '3', contract: 'StellarSwap', position: 'Staking', value: 5600.00, apy: 6.8, token: 'SWAP', risk: 'Low', chain: 'Stellar' },
-  { id: '4', contract: 'Lumenswap Pool', position: 'LP Token Holder', value: 3890.00, apy: 15.2, token: 'LSP', risk: 'Medium', chain: 'Stellar' },
-  { id: '5', contract: 'Ultra Capital', position: 'Lending', value: 7650.00, apy: 5.4, token: 'yUSDC', risk: 'Low', chain: 'Stellar' },
-  { id: '6', contract: 'Phoenix DeFi', position: 'Yield Farming', value: 4500.00, apy: 22.3, token: 'PHO', risk: 'High', chain: 'Stellar' },
-  { id: '7', contract: 'Soroswap', position: 'Liquidity', value: 6780.00, apy: 11.8, token: 'SORO', risk: 'Medium', chain: 'Stellar' },
-  { id: '8', contract: 'Mercury Indexer', position: 'Data Provider', value: 2100.00, apy: 4.2, token: 'MERC', risk: 'Low', chain: 'Stellar' },
-  { id: '9', contract: 'Stellar X', position: 'Market Making', value: 15200.00, apy: 9.5, token: 'XLM-BTC', risk: 'High', chain: 'Stellar' },
-  { id: '10', contract: 'AMM Prime', position: 'LP Provider', value: 9800.00, apy: 18.7, token: 'ETH-XLM', risk: 'Medium', chain: 'Stellar' },
-  { id: '11', contract: 'YieldVault', position: 'Staking', value: 4200.00, apy: 7.2, token: 'yXLM', risk: 'Low', chain: 'Stellar' },
-  { id: '12', contract: 'LiquidStake', position: 'Liquid Staking', value: 11500.00, apy: 6.1, token: 'stXLM', risk: 'Low', chain: 'Stellar' },
-  { id: '13', contract: 'DeFi Hub', position: 'Yield Aggregator', value: 8900.00, apy: 14.8, token: 'DHB', risk: 'Medium', chain: 'Stellar' },
-  { id: '14', contract: 'Nexus Protocol', position: 'Lending', value: 6700.00, apy: 10.2, token: 'NEX', risk: 'Medium', chain: 'Stellar' },
-  { id: '15', contract: 'Orbit Finance', position: 'Yield Farming', value: 3500.00, apy: 28.5, token: 'ORB', risk: 'High', chain: 'Stellar' },
-  { id: '16', contract: 'Nova Swap', position: 'LP Provider', value: 5200.00, apy: 16.3, token: 'NOVA', risk: 'Medium', chain: 'Stellar' },
-  { id: '17', contract: 'Stellar Vault', position: 'Staking', value: 7800.00, apy: 5.8, token: 'sVLT', risk: 'Low', chain: 'Stellar' },
-  { id: '18', contract: 'Anchor Protocol', position: 'Lending', value: 12100.00, apy: 8.9, token: 'ANC', risk: 'Low', chain: 'Stellar' },
-  { id: '19', contract: 'Gamma Finance', position: 'Options', value: 4800.00, apy: 35.2, token: 'GAM', risk: 'High', chain: 'Stellar' },
-  { id: '20', contract: 'Delta Labs', position: 'Perpetuals', value: 6200.00, apy: 24.1, token: 'DLT', risk: 'High', chain: 'Stellar' },
+const allProtocols: SorobanProtocol[] = [
+  { id: '1', name: 'Blend Protocol', category: 'Lending', tvl: 15200000, apy: 8.5, token: 'BLND', audited: true, users: '12.5K', logo: '🔷' },
+  { id: '2', name: 'Aquarius', category: 'AMM/DEX', tvl: 45000000, apy: 12.3, token: 'AQUA', audited: true, users: '45.2K', logo: '🌊' },
+  { id: '3', name: 'Soroswap', category: 'AMM', tvl: 8500000, apy: 18.7, token: 'SORO', audited: true, users: '8.9K', logo: '⚡' },
+  { id: '4', name: 'Phoenix DeFi', category: 'Yield', tvl: 4200000, apy: 22.3, token: 'PHO', audited: false, users: '5.6K', logo: '🔥' },
+  { id: '5', name: 'Ultra Capital', category: 'Lending', tvl: 9400000, apy: 5.4, token: 'yUSDC', audited: true, users: '18K', logo: '💎' },
+  { id: '6', name: 'Mercury', category: 'Indexer', tvl: 0, apy: 0, token: 'MERC', audited: true, users: '8K', logo: '📊' },
+  { id: '7', name: 'Lumenswap', category: 'AMM', tvl: 6800000, apy: 15.2, token: 'LSP', audited: true, users: '32K', logo: '💧' },
+  { id: '8', name: 'StellarX', category: 'DEX', tvl: 12500000, apy: 5.8, token: 'XLM', audited: true, users: '85K', logo: '🌟' },
+  { id: '9', name: 'Freighter', category: 'Wallet', tvl: 0, apy: 0, token: 'N/A', audited: true, users: '125K', logo: '🚀' },
+  { id: '10', name: 'Stellar Expert', category: 'Explorer', tvl: 0, apy: 0, token: 'N/A', audited: true, users: '85K', logo: '🔍' },
+  { id: '11', name: 'Lobstr', category: 'Wallet', tvl: 0, apy: 0, token: 'N/A', audited: true, users: '200K', logo: '🦞' },
+  { id: '12', name: 'Script3', category: 'Infrastructure', tvl: 0, apy: 0, token: 'N/A', audited: true, users: '5K', logo: '📜' },
+  { id: '13', name: 'Stellar Term', category: 'DEX', tvl: 3200000, apy: 4.2, token: 'XLM', audited: true, users: '15K', logo: '📈' },
+  { id: '14', name: 'FxDAO', category: 'Stablecoin', tvl: 2800000, apy: 6.8, token: 'FXD', audited: true, users: '3.2K', logo: '💰' },
+  { id: '15', name: 'Reflector', category: 'Oracle', tvl: 0, apy: 0, token: 'N/A', audited: true, users: '1.2K', logo: '🔮' },
+  { id: '16', name: 'Comet', category: 'AMM', tvl: 5600000, apy: 14.5, token: 'COMET', audited: true, users: '6.8K', logo: '☄️' },
+  { id: '17', name: 'Sep41', category: 'Token Standard', tvl: 0, apy: 0, token: 'N/A', audited: true, users: '10K', logo: '🔧' },
+  { id: '18', name: 'Passkey Kit', category: 'Auth', tvl: 0, apy: 0, token: 'N/A', audited: true, users: '2.5K', logo: '🔐' },
+  { id: '19', name: 'Allbridge', category: 'Bridge', tvl: 8900000, apy: 0, token: 'ABR', audited: true, users: '12K', logo: '🌉' },
+  { id: '20', name: 'Pendulum', category: 'Bridge', tvl: 4500000, apy: 0, token: 'PEN', audited: true, users: '4.5K', logo: '⏰' },
 ];
 
 const ITEMS_PER_PAGE = 8;
 
 export default function SorobanPositions() {
   const [searchQuery, setSearchQuery] = useState('');
-  const [sortBy, setSortBy] = useState('value');
-  const [filterRisk, setFilterRisk] = useState('all');
+  const [sortBy, setSortBy] = useState('tvl');
+  const [filterCategory, setFilterCategory] = useState('all');
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
-  const [selectedPosition, setSelectedPosition] = useState<typeof allPositions[0] | null>(null);
+  const [selectedProtocol, setSelectedProtocol] = useState<SorobanProtocol | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   
-  const { favorites, toggleFavorite, isFavorite } = useFavorites('positions');
+  const { favorites, toggleFavorite, isFavorite } = useFavorites('protocols');
 
-  const filteredPositions = useMemo(() => {
-    return allPositions
-      .filter(pos => {
-        const matchesSearch = pos.contract.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          pos.token.toLowerCase().includes(searchQuery.toLowerCase());
-        const matchesRisk = filterRisk === 'all' || pos.risk.toLowerCase() === filterRisk;
-        const matchesFavorites = !showFavoritesOnly || isFavorite(pos.id);
-        return matchesSearch && matchesRisk && matchesFavorites;
+  const categories = useMemo(() => {
+    const cats = new Set(allProtocols.map(p => p.category));
+    return ['all', ...Array.from(cats)];
+  }, []);
+
+  const filteredProtocols = useMemo(() => {
+    return allProtocols
+      .filter(protocol => {
+        const matchesSearch = protocol.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          protocol.token.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          protocol.category.toLowerCase().includes(searchQuery.toLowerCase());
+        const matchesCategory = filterCategory === 'all' || protocol.category === filterCategory;
+        const matchesFavorites = !showFavoritesOnly || isFavorite(protocol.id);
+        return matchesSearch && matchesCategory && matchesFavorites;
       })
       .sort((a, b) => {
-        if (sortBy === 'value') return b.value - a.value;
+        if (sortBy === 'tvl') return b.tvl - a.tvl;
         if (sortBy === 'apy') return b.apy - a.apy;
-        if (sortBy === 'name') return a.contract.localeCompare(b.contract);
+        if (sortBy === 'users') {
+          const parseUsers = (u: string) => parseFloat(u.replace('K', '')) * (u.includes('K') ? 1000 : 1);
+          return parseUsers(b.users) - parseUsers(a.users);
+        }
+        if (sortBy === 'name') return a.name.localeCompare(b.name);
         return 0;
       });
-  }, [searchQuery, filterRisk, sortBy, showFavoritesOnly, isFavorite]);
+  }, [searchQuery, filterCategory, sortBy, showFavoritesOnly, isFavorite]);
 
-  const totalPages = Math.ceil(filteredPositions.length / ITEMS_PER_PAGE);
-  const paginatedPositions = filteredPositions.slice(
+  const totalPages = Math.ceil(filteredProtocols.length / ITEMS_PER_PAGE);
+  const paginatedProtocols = filteredProtocols.slice(
     (currentPage - 1) * ITEMS_PER_PAGE,
     currentPage * ITEMS_PER_PAGE
   );
 
-  // Reset to page 1 when filters change
   const handleFilterChange = (setter: (val: string) => void, value: string) => {
     setter(value);
     setCurrentPage(1);
   };
 
-  const totalValue = allPositions.reduce((sum, pos) => sum + pos.value, 0);
-  const avgApy = allPositions.reduce((sum, pos) => sum + pos.apy, 0) / allPositions.length;
+  const totalTvl = allProtocols.reduce((sum, p) => sum + p.tvl, 0);
+  const avgApy = allProtocols.filter(p => p.apy > 0).reduce((sum, p, _, arr) => sum + p.apy / arr.length, 0);
+  const auditedCount = allProtocols.filter(p => p.audited).length;
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <PositionDetailModal
+      <ProtocolDetailModal
         open={modalOpen}
         onOpenChange={setModalOpen}
-        position={selectedPosition ? {
-          contract: selectedPosition.contract,
-          position: selectedPosition.position,
-          value: selectedPosition.value,
-          apy: selectedPosition.apy,
-          token: selectedPosition.token,
-        } : null}
+        protocol={selectedProtocol}
       />
 
       {/* Header */}
@@ -124,20 +128,23 @@ export default function SorobanPositions() {
         {/* Stats Overview */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">
           <div className="card-elevated p-3 sm:p-4">
-            <p className="text-tiny text-muted-foreground">Total Positions</p>
-            <p className="text-lg sm:text-h2 font-bold text-foreground">{allPositions.length}</p>
+            <p className="text-tiny text-muted-foreground">Total Protocols</p>
+            <p className="text-lg sm:text-h2 font-bold text-foreground">{allProtocols.length}</p>
           </div>
           <div className="card-elevated p-3 sm:p-4">
-            <p className="text-tiny text-muted-foreground">Total Value Locked</p>
-            <p className="text-lg sm:text-h2 font-bold text-foreground">${(totalValue / 1000).toFixed(1)}K</p>
+            <p className="text-tiny text-muted-foreground">Total TVL</p>
+            <p className="text-lg sm:text-h2 font-bold text-foreground">${(totalTvl / 1000000).toFixed(1)}M</p>
           </div>
           <div className="card-elevated p-3 sm:p-4">
             <p className="text-tiny text-muted-foreground">Average APY</p>
             <p className="text-lg sm:text-h2 font-bold text-success">{avgApy.toFixed(1)}%</p>
           </div>
           <div className="card-elevated p-3 sm:p-4">
-            <p className="text-tiny text-muted-foreground">Watchlist</p>
-            <p className="text-lg sm:text-h2 font-bold text-primary">{favorites.length}</p>
+            <div className="flex items-center gap-1">
+              <Shield className="w-3 h-3 text-success" />
+              <p className="text-tiny text-muted-foreground">Audited</p>
+            </div>
+            <p className="text-lg sm:text-h2 font-bold text-success">{auditedCount}/{allProtocols.length}</p>
           </div>
         </div>
 
@@ -158,21 +165,23 @@ export default function SorobanPositions() {
                 <SelectValue placeholder="Sort by" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="value">Value (High to Low)</SelectItem>
+                <SelectItem value="tvl">TVL (High to Low)</SelectItem>
                 <SelectItem value="apy">APY (High to Low)</SelectItem>
+                <SelectItem value="users">Users (High to Low)</SelectItem>
                 <SelectItem value="name">Name (A-Z)</SelectItem>
               </SelectContent>
             </Select>
-            <Select value={filterRisk} onValueChange={(v) => handleFilterChange(setFilterRisk, v)}>
+            <Select value={filterCategory} onValueChange={(v) => handleFilterChange(setFilterCategory, v)}>
               <SelectTrigger className="w-full">
                 <Filter className="w-4 h-4 mr-2 shrink-0" />
-                <SelectValue placeholder="Risk Level" />
+                <SelectValue placeholder="Category" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Risks</SelectItem>
-                <SelectItem value="low">Low Risk</SelectItem>
-                <SelectItem value="medium">Medium Risk</SelectItem>
-                <SelectItem value="high">High Risk</SelectItem>
+                {categories.map(cat => (
+                  <SelectItem key={cat} value={cat}>
+                    {cat === 'all' ? 'All Categories' : cat}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
             <Button
@@ -186,47 +195,58 @@ export default function SorobanPositions() {
           </div>
         </div>
 
-        {/* Positions Grid */}
+        {/* Protocols Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
-          {paginatedPositions.map((position) => (
+          {paginatedProtocols.map((protocol) => (
             <div
-              key={position.id}
+              key={protocol.id}
               className="card-elevated p-3 sm:p-4 hover:shadow-card transition-all cursor-pointer relative"
               onClick={() => {
-                setSelectedPosition(position);
+                setSelectedProtocol(protocol);
                 setModalOpen(true);
               }}
             >
               <button
                 onClick={(e) => {
                   e.stopPropagation();
-                  toggleFavorite(position.id);
+                  toggleFavorite(protocol.id);
                 }}
                 className="absolute top-2 right-2 p-1.5 rounded-full hover:bg-secondary transition-colors"
               >
-                <Heart className={`w-4 h-4 ${isFavorite(position.id) ? 'fill-primary text-primary' : 'text-muted-foreground'}`} />
+                <Heart className={`w-4 h-4 ${isFavorite(protocol.id) ? 'fill-primary text-primary' : 'text-muted-foreground'}`} />
               </button>
-              <div className="flex items-center justify-between mb-2 sm:mb-3 pr-8">
-                <span className="text-small font-medium text-foreground truncate mr-2">{position.contract}</span>
-                <Badge variant="outline" className="text-tiny shrink-0">{position.position}</Badge>
+              
+              <div className="flex items-center gap-3 mb-3 pr-8">
+                <span className="text-2xl">{protocol.logo}</span>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <span className="text-small font-medium text-foreground truncate">{protocol.name}</span>
+                    {protocol.audited && <Shield className="w-3 h-3 text-success shrink-0" />}
+                  </div>
+                  <Badge variant="outline" className="text-tiny mt-1">{protocol.category}</Badge>
+                </div>
               </div>
-              <p className="text-lg sm:text-h3 font-bold font-mono text-foreground mb-2">
-                ${position.value.toLocaleString(undefined, { maximumFractionDigits: 0 })}
-              </p>
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-tiny text-muted-foreground">{position.token}</span>
-                <span className="text-tiny text-success flex items-center gap-1">
-                  <TrendingUp className="w-3 h-3" />
-                  {position.apy.toFixed(1)}% APY
-                </span>
+              
+              <div className="grid grid-cols-2 gap-2 text-tiny mb-2">
+                <div>
+                  <p className="text-muted-foreground">TVL</p>
+                  <p className="font-mono font-medium text-foreground">
+                    {protocol.tvl > 0 ? `$${(protocol.tvl / 1000000).toFixed(1)}M` : 'N/A'}
+                  </p>
+                </div>
+                <div className="text-right">
+                  <p className="text-muted-foreground">APY</p>
+                  <p className={`font-mono font-medium ${protocol.apy > 0 ? 'text-success' : 'text-muted-foreground'}`}>
+                    {protocol.apy > 0 ? `${protocol.apy.toFixed(1)}%` : 'N/A'}
+                  </p>
+                </div>
               </div>
-              <div className="flex items-center justify-between">
-                <Badge 
-                  variant={position.risk === 'Low' ? 'default' : position.risk === 'Medium' ? 'secondary' : 'destructive'}
-                  className="text-tiny"
-                >
-                  {position.risk} Risk
-                </Badge>
+              
+              <div className="flex items-center justify-between pt-2 border-t border-border">
+                <div className="flex items-center gap-1 text-tiny text-muted-foreground">
+                  <Users className="w-3 h-3" />
+                  <span>{protocol.users}</span>
+                </div>
                 <span className="text-tiny text-primary flex items-center gap-1">
                   View <ArrowUpRight className="w-3 h-3" />
                 </span>
@@ -235,10 +255,10 @@ export default function SorobanPositions() {
           ))}
         </div>
 
-        {filteredPositions.length === 0 && (
+        {filteredProtocols.length === 0 && (
           <div className="text-center py-12">
             <p className="text-muted-foreground">
-              {showFavoritesOnly ? "No positions in your watchlist yet." : "No positions found matching your criteria."}
+              {showFavoritesOnly ? "No protocols in your watchlist yet." : "No protocols found matching your criteria."}
             </p>
           </div>
         )}
