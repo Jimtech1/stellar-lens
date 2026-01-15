@@ -16,6 +16,10 @@ import {
   Wallet,
   Star,
   Layers,
+  Coins,
+  Droplets,
+  Landmark,
+  ArrowRightLeft,
 } from "lucide-react";
 import { YieldOpportunity } from "@/lib/mockData";
 
@@ -171,22 +175,64 @@ export const ProtocolDetailModal = memo(({
             </div>
           </div>
 
-          {/* Actions */}
-          <div className="flex gap-2 pt-2">
-            <Button variant="outline" size="icon">
-              <Star className="w-4 h-4" />
-            </Button>
-            <Button variant="outline" className="flex-1" asChild>
-              <a href="#" target="_blank" rel="noopener noreferrer">
-                <ExternalLink className="w-4 h-4 mr-2" />
-                Visit Protocol
-              </a>
-            </Button>
-            {protocol.apy > 0 && (
-              <Button className="flex-1" onClick={() => { onInvest?.(); onOpenChange(false); }}>
-                Invest Now
+          {/* Protocol-Specific Actions */}
+          <div className="space-y-2 pt-2">
+            <div className="flex gap-2">
+              <Button variant="outline" size="icon">
+                <Star className="w-4 h-4" />
               </Button>
-            )}
+              <Button variant="outline" className="flex-1" asChild>
+                <a href="#" target="_blank" rel="noopener noreferrer">
+                  <ExternalLink className="w-4 h-4 mr-2" />
+                  Visit Protocol
+                </a>
+              </Button>
+            </div>
+            
+            {/* Category-Specific Action Buttons */}
+            <div className="grid grid-cols-2 gap-2">
+              {displayCategory === 'dex' && (
+                <>
+                  <Button variant="secondary" onClick={() => { onInvest?.(); onOpenChange(false); }}>
+                    <Droplets className="w-4 h-4 mr-2" />
+                    Provide Liquidity
+                  </Button>
+                  <Button variant="secondary" onClick={() => onOpenChange(false)}>
+                    <ArrowRightLeft className="w-4 h-4 mr-2" />
+                    Swap
+                  </Button>
+                </>
+              )}
+              {displayCategory === 'lending' && (
+                <>
+                  <Button variant="secondary" onClick={() => { onInvest?.(); onOpenChange(false); }}>
+                    <Landmark className="w-4 h-4 mr-2" />
+                    Lend Assets
+                  </Button>
+                  <Button variant="secondary" onClick={() => onOpenChange(false)}>
+                    <Wallet className="w-4 h-4 mr-2" />
+                    Borrow
+                  </Button>
+                </>
+              )}
+              {displayCategory === 'staking' && (
+                <>
+                  <Button variant="secondary" onClick={() => { onInvest?.(); onOpenChange(false); }}>
+                    <Coins className="w-4 h-4 mr-2" />
+                    Stake
+                  </Button>
+                  <Button variant="secondary" onClick={() => onOpenChange(false)}>
+                    <TrendingUp className="w-4 h-4 mr-2" />
+                    Claim Rewards
+                  </Button>
+                </>
+              )}
+              {!['dex', 'lending', 'staking'].includes(displayCategory) && protocol.apy > 0 && (
+                <Button className="col-span-2" onClick={() => { onInvest?.(); onOpenChange(false); }}>
+                  Invest Now
+                </Button>
+              )}
+            </div>
           </div>
         </div>
       </DialogContent>

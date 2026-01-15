@@ -27,9 +27,11 @@ import {
   LineChart,
   Line,
 } from "recharts";
-import { TrendingUp, TrendingDown, Activity, DollarSign, Percent, Calendar, Download, Bell } from "lucide-react";
+import { TrendingUp, TrendingDown, Activity, DollarSign, Percent, Calendar, Download, Bell, Shield, Zap, Clock, Target, Flame, Layers, BarChart3 } from "lucide-react";
 import { useState } from "react";
 import { PriceAlertDialog } from "./forms/PriceAlertDialog";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
 
 const portfolioPerformance = [
   { month: "Jan", value: 42000, benchmark: 40000 },
@@ -71,10 +73,55 @@ const chainActivity = [
   { chain: "Arbitrum", transactions: 23, volume: 4500 },
 ];
 
+// Protocol Performance Data
+const protocolPerformance = [
+  { protocol: "Soroswap", logo: "🔄", category: "DEX", yourApy: 12.5, avgApy: 8.2, rank: 1, tvl: 4200000, trend: "up" },
+  { protocol: "Blend", logo: "💧", category: "Lending", yourApy: 9.8, avgApy: 7.5, rank: 3, tvl: 3800000, trend: "up" },
+  { protocol: "AQUA Staking", logo: "🌊", category: "Staking", yourApy: 15.2, avgApy: 12.1, rank: 2, tvl: 2500000, trend: "up" },
+  { protocol: "Phoenix DeFi", logo: "🔥", category: "DEX", yourApy: 8.1, avgApy: 9.2, rank: 5, tvl: 1800000, trend: "down" },
+  { protocol: "Lumenswap", logo: "✨", category: "DEX", yourApy: 7.4, avgApy: 6.8, rank: 4, tvl: 1200000, trend: "up" },
+];
+
+// Risk Metrics Data
+const riskMetrics = [
+  { label: "Smart Contract Risk", value: 25, color: "hsl(var(--success))", description: "Low exposure to unaudited contracts" },
+  { label: "Impermanent Loss", value: 42, color: "hsl(40, 90%, 50%)", description: "Moderate IL from LP positions" },
+  { label: "Liquidity Risk", value: 18, color: "hsl(var(--success))", description: "High liquidity across positions" },
+  { label: "Protocol Concentration", value: 35, color: "hsl(40, 90%, 50%)", description: "Diversified across 5 protocols" },
+];
+
+// Gas & Fee Analytics
+const gasAnalytics = [
+  { month: "Jan", fees: 12.5, avgNetwork: 18.2 },
+  { month: "Feb", fees: 15.2, avgNetwork: 22.4 },
+  { month: "Mar", fees: 8.9, avgNetwork: 14.6 },
+  { month: "Apr", fees: 11.3, avgNetwork: 16.8 },
+  { month: "May", fees: 9.7, avgNetwork: 15.2 },
+  { month: "Jun", fees: 14.1, avgNetwork: 19.5 },
+];
+
+// Top Performing Assets
+const topAssets = [
+  { asset: "XLM", logo: "⭐", return30d: 18.5, return7d: 4.2, volume: 125000, volatility: "Medium" },
+  { asset: "USDC", logo: "💵", return30d: 0.1, return7d: 0.02, volume: 890000, volatility: "Low" },
+  { asset: "yXLM", logo: "🌟", return30d: 22.3, return7d: 5.8, volume: 45000, volatility: "High" },
+  { asset: "AQUA", logo: "🌊", return30d: 15.2, return7d: -2.1, volume: 67000, volatility: "High" },
+];
+
+// DeFi Health Score Components
+const healthScoreComponents = [
+  { metric: "Diversification", score: 85, icon: Layers },
+  { metric: "Liquidity", score: 92, icon: Zap },
+  { metric: "Security", score: 78, icon: Shield },
+  { metric: "Yield Efficiency", score: 88, icon: Target },
+];
+
 const chartConfig = {
   value: { label: "Portfolio", color: "hsl(var(--primary))" },
   benchmark: { label: "Benchmark", color: "hsl(var(--muted-foreground))" },
   earnings: { label: "Earnings", color: "hsl(var(--success))" },
+  fees: { label: "Your Fees", color: "hsl(var(--primary))" },
+  avgNetwork: { label: "Network Avg", color: "hsl(var(--muted-foreground))" },
 };
 
 export function AnalyticsView() {
@@ -342,6 +389,218 @@ export function AnalyticsView() {
                   </div>
                 </div>
               ))}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Protocol Performance Comparison */}
+      <Card>
+        <CardHeader className="pb-2 md:pb-4">
+          <CardTitle className="text-sm md:text-base font-medium flex items-center gap-2">
+            <BarChart3 className="w-4 h-4 text-primary" />
+            Protocol Performance
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {/* Desktop Table */}
+          <div className="hidden md:block overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-border">
+                  <th className="text-left py-2 text-muted-foreground font-medium">Protocol</th>
+                  <th className="text-right py-2 text-muted-foreground font-medium">Your APY</th>
+                  <th className="text-right py-2 text-muted-foreground font-medium">Avg APY</th>
+                  <th className="text-right py-2 text-muted-foreground font-medium">Rank</th>
+                  <th className="text-right py-2 text-muted-foreground font-medium">TVL</th>
+                </tr>
+              </thead>
+              <tbody>
+                {protocolPerformance.map((p) => (
+                  <tr key={p.protocol} className="border-b border-border/50">
+                    <td className="py-3">
+                      <div className="flex items-center gap-2">
+                        <span className="text-lg">{p.logo}</span>
+                        <div>
+                          <p className="font-medium text-foreground">{p.protocol}</p>
+                          <p className="text-xs text-muted-foreground">{p.category}</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="text-right py-3">
+                      <span className={`font-mono font-medium ${p.yourApy > p.avgApy ? 'text-success' : 'text-warning'}`}>
+                        {p.yourApy}%
+                      </span>
+                    </td>
+                    <td className="text-right py-3 font-mono text-muted-foreground">{p.avgApy}%</td>
+                    <td className="text-right py-3">
+                      <Badge variant={p.rank <= 2 ? "default" : "secondary"} className="text-xs">
+                        #{p.rank}
+                      </Badge>
+                    </td>
+                    <td className="text-right py-3 font-mono text-foreground">
+                      ${(p.tvl / 1000000).toFixed(1)}M
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          {/* Mobile Cards */}
+          <div className="md:hidden space-y-3">
+            {protocolPerformance.map((p) => (
+              <div key={p.protocol} className="p-3 bg-muted/50 rounded-lg">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg">{p.logo}</span>
+                    <div>
+                      <p className="text-sm font-medium text-foreground">{p.protocol}</p>
+                      <p className="text-xs text-muted-foreground">{p.category}</p>
+                    </div>
+                  </div>
+                  <Badge variant={p.rank <= 2 ? "default" : "secondary"} className="text-xs">
+                    #{p.rank}
+                  </Badge>
+                </div>
+                <div className="grid grid-cols-3 gap-2 text-xs">
+                  <div>
+                    <p className="text-muted-foreground">Your APY</p>
+                    <p className={`font-mono font-medium ${p.yourApy > p.avgApy ? 'text-success' : 'text-warning'}`}>
+                      {p.yourApy}%
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground">Avg APY</p>
+                    <p className="font-mono text-foreground">{p.avgApy}%</p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground">TVL</p>
+                    <p className="font-mono text-foreground">${(p.tvl / 1000000).toFixed(1)}M</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Risk & Health Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
+        {/* Risk Exposure */}
+        <Card>
+          <CardHeader className="pb-2 md:pb-4">
+            <CardTitle className="text-sm md:text-base font-medium flex items-center gap-2">
+              <Shield className="w-4 h-4 text-primary" />
+              Risk Exposure
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {riskMetrics.map((risk) => (
+                <div key={risk.label}>
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-xs md:text-sm text-foreground">{risk.label}</span>
+                    <span className="text-xs font-mono" style={{ color: risk.color }}>
+                      {risk.value}%
+                    </span>
+                  </div>
+                  <Progress value={risk.value} className="h-2" />
+                  <p className="text-[10px] text-muted-foreground mt-1">{risk.description}</p>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* DeFi Health Score */}
+        <Card>
+          <CardHeader className="pb-2 md:pb-4">
+            <CardTitle className="text-sm md:text-base font-medium flex items-center gap-2">
+              <Flame className="w-4 h-4 text-primary" />
+              DeFi Health Score
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-center mb-4">
+              <div className="inline-flex items-center justify-center w-20 h-20 md:w-24 md:h-24 rounded-full bg-success/10 border-4 border-success">
+                <span className="text-2xl md:text-3xl font-bold text-success">86</span>
+              </div>
+              <p className="text-xs text-muted-foreground mt-2">Excellent Health</p>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              {healthScoreComponents.map((item) => (
+                <div key={item.metric} className="p-2 bg-muted/50 rounded-lg text-center">
+                  <item.icon className="w-4 h-4 mx-auto mb-1 text-primary" />
+                  <p className="text-lg font-mono font-medium text-foreground">{item.score}</p>
+                  <p className="text-[10px] text-muted-foreground">{item.metric}</p>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Top Assets & Gas Analytics */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
+        {/* Top Performing Assets */}
+        <Card>
+          <CardHeader className="pb-2 md:pb-4">
+            <CardTitle className="text-sm md:text-base font-medium flex items-center gap-2">
+              <TrendingUp className="w-4 h-4 text-success" />
+              Top Performing Assets
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {topAssets.map((asset) => (
+                <div key={asset.asset} className="flex items-center justify-between p-2 md:p-3 bg-muted/50 rounded-lg">
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg">{asset.logo}</span>
+                    <div>
+                      <p className="text-xs md:text-sm font-medium text-foreground">{asset.asset}</p>
+                      <Badge variant="outline" className="text-[10px]">{asset.volatility}</Badge>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className={`text-xs md:text-sm font-mono font-medium ${asset.return30d >= 0 ? 'text-success' : 'text-destructive'}`}>
+                      {asset.return30d >= 0 ? '+' : ''}{asset.return30d}%
+                    </p>
+                    <p className="text-[10px] text-muted-foreground">30d return</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Gas & Fee Analytics */}
+        <Card>
+          <CardHeader className="pb-2 md:pb-4">
+            <CardTitle className="text-sm md:text-base font-medium flex items-center gap-2">
+              <Clock className="w-4 h-4 text-primary" />
+              Fee Analytics
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ChartContainer config={chartConfig} className="h-[140px] md:h-[180px] w-full">
+              <LineChart data={gasAnalytics}>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" fontSize={9} tickMargin={4} />
+                <YAxis stroke="hsl(var(--muted-foreground))" fontSize={9} tickFormatter={(v) => `$${v}`} width={35} />
+                <ChartTooltip content={<ChartTooltipContent />} />
+                <Line type="monotone" dataKey="fees" stroke="hsl(var(--primary))" strokeWidth={2} dot={false} />
+                <Line type="monotone" dataKey="avgNetwork" stroke="hsl(var(--muted-foreground))" strokeWidth={1.5} strokeDasharray="4 4" dot={false} />
+              </LineChart>
+            </ChartContainer>
+            <div className="flex items-center justify-center gap-4 mt-2 text-xs">
+              <div className="flex items-center gap-1">
+                <div className="w-3 h-0.5 bg-primary rounded" />
+                <span className="text-muted-foreground">Your Fees</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <div className="w-3 h-0.5 bg-muted-foreground rounded" style={{ borderStyle: 'dashed' }} />
+                <span className="text-muted-foreground">Network Avg</span>
+              </div>
             </div>
           </CardContent>
         </Card>
