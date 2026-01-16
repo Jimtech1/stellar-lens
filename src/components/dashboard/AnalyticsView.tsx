@@ -27,11 +27,12 @@ import {
   LineChart,
   Line,
 } from "recharts";
-import { TrendingUp, TrendingDown, Activity, DollarSign, Percent, Calendar, Download, Bell, Shield, Zap, Clock, Target, Flame, Layers, BarChart3 } from "lucide-react";
+import { TrendingUp, TrendingDown, Activity, DollarSign, Percent, Calendar, Download, Bell, Shield, Zap, Clock, Target, Flame, Layers, BarChart3, ArrowUpRight, ArrowDownRight, RefreshCw, AlertTriangle, Sliders } from "lucide-react";
 import { useState } from "react";
 import { PriceAlertDialog } from "./forms/PriceAlertDialog";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import { Slider } from "@/components/ui/slider";
 
 const portfolioPerformance = [
   { month: "Jan", value: 42000, benchmark: 40000 },
@@ -116,6 +117,108 @@ const healthScoreComponents = [
   { metric: "Yield Efficiency", score: 88, icon: Target },
 ];
 
+// Historical Trends Data
+const historicalTrends = [
+  { 
+    metric: "Portfolio Value", 
+    current: 54500, 
+    wow: 4.8, 
+    mom: 12.3, 
+    icon: DollarSign,
+    format: "currency"
+  },
+  { 
+    metric: "Total Yield", 
+    current: 520.80, 
+    wow: 8.2, 
+    mom: 18.5, 
+    icon: TrendingUp,
+    format: "currency"
+  },
+  { 
+    metric: "Average APY", 
+    current: 8.45, 
+    wow: 0.3, 
+    mom: 1.2, 
+    icon: Percent,
+    format: "percentage"
+  },
+  { 
+    metric: "Active Positions", 
+    current: 12, 
+    wow: 2, 
+    mom: 4, 
+    icon: Layers,
+    format: "number"
+  },
+  { 
+    metric: "Transaction Volume", 
+    current: 28500, 
+    wow: -3.2, 
+    mom: 15.7, 
+    icon: Activity,
+    format: "currency"
+  },
+  { 
+    metric: "Gas Spent", 
+    current: 14.1, 
+    wow: -12.5, 
+    mom: -8.3, 
+    icon: Flame,
+    format: "currency"
+  },
+];
+
+// Rebalancing Suggestions based on risk tolerance
+const getRebalancingSuggestions = (riskTolerance: number) => {
+  if (riskTolerance <= 33) {
+    // Conservative
+    return {
+      profile: "Conservative",
+      description: "Focus on stability and capital preservation with lower-volatility assets",
+      suggestions: [
+        { asset: "USDC", current: 25, suggested: 45, action: "increase", reason: "Stable yield with minimal risk" },
+        { asset: "XLM", current: 35, suggested: 25, action: "decrease", reason: "Reduce volatile asset exposure" },
+        { asset: "yXLM", current: 10, suggested: 15, action: "increase", reason: "Liquid staking for steady returns" },
+        { asset: "ETH (Bridged)", current: 20, suggested: 10, action: "decrease", reason: "High volatility exposure" },
+        { asset: "BTC (Bridged)", current: 10, suggested: 5, action: "decrease", reason: "Reduce crypto market exposure" },
+      ],
+      expectedApy: 5.8,
+      riskScore: 22,
+    };
+  } else if (riskTolerance <= 66) {
+    // Balanced
+    return {
+      profile: "Balanced",
+      description: "Optimal mix of growth and stability for moderate risk appetite",
+      suggestions: [
+        { asset: "XLM", current: 35, suggested: 30, action: "decrease", reason: "Slight reduction for balance" },
+        { asset: "USDC", current: 25, suggested: 25, action: "maintain", reason: "Maintain stable base" },
+        { asset: "ETH (Bridged)", current: 20, suggested: 20, action: "maintain", reason: "Good growth potential" },
+        { asset: "yXLM", current: 10, suggested: 15, action: "increase", reason: "Optimize yield returns" },
+        { asset: "AQUA LP", current: 0, suggested: 10, action: "add", reason: "LP rewards opportunity" },
+      ],
+      expectedApy: 8.4,
+      riskScore: 45,
+    };
+  } else {
+    // Aggressive
+    return {
+      profile: "Aggressive",
+      description: "Maximize growth potential with higher risk tolerance",
+      suggestions: [
+        { asset: "XLM", current: 35, suggested: 40, action: "increase", reason: "Core Stellar ecosystem exposure" },
+        { asset: "yXLM", current: 10, suggested: 20, action: "increase", reason: "High yield staking position" },
+        { asset: "USDC", current: 25, suggested: 10, action: "decrease", reason: "Reduce low-yield allocation" },
+        { asset: "AQUA LP", current: 0, suggested: 15, action: "add", reason: "High APY LP opportunities" },
+        { asset: "Phoenix LP", current: 0, suggested: 15, action: "add", reason: "New protocol incentives" },
+      ],
+      expectedApy: 14.2,
+      riskScore: 72,
+    };
+  }
+};
+
 const chartConfig = {
   value: { label: "Portfolio", color: "hsl(var(--primary))" },
   benchmark: { label: "Benchmark", color: "hsl(var(--muted-foreground))" },
@@ -127,6 +230,20 @@ const chartConfig = {
 export function AnalyticsView() {
   const [timeframe, setTimeframe] = useState("6m");
   const [priceAlertOpen, setPriceAlertOpen] = useState(false);
+  const [riskTolerance, setRiskTolerance] = useState([50]);
+  
+  const rebalancingSuggestions = getRebalancingSuggestions(riskTolerance[0]);
+  
+  const formatValue = (value: number, format: string) => {
+    switch (format) {
+      case "currency":
+        return `$${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+      case "percentage":
+        return `${value}%`;
+      default:
+        return value.toString();
+    }
+  };
 
   return (
     <>
@@ -229,6 +346,199 @@ export function AnalyticsView() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Historical Trends - WoW & MoM Comparisons */}
+      <Card>
+        <CardHeader className="pb-2 md:pb-4">
+          <CardTitle className="text-sm md:text-base font-medium flex items-center gap-2">
+            <Clock className="w-4 h-4 text-primary" />
+            Historical Trends
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {/* Desktop Grid */}
+          <div className="hidden md:grid md:grid-cols-3 lg:grid-cols-6 gap-4">
+            {historicalTrends.map((trend) => (
+              <div key={trend.metric} className="p-3 bg-muted/50 rounded-lg">
+                <div className="flex items-center gap-2 mb-2">
+                  <trend.icon className="w-4 h-4 text-primary" />
+                  <span className="text-xs text-muted-foreground">{trend.metric}</span>
+                </div>
+                <p className="text-lg font-mono font-semibold text-foreground mb-3">
+                  {formatValue(trend.current, trend.format)}
+                </p>
+                <div className="space-y-1">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] text-muted-foreground">WoW</span>
+                    <div className={`flex items-center gap-0.5 text-xs font-mono ${trend.wow >= 0 ? 'text-success' : 'text-destructive'}`}>
+                      {trend.wow >= 0 ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
+                      {trend.wow >= 0 ? '+' : ''}{trend.wow}%
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] text-muted-foreground">MoM</span>
+                    <div className={`flex items-center gap-0.5 text-xs font-mono ${trend.mom >= 0 ? 'text-success' : 'text-destructive'}`}>
+                      {trend.mom >= 0 ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
+                      {trend.mom >= 0 ? '+' : ''}{trend.mom}%
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+          {/* Mobile Cards */}
+          <div className="md:hidden space-y-3">
+            {historicalTrends.map((trend) => (
+              <div key={trend.metric} className="p-3 bg-muted/50 rounded-lg">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    <trend.icon className="w-4 h-4 text-primary" />
+                    <span className="text-xs text-muted-foreground">{trend.metric}</span>
+                  </div>
+                  <span className="text-sm font-mono font-semibold text-foreground">
+                    {formatValue(trend.current, trend.format)}
+                  </span>
+                </div>
+                <div className="flex items-center gap-4 justify-end">
+                  <div className={`flex items-center gap-0.5 text-xs font-mono ${trend.wow >= 0 ? 'text-success' : 'text-destructive'}`}>
+                    <span className="text-muted-foreground mr-1">WoW</span>
+                    {trend.wow >= 0 ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
+                    {trend.wow >= 0 ? '+' : ''}{trend.wow}%
+                  </div>
+                  <div className={`flex items-center gap-0.5 text-xs font-mono ${trend.mom >= 0 ? 'text-success' : 'text-destructive'}`}>
+                    <span className="text-muted-foreground mr-1">MoM</span>
+                    {trend.mom >= 0 ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
+                    {trend.mom >= 0 ? '+' : ''}{trend.mom}%
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Portfolio Rebalancing Suggestions */}
+      <Card>
+        <CardHeader className="pb-2 md:pb-4">
+          <CardTitle className="text-sm md:text-base font-medium flex items-center gap-2">
+            <Sliders className="w-4 h-4 text-primary" />
+            Portfolio Rebalancing
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {/* Risk Tolerance Slider */}
+          <div className="mb-6">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-xs md:text-sm text-muted-foreground">Risk Tolerance</span>
+              <Badge variant={riskTolerance[0] <= 33 ? "secondary" : riskTolerance[0] <= 66 ? "default" : "destructive"}>
+                {rebalancingSuggestions.profile}
+              </Badge>
+            </div>
+            <Slider
+              value={riskTolerance}
+              onValueChange={setRiskTolerance}
+              max={100}
+              step={1}
+              className="w-full"
+            />
+            <div className="flex justify-between mt-2 text-[10px] text-muted-foreground">
+              <span>Conservative</span>
+              <span>Balanced</span>
+              <span>Aggressive</span>
+            </div>
+          </div>
+
+          {/* Profile Description */}
+          <div className="p-3 bg-muted/50 rounded-lg mb-4">
+            <p className="text-xs md:text-sm text-foreground">{rebalancingSuggestions.description}</p>
+            <div className="flex flex-wrap gap-3 mt-3">
+              <div className="flex items-center gap-1.5">
+                <Percent className="w-3.5 h-3.5 text-success" />
+                <span className="text-xs text-muted-foreground">Expected APY:</span>
+                <span className="text-xs font-mono font-medium text-success">{rebalancingSuggestions.expectedApy}%</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <Shield className="w-3.5 h-3.5 text-primary" />
+                <span className="text-xs text-muted-foreground">Risk Score:</span>
+                <span className="text-xs font-mono font-medium text-foreground">{rebalancingSuggestions.riskScore}/100</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Suggestions Table (Desktop) */}
+          <div className="hidden md:block overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-border">
+                  <th className="text-left py-2 text-muted-foreground font-medium">Asset</th>
+                  <th className="text-right py-2 text-muted-foreground font-medium">Current</th>
+                  <th className="text-right py-2 text-muted-foreground font-medium">Suggested</th>
+                  <th className="text-center py-2 text-muted-foreground font-medium">Action</th>
+                  <th className="text-left py-2 text-muted-foreground font-medium">Reason</th>
+                </tr>
+              </thead>
+              <tbody>
+                {rebalancingSuggestions.suggestions.map((s) => (
+                  <tr key={s.asset} className="border-b border-border/50">
+                    <td className="py-3 font-medium text-foreground">{s.asset}</td>
+                    <td className="text-right py-3 font-mono text-muted-foreground">{s.current}%</td>
+                    <td className="text-right py-3 font-mono text-foreground">{s.suggested}%</td>
+                    <td className="text-center py-3">
+                      <Badge 
+                        variant={s.action === "increase" || s.action === "add" ? "default" : s.action === "decrease" ? "secondary" : "outline"}
+                        className="text-xs capitalize"
+                      >
+                        {s.action === "add" && <RefreshCw className="w-3 h-3 mr-1" />}
+                        {s.action === "increase" && <ArrowUpRight className="w-3 h-3 mr-1" />}
+                        {s.action === "decrease" && <ArrowDownRight className="w-3 h-3 mr-1" />}
+                        {s.action}
+                      </Badge>
+                    </td>
+                    <td className="text-left py-3 text-xs text-muted-foreground max-w-[200px]">{s.reason}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Suggestions Cards (Mobile) */}
+          <div className="md:hidden space-y-3">
+            {rebalancingSuggestions.suggestions.map((s) => (
+              <div key={s.asset} className="p-3 bg-muted/30 rounded-lg border border-border/50">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm font-medium text-foreground">{s.asset}</span>
+                  <Badge 
+                    variant={s.action === "increase" || s.action === "add" ? "default" : s.action === "decrease" ? "secondary" : "outline"}
+                    className="text-[10px] capitalize"
+                  >
+                    {s.action}
+                  </Badge>
+                </div>
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="flex items-center gap-1">
+                    <span className="text-[10px] text-muted-foreground">Current:</span>
+                    <span className="text-xs font-mono text-muted-foreground">{s.current}%</span>
+                  </div>
+                  <ArrowUpRight className="w-3 h-3 text-muted-foreground" />
+                  <div className="flex items-center gap-1">
+                    <span className="text-[10px] text-muted-foreground">Suggested:</span>
+                    <span className="text-xs font-mono font-medium text-foreground">{s.suggested}%</span>
+                  </div>
+                </div>
+                <p className="text-[10px] text-muted-foreground">{s.reason}</p>
+              </div>
+            ))}
+          </div>
+
+          {/* Apply Rebalancing Button */}
+          <div className="mt-4 flex justify-end">
+            <Button size="sm" className="text-xs md:text-sm">
+              <RefreshCw className="w-4 h-4 mr-2" />
+              Apply Suggestions
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Portfolio Performance Chart */}
       <Card>
