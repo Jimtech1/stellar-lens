@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { 
+import {
   TrendingUp, TrendingDown, DollarSign, Percent, Shield, PieChart, ArrowUpDown, Filter, Sparkles,
   Layers, Gift, AlertTriangle, CheckCircle, Bell, Target, Activity, Lock, Droplets, Building2, Users, ChevronRight, BarChart3, Trophy
 } from "lucide-react";
@@ -13,6 +13,8 @@ import { EarnDialog } from "./forms/EarnDialog";
 import { useLivePortfolio, useAnimatedCounter } from "@/hooks/useLiveData";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/lib/api";
 
 // Mock Soroban positions data
 const sorobanPositions = [
@@ -186,8 +188,34 @@ export function PortfolioOverview() {
   const [activityFilter, setActivityFilter] = useState<ActivityFilter>("all");
   const [lastUpdate, setLastUpdate] = useState<string | null>(null);
 
-  // Live data hooks
-  const liveStats = useLivePortfolio(portfolioStats);
+  // Real Data Fetching
+  const { data: portfolioData, isLoading: isPortfolioLoading } = useQuery({
+    queryKey: ['portfolio'],
+    queryFn: async () => {
+      try {
+        // Try fetching real data
+        return await api.get<any>('/portfolio');
+      } catch (e) {
+        console.warn("Using mock data due to API error", e);
+        // Fallback to mock data structure on error (or for demo)
+        return {
+          totalValue: portfolioStats.totalValue,
+          change24h: portfolioStats.change24h,
+          totalYield: portfolioStats.totalYield,
+          avgApy: portfolioStats.avgApy,
+          riskScore: portfolioStats.riskScore,
+          assetCount: portfolioStats.assetCount,
+          history: portfolioHistory
+        };
+      }
+    }
+  });
+
+  // Use real data if available, else fallback provided by queryFn catch
+  const stats = portfolioData || portfolioStats;
+
+  // Live data hooks (wrapping the fetched stats)
+  const liveStats = useLivePortfolio(stats);
   const animatedValue = useAnimatedCounter(liveStats.totalValue, 500, (v) => v.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
   const animatedYield = useAnimatedCounter(liveStats.totalYield, 500, (v) => v.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
 
@@ -226,7 +254,7 @@ export function PortfolioOverview() {
       <DepositWithdrawDialog open={withdrawOpen} onOpenChange={setWithdrawOpen} type="withdraw" />
       <SwapDialog open={swapOpen} onOpenChange={setSwapOpen} />
       <EarnDialog open={earnOpen} onOpenChange={setEarnOpen} />
-      
+
       <motion.div
         variants={containerVariants}
         initial="hidden"
@@ -248,7 +276,7 @@ export function PortfolioOverview() {
         {/* Stats Grid - Fully visible 2x2 grid on mobile */}
         <motion.div variants={itemVariants} className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 md:gap-4">
           {/* Total Value */}
-          <motion.div 
+          <motion.div
             className="card-elevated p-3 sm:p-4 md:p-5 min-w-0"
             variants={pulseVariants}
             animate={lastUpdate === "totalValue" ? "pulse" : undefined}
@@ -368,16 +396,15 @@ export function PortfolioOverview() {
                   <button
                     key={period}
                     onClick={() => setSelectedTimeframe(period)}
-                    className={`px-1.5 sm:px-2 md:px-3 py-0.5 sm:py-1 text-[9px] sm:text-[10px] md:text-tiny font-medium rounded-md transition-colors ${
-                      selectedTimeframe === period ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
-                    }`}
+                    className={`px-1.5 sm:px-2 md:px-3 py-0.5 sm:py-1 text-[9px] sm:text-[10px] md:text-tiny font-medium rounded-md transition-colors ${selectedTimeframe === period ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
+                      }`}
                   >
                     {period}
                   </button>
                 ))}
               </div>
             </div>
-            
+
             <div className="h-36 sm:h-44 md:h-64">
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={portfolioHistory} margin={{ left: -10, right: 0, top: 4, bottom: 0 }}>
@@ -387,10 +414,10 @@ export function PortfolioOverview() {
                       <stop offset="100%" stopColor="hsl(224, 100%, 58%)" stopOpacity={0} />
                     </linearGradient>
                   </defs>
-                  <XAxis 
-                    dataKey="date" 
-                    axisLine={false} 
-                    tickLine={false} 
+                  <XAxis
+                    dataKey="date"
+                    axisLine={false}
+                    tickLine={false}
                     tick={{ fontSize: 8, fill: 'hsl(0, 0%, 45%)' }}
                     interval="preserveStartEnd"
                     tickMargin={4}
@@ -425,18 +452,17 @@ export function PortfolioOverview() {
               <h3 className="text-xs sm:text-sm md:text-h3 font-semibold text-foreground">Recent Activity</h3>
               <Filter className="w-3.5 h-3.5 md:w-4 md:h-4 text-muted-foreground" />
             </div>
-            
+
             {/* Activity Filter */}
             <div className="flex flex-wrap gap-1 mb-2 sm:mb-3 md:mb-4">
               {activityFilters.map((filter) => (
                 <button
                   key={filter.key}
                   onClick={() => setActivityFilter(filter.key)}
-                  className={`px-2 py-0.5 sm:py-1 text-[9px] sm:text-[10px] md:text-xs font-medium rounded-md transition-colors ${
-                    activityFilter === filter.key
-                      ? "bg-primary/10 text-primary"
-                      : "text-muted-foreground hover:text-foreground hover:bg-secondary"
-                  }`}
+                  className={`px-2 py-0.5 sm:py-1 text-[9px] sm:text-[10px] md:text-xs font-medium rounded-md transition-colors ${activityFilter === filter.key
+                    ? "bg-primary/10 text-primary"
+                    : "text-muted-foreground hover:text-foreground hover:bg-secondary"
+                    }`}
                 >
                   {filter.label}
                 </button>
@@ -446,8 +472,8 @@ export function PortfolioOverview() {
             <div className="space-y-2 sm:space-y-3 md:space-y-4 max-h-[180px] sm:max-h-[220px] md:max-h-[320px] overflow-y-auto">
               <AnimatePresence mode="popLayout">
                 {filteredTransactions.slice(0, 5).map((tx) => (
-                  <motion.div 
-                    key={tx.id} 
+                  <motion.div
+                    key={tx.id}
                     className="flex items-center justify-between gap-2"
                     initial={{ opacity: 0, x: -10 }}
                     animate={{ opacity: 1, x: 0 }}
@@ -455,11 +481,10 @@ export function PortfolioOverview() {
                     layout
                   >
                     <div className="flex items-center gap-2 sm:gap-2.5 md:gap-3 min-w-0">
-                      <div className={`w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${
-                        tx.type === 'deposit' ? 'bg-success/10' :
+                      <div className={`w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${tx.type === 'deposit' ? 'bg-success/10' :
                         tx.type === 'withdrawal' ? 'bg-destructive/10' :
-                        tx.type === 'swap' ? 'bg-primary/10' : 'bg-warning/10'
-                      }`}>
+                          tx.type === 'swap' ? 'bg-primary/10' : 'bg-warning/10'
+                        }`}>
                         {tx.type === 'deposit' && <TrendingUp className="w-3 h-3 sm:w-3.5 sm:h-3.5 md:w-4 md:h-4 text-success" />}
                         {tx.type === 'withdrawal' && <TrendingDown className="w-3 h-3 sm:w-3.5 sm:h-3.5 md:w-4 md:h-4 text-destructive" />}
                         {tx.type === 'swap' && <Percent className="w-3 h-3 sm:w-3.5 sm:h-3.5 md:w-4 md:h-4 text-primary" />}
@@ -481,7 +506,7 @@ export function PortfolioOverview() {
                   </motion.div>
                 ))}
               </AnimatePresence>
-              
+
               {filteredTransactions.length === 0 && (
                 <div className="text-center py-4 sm:py-6 md:py-8">
                   <p className="text-[10px] sm:text-xs md:text-small text-muted-foreground">No {activityFilter} transactions</p>
@@ -524,7 +549,7 @@ export function PortfolioOverview() {
               <span className="text-xs text-muted-foreground">Avg APY: <span className="text-success font-medium">{averageApy.toFixed(1)}%</span></span>
             </div>
           </div>
-          
+
           <div className="space-y-3">
             {sorobanPositions.map((position) => (
               <div key={position.id} className="p-3 rounded-xl border border-border/50 bg-background/50 hover:border-primary/30 transition-all">
@@ -811,7 +836,7 @@ export function PortfolioOverview() {
                   <Progress value={riskExposure.protocol.low} className="h-2 bg-muted" />
                 </div>
               </div>
-              
+
               {/* Smart Contract Exposure */}
               <div className="mt-4 pt-3 border-t border-border/50">
                 <h5 className="text-[10px] text-muted-foreground uppercase tracking-wide mb-2">Smart Contract Exposure</h5>
@@ -846,7 +871,7 @@ export function PortfolioOverview() {
                       <span className="font-mono text-muted-foreground">{asset.percentage}%</span>
                     </div>
                     <div className="h-2 bg-muted rounded-full overflow-hidden">
-                      <div 
+                      <div
                         className="h-full bg-gradient-to-r from-primary to-primary/60 rounded-full transition-all"
                         style={{ width: `${asset.percentage}%` }}
                       />

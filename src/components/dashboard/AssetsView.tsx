@@ -9,6 +9,8 @@ import { StakeDialog } from "./forms/StakeDialog";
 import { AssetActionsMenu } from "./forms/AssetActionsMenu";
 import { useLiveAssets } from "@/hooks/useLiveData";
 import { AssetDetailModal } from "./modals/AssetDetailModal";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/lib/api";
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -40,8 +42,23 @@ export function AssetsView() {
 
   const chains = ["all", "Stellar", "Ethereum", "Polygon", "Arbitrum"];
 
+  // Fetch Real Assets
+  const { data: assetsData, isLoading } = useQuery({
+    queryKey: ['assets'],
+    queryFn: async () => {
+      try {
+        return await api.get<Asset[]>('/portfolio/assets');
+      } catch (e) {
+        console.warn("Using mock assets", e);
+        return mockAssets;
+      }
+    }
+  });
+
+  const displayAssets = assetsData || mockAssets;
+
   // Live price updates
-  const liveAssets = useLiveAssets(mockAssets);
+  const liveAssets = useLiveAssets(displayAssets);
 
   const openSendReceive = (tab: "send" | "receive", asset: string) => {
     setSendReceiveTab(tab);
@@ -86,9 +103,9 @@ export function AssetsView() {
 
   return (
     <>
-      <SendReceiveDialog 
-        open={sendReceiveOpen} 
-        onOpenChange={setSendReceiveOpen} 
+      <SendReceiveDialog
+        open={sendReceiveOpen}
+        onOpenChange={setSendReceiveOpen}
         initialTab={sendReceiveTab}
         preselectedAsset={selectedAsset}
       />
@@ -101,7 +118,7 @@ export function AssetsView() {
         onReceive={() => openSendReceive("receive", selectedAssetDetail?.symbol || "")}
         onStake={() => setStakeOpen(true)}
       />
-      
+
       <motion.div
         variants={containerVariants}
         initial="hidden"
@@ -140,11 +157,10 @@ export function AssetsView() {
               <button
                 key={chain}
                 onClick={() => setSelectedChain(chain)}
-                className={`px-3 py-1.5 text-small font-medium rounded-md transition-colors capitalize whitespace-nowrap ${
-                  selectedChain === chain
+                className={`px-3 py-1.5 text-small font-medium rounded-md transition-colors capitalize whitespace-nowrap ${selectedChain === chain
                     ? "bg-card text-foreground shadow-sm"
                     : "text-muted-foreground hover:text-foreground"
-                }`}
+                  }`}
               >
                 {chain === "all" ? "All Chains" : chain}
               </button>
@@ -157,11 +173,10 @@ export function AssetsView() {
               <button
                 key={col}
                 onClick={() => toggleSort(col)}
-                className={`px-3 py-1.5 text-small font-medium rounded-lg border transition-colors flex items-center gap-1.5 ${
-                  sortBy === col
+                className={`px-3 py-1.5 text-small font-medium rounded-lg border transition-colors flex items-center gap-1.5 ${sortBy === col
                     ? "border-primary text-primary bg-primary/5"
                     : "border-border text-muted-foreground hover:text-foreground"
-                }`}
+                  }`}
               >
                 {col === "value" ? "Value" : col === "change24h" ? "24h %" : "APY"}
                 {sortBy === col && (
@@ -218,11 +233,10 @@ export function AssetsView() {
                         <button
                           key={chain}
                           onClick={() => setSelectedChain(chain)}
-                          className={`px-2.5 py-1 text-xs font-medium rounded-md transition-colors capitalize ${
-                            selectedChain === chain
+                          className={`px-2.5 py-1 text-xs font-medium rounded-md transition-colors capitalize ${selectedChain === chain
                               ? "bg-primary text-primary-foreground"
                               : "bg-secondary text-muted-foreground"
-                          }`}
+                            }`}
                         >
                           {chain === "all" ? "All" : chain}
                         </button>
@@ -238,11 +252,10 @@ export function AssetsView() {
                         <button
                           key={col}
                           onClick={() => toggleSort(col)}
-                          className={`px-2.5 py-1 text-xs font-medium rounded-md transition-colors flex items-center gap-1 ${
-                            sortBy === col
+                          className={`px-2.5 py-1 text-xs font-medium rounded-md transition-colors flex items-center gap-1 ${sortBy === col
                               ? "bg-primary text-primary-foreground"
                               : "bg-secondary text-muted-foreground"
-                          }`}
+                            }`}
                         >
                           {col === "value" ? "Value" : col === "change24h" ? "24h %" : col === "apy" ? "APY" : "Balance"}
                           {sortBy === col && <ChevronDown className={`w-3 h-3 ${sortOrder === "asc" ? "rotate-180" : ""}`} />}
@@ -364,7 +377,7 @@ export function AssetsView() {
                 <tr className="border-b border-border">
                   <th className="text-left px-4 py-3 text-small font-medium text-muted-foreground">Asset</th>
                   <th className="text-left px-4 py-3 text-small font-medium text-muted-foreground">Chain</th>
-                  <th 
+                  <th
                     className="text-right px-4 py-3 text-small font-medium text-muted-foreground cursor-pointer hover:text-foreground"
                     onClick={() => toggleSort("balance")}
                   >
@@ -373,7 +386,7 @@ export function AssetsView() {
                       <ArrowUpDown className={`w-3 h-3 transition-opacity ${sortBy === "balance" ? "opacity-100" : "opacity-40"}`} />
                     </div>
                   </th>
-                  <th 
+                  <th
                     className="text-right px-4 py-3 text-small font-medium text-muted-foreground cursor-pointer hover:text-foreground"
                     onClick={() => toggleSort("value")}
                   >
@@ -382,7 +395,7 @@ export function AssetsView() {
                       <ArrowUpDown className={`w-3 h-3 transition-opacity ${sortBy === "value" ? "opacity-100" : "opacity-40"}`} />
                     </div>
                   </th>
-                  <th 
+                  <th
                     className="text-right px-4 py-3 text-small font-medium text-muted-foreground cursor-pointer hover:text-foreground"
                     onClick={() => toggleSort("change24h")}
                   >
@@ -391,7 +404,7 @@ export function AssetsView() {
                       <ArrowUpDown className={`w-3 h-3 transition-opacity ${sortBy === "change24h" ? "opacity-100" : "opacity-40"}`} />
                     </div>
                   </th>
-                  <th 
+                  <th
                     className="text-right px-4 py-3 text-small font-medium text-muted-foreground cursor-pointer hover:text-foreground"
                     onClick={() => toggleSort("apy")}
                   >
@@ -441,7 +454,7 @@ export function AssetsView() {
                         </p>
                       </td>
                       <td className="px-4 py-4 text-right">
-                        <motion.div 
+                        <motion.div
                           className="flex items-center justify-end gap-1"
                           key={asset.change24h.toFixed(2)}
                           initial={{ scale: 1.1 }}

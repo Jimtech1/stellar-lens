@@ -9,6 +9,7 @@ import {
   ChevronLeft,
   ChevronRight,
   History,
+  Layers,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { DashboardView } from "@/pages/Dashboard";
@@ -24,6 +25,7 @@ interface DashboardSidebarProps {
 const navItems = [
   { id: "overview" as DashboardView, label: "Overview", icon: LayoutDashboard },
   { id: "assets" as DashboardView, label: "Assets", icon: Wallet },
+  { id: "wallets" as DashboardView, label: "Wallets", icon: Layers },
   { id: "bridge" as DashboardView, label: "Bridge", icon: ArrowLeftRight },
   { id: "discover" as DashboardView, label: "Discover", icon: Compass },
   { id: "analytics" as DashboardView, label: "Analytics", icon: BarChart3 },

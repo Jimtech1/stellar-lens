@@ -1,5 +1,7 @@
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
+import { WalletProvider } from "@/contexts/WalletContext";
+import { AuthProvider } from "@/contexts/AuthContext";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
@@ -15,6 +17,8 @@ const SorobanPositions = lazy(() => import("./pages/SorobanPositions"));
 const TrendingAssets = lazy(() => import("./pages/TrendingAssets"));
 const LiquidityPools = lazy(() => import("./pages/LiquidityPools"));
 const EmergingDApps = lazy(() => import("./pages/EmergingDApps"));
+const LoginPage = lazy(() => import("./pages/auth/LoginPage"));
+const RegisterPage = lazy(() => import("./pages/auth/RegisterPage"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -42,26 +46,32 @@ const PageLoader = () => (
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-      <TooltipProvider delayDuration={0}>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Suspense fallback={<PageLoader />}>
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/soroban-positions" element={<SorobanPositions />} />
-              <Route path="/trending-assets" element={<TrendingAssets />} />
-              <Route path="/liquidity-pools" element={<LiquidityPools />} />
-              <Route path="/emerging-dapps" element={<EmergingDApps />} />
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </Suspense>
-        </BrowserRouter>
-      </TooltipProvider>
-    </ThemeProvider>
+    <WalletProvider>
+      <AuthProvider>
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+          <TooltipProvider delayDuration={0}>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
+              <Suspense fallback={<PageLoader />}>
+                <Routes>
+                  <Route path="/" element={<Index />} />
+                  <Route path="/dashboard" element={<Dashboard />} />
+                  <Route path="/soroban-positions" element={<SorobanPositions />} />
+                  <Route path="/trending-assets" element={<TrendingAssets />} />
+                  <Route path="/liquidity-pools" element={<LiquidityPools />} />
+                  <Route path="/emerging-dapps" element={<EmergingDApps />} />
+                  <Route path="/login" element={<LoginPage />} />
+                  <Route path="/register" element={<RegisterPage />} />
+                  {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </Suspense>
+            </BrowserRouter>
+          </TooltipProvider>
+        </ThemeProvider>
+      </AuthProvider>
+    </WalletProvider>
   </QueryClientProvider>
 );
 

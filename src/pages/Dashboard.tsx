@@ -7,15 +7,17 @@ import { HoloBackground } from "@/components/landing/HoloBackground";
 import { Skeleton } from "@/components/ui/skeleton";
 
 // Lazy load dashboard views with prefetch hints
+// Lazy load dashboard views with prefetch hints
 const PortfolioOverview = lazy(() => import("@/components/dashboard/PortfolioOverview").then(m => ({ default: m.PortfolioOverview })));
 const AssetsView = lazy(() => import("@/components/dashboard/AssetsView").then(m => ({ default: m.AssetsView })));
 const BridgeView = lazy(() => import("@/components/dashboard/BridgeView").then(m => ({ default: m.BridgeView })));
-const DiscoverView = lazy(() => import("@/components/dashboard/DiscoverView").then(m => ({ default: m.DiscoverView })));
+const DiscoverView = lazy(() => import("@/components/dashboard/DeFiView").then(m => ({ default: m.DeFiView }))); // Map Discover to DeFiView
 const AnalyticsView = lazy(() => import("@/components/dashboard/AnalyticsView").then(m => ({ default: m.AnalyticsView })));
 const SettingsView = lazy(() => import("@/components/dashboard/SettingsView").then(m => ({ default: m.SettingsView })));
 const TransactionHistoryView = lazy(() => import("@/components/dashboard/TransactionHistoryView").then(m => ({ default: m.TransactionHistoryView })));
+const WalletManagementView = lazy(() => import("@/components/dashboard/WalletManagementView").then(m => ({ default: m.WalletManagementView })));
 
-export type DashboardView = "overview" | "assets" | "bridge" | "discover" | "analytics" | "transactions" | "settings";
+export type DashboardView = "overview" | "assets" | "wallets" | "bridge" | "discover" | "analytics" | "transactions" | "settings";
 
 // View loading skeleton
 const ViewLoader = memo(() => (
@@ -55,6 +57,8 @@ const Dashboard = () => {
         return <PortfolioOverview />;
       case "assets":
         return <AssetsView />;
+      case "wallets":
+        return <WalletManagementView />;
       case "bridge":
         return <BridgeView />;
       case "discover":
@@ -74,7 +78,7 @@ const Dashboard = () => {
     <div className="min-h-screen bg-background flex relative overflow-hidden">
       {/* Holographic Background */}
       <HoloBackground variant="subtle" className="fixed z-0" />
-      
+
       {/* Desktop Sidebar */}
       <DashboardSidebar
         collapsed={sidebarCollapsed}
@@ -90,10 +94,10 @@ const Dashboard = () => {
         activeView={activeView}
         onViewChange={setActiveView}
       />
-      
+
       <div className="flex-1 flex flex-col min-h-screen relative z-10">
         <DashboardHeader onMenuToggle={openMobileSidebar} />
-        
+
         <main className="flex-1 p-4 md:p-6 overflow-auto">
           <Suspense fallback={<ViewLoader />}>
             {renderView()}

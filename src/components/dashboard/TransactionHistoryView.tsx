@@ -42,6 +42,8 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { TransactionDetailModal } from "./modals/TransactionDetailModal";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/lib/api";
 
 interface Transaction {
   id: string;
@@ -57,8 +59,8 @@ interface Transaction {
   chain: string;
 }
 
-// Extended mock transactions
-const mockTransactions: Transaction[] = [
+// Extended mock transactions (keep as fallback)
+const mockTransactionsData: Transaction[] = [
   { id: "1", type: "deposit", fromAsset: "XLM", amount: 5000, value: 600, fee: 0.01, timestamp: new Date("2024-01-15T10:30:00"), status: "completed", txHash: "0x7a3f...92d1", chain: "Stellar" },
   { id: "2", type: "swap", fromAsset: "USDC", toAsset: "XLM", amount: 1000, value: 1000, fee: 2.50, timestamp: new Date("2024-01-14T14:20:00"), status: "completed", txHash: "0x8b4e...83c2", chain: "Stellar" },
   { id: "3", type: "bridge", fromAsset: "ETH", toAsset: "ETH", amount: 0.5, value: 1150, fee: 5.00, timestamp: new Date("2024-01-14T09:15:00"), status: "completed", txHash: "0x9c5f...74d3", chain: "Ethereum → Polygon" },
@@ -128,7 +130,7 @@ const formatDate = (date: Date) => {
 };
 
 const MobileTransactionCard = memo(({ tx, onClick }: { tx: Transaction; onClick: () => void }) => (
-  <div 
+  <div
     className="p-4 border-b border-border/50 last:border-b-0 cursor-pointer hover:bg-secondary/30 transition-colors"
     onClick={onClick}
   >
@@ -223,6 +225,7 @@ TransactionRow.displayName = "TransactionRow";
 
 const ITEMS_PER_PAGE = 5;
 
+
 export const TransactionHistoryView = memo(() => {
   const [searchQuery, setSearchQuery] = useState("");
   const [typeFilter, setTypeFilter] = useState<string>("all");
@@ -231,13 +234,30 @@ export const TransactionHistoryView = memo(() => {
   const [detailModalOpen, setDetailModalOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
 
+  // Fetch transactions
+  const { data: transactionsData, isLoading } = useQuery({
+    queryKey: ['transactions'],
+    queryFn: async () => {
+      try {
+        const res = await api.get<Transaction[]>('/transactions');
+        // Ensure dates are parsed correctly if API returns strings
+        return res.map(tx => ({ ...tx, timestamp: new Date(tx.timestamp) }));
+      } catch (e) {
+        console.warn("Using mock transactions", e);
+        return mockTransactionsData;
+      }
+    }
+  });
+
+  const transactions = transactionsData || mockTransactionsData;
+
   const openTransactionDetail = (tx: Transaction) => {
     setSelectedTransaction(tx);
     setDetailModalOpen(true);
   };
 
   const filteredTransactions = useMemo(() => {
-    return mockTransactions.filter((tx) => {
+    return transactions.filter((tx) => {
       const matchesSearch =
         tx.fromAsset.toLowerCase().includes(searchQuery.toLowerCase()) ||
         tx.toAsset?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -264,12 +284,12 @@ export const TransactionHistoryView = memo(() => {
   }, [searchQuery, typeFilter, statusFilter]);
 
   const stats = useMemo(() => {
-    const total = mockTransactions.length;
-    const completed = mockTransactions.filter((t) => t.status === "completed").length;
-    const pending = mockTransactions.filter((t) => t.status === "pending").length;
-    const totalVolume = mockTransactions.reduce((acc, t) => acc + t.value, 0);
+    const total = transactions.length;
+    const completed = transactions.filter((t) => t.status === "completed").length;
+    const pending = transactions.filter((t) => t.status === "pending").length;
+    const totalVolume = transactions.reduce((acc, t) => acc + t.value, 0);
     return { total, completed, pending, totalVolume };
-  }, []);
+  }, [transactions]);
 
   const getPageNumbers = () => {
     const pages: (number | 'ellipsis')[] = [];
@@ -294,181 +314,181 @@ export const TransactionHistoryView = memo(() => {
         onOpenChange={setDetailModalOpen}
         transaction={selectedTransaction}
       />
-    <div className="space-y-4 sm:space-y-6 animate-fade-in">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-h2 font-semibold text-foreground">Transaction History</h1>
-          <p className="text-muted-foreground">View and track all your transactions</p>
-        </div>
-        <Button variant="outline" size="sm" className="gap-2 w-fit">
-          <Download className="w-4 h-4" />
-          Export CSV
-        </Button>
-      </div>
-
-      {/* Stats Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-        <Card className="bg-card/80 backdrop-blur-sm border-border/50">
-          <CardContent className="p-3 sm:p-4">
-            <p className="text-tiny text-muted-foreground">Total Transactions</p>
-            <p className="text-h2 font-semibold text-foreground">{stats.total}</p>
-          </CardContent>
-        </Card>
-        <Card className="bg-card/80 backdrop-blur-sm border-border/50">
-          <CardContent className="p-3 sm:p-4">
-            <p className="text-tiny text-muted-foreground">Completed</p>
-            <p className="text-h2 font-semibold text-success">{stats.completed}</p>
-          </CardContent>
-        </Card>
-        <Card className="bg-card/80 backdrop-blur-sm border-border/50">
-          <CardContent className="p-3 sm:p-4">
-            <p className="text-tiny text-muted-foreground">Pending</p>
-            <p className="text-h2 font-semibold text-warning">{stats.pending}</p>
-          </CardContent>
-        </Card>
-        <Card className="bg-card/80 backdrop-blur-sm border-border/50">
-          <CardContent className="p-3 sm:p-4">
-            <p className="text-tiny text-muted-foreground">Total Volume</p>
-            <p className="text-h2 font-semibold text-foreground">${stats.totalVolume.toLocaleString()}</p>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Filters */}
-      <Card className="bg-card/80 backdrop-blur-sm border-border/50">
-        <CardContent className="p-3 sm:p-4">
-          <div className="flex flex-col sm:flex-row gap-3">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input
-                placeholder="Search by asset, chain, or tx hash..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-9 bg-secondary/50 border-border/50"
-              />
-            </div>
-            <div className="flex gap-2">
-              <Select value={typeFilter} onValueChange={setTypeFilter}>
-                <SelectTrigger className="w-[130px] bg-secondary/50 border-border/50">
-                  <Filter className="w-4 h-4 mr-2" />
-                  <SelectValue placeholder="Type" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Types</SelectItem>
-                  <SelectItem value="deposit">Deposit</SelectItem>
-                  <SelectItem value="withdrawal">Withdrawal</SelectItem>
-                  <SelectItem value="swap">Swap</SelectItem>
-                  <SelectItem value="bridge">Bridge</SelectItem>
-                  <SelectItem value="stake">Stake</SelectItem>
-                  <SelectItem value="unstake">Unstake</SelectItem>
-                </SelectContent>
-              </Select>
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="w-[130px] bg-secondary/50 border-border/50">
-                  <SelectValue placeholder="Status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Status</SelectItem>
-                  <SelectItem value="completed">Completed</SelectItem>
-                  <SelectItem value="pending">Pending</SelectItem>
-                  <SelectItem value="failed">Failed</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+      <div className="space-y-4 sm:space-y-6 animate-fade-in">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h1 className="text-h2 font-semibold text-foreground">Transaction History</h1>
+            <p className="text-muted-foreground">View and track all your transactions</p>
           </div>
-        </CardContent>
-      </Card>
-
-      {/* Transactions - Mobile Cards */}
-      <Card className="bg-card/80 backdrop-blur-sm border-border/50 md:hidden">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-h3 font-medium">Recent Transactions</CardTitle>
-        </CardHeader>
-        <CardContent className="p-0">
-          {paginatedTransactions.map((tx) => (
-            <MobileTransactionCard key={tx.id} tx={tx} onClick={() => openTransactionDetail(tx)} />
-          ))}
-          {filteredTransactions.length === 0 && (
-            <div className="py-12 text-center text-muted-foreground">
-              No transactions found matching your filters.
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Transactions Table - Desktop */}
-      <Card className="bg-card/80 backdrop-blur-sm border-border/50 hidden md:block">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-h3 font-medium">Recent Transactions</CardTitle>
-        </CardHeader>
-        <CardContent className="p-0 overflow-x-auto">
-          <Table>
-            <TableHeader>
-              <TableRow className="hover:bg-transparent border-border/50">
-                <TableHead className="text-muted-foreground">Type</TableHead>
-                <TableHead className="text-muted-foreground">Amount</TableHead>
-                <TableHead className="text-muted-foreground">Value</TableHead>
-                <TableHead className="text-muted-foreground">Fee</TableHead>
-                <TableHead className="text-muted-foreground">Time</TableHead>
-                <TableHead className="text-muted-foreground">Status</TableHead>
-                <TableHead className="text-muted-foreground">Tx Hash</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {paginatedTransactions.map((tx) => (
-                <TransactionRow key={tx.id} tx={tx} onClick={() => openTransactionDetail(tx)} />
-              ))}
-            </TableBody>
-          </Table>
-          {filteredTransactions.length === 0 && (
-            <div className="py-12 text-center text-muted-foreground">
-              No transactions found matching your filters.
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p className="text-sm text-muted-foreground">
-            Showing {(currentPage - 1) * ITEMS_PER_PAGE + 1} to {Math.min(currentPage * ITEMS_PER_PAGE, filteredTransactions.length)} of {filteredTransactions.length} transactions
-          </p>
-          <Pagination>
-            <PaginationContent>
-              <PaginationItem>
-                <PaginationPrevious 
-                  onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                  className={cn(currentPage === 1 && "pointer-events-none opacity-50", "cursor-pointer")}
-                />
-              </PaginationItem>
-              {getPageNumbers().map((page, i) => (
-                <PaginationItem key={i}>
-                  {page === 'ellipsis' ? (
-                    <PaginationEllipsis />
-                  ) : (
-                    <PaginationLink
-                      onClick={() => setCurrentPage(page)}
-                      isActive={currentPage === page}
-                      className="cursor-pointer"
-                    >
-                      {page}
-                    </PaginationLink>
-                  )}
-                </PaginationItem>
-              ))}
-              <PaginationItem>
-                <PaginationNext 
-                  onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                  className={cn(currentPage === totalPages && "pointer-events-none opacity-50", "cursor-pointer")}
-                />
-              </PaginationItem>
-            </PaginationContent>
-          </Pagination>
+          <Button variant="outline" size="sm" className="gap-2 w-fit">
+            <Download className="w-4 h-4" />
+            Export CSV
+          </Button>
         </div>
-      )}
-    </div>
+
+        {/* Stats Cards */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+          <Card className="bg-card/80 backdrop-blur-sm border-border/50">
+            <CardContent className="p-3 sm:p-4">
+              <p className="text-tiny text-muted-foreground">Total Transactions</p>
+              <p className="text-h2 font-semibold text-foreground">{stats.total}</p>
+            </CardContent>
+          </Card>
+          <Card className="bg-card/80 backdrop-blur-sm border-border/50">
+            <CardContent className="p-3 sm:p-4">
+              <p className="text-tiny text-muted-foreground">Completed</p>
+              <p className="text-h2 font-semibold text-success">{stats.completed}</p>
+            </CardContent>
+          </Card>
+          <Card className="bg-card/80 backdrop-blur-sm border-border/50">
+            <CardContent className="p-3 sm:p-4">
+              <p className="text-tiny text-muted-foreground">Pending</p>
+              <p className="text-h2 font-semibold text-warning">{stats.pending}</p>
+            </CardContent>
+          </Card>
+          <Card className="bg-card/80 backdrop-blur-sm border-border/50">
+            <CardContent className="p-3 sm:p-4">
+              <p className="text-tiny text-muted-foreground">Total Volume</p>
+              <p className="text-h2 font-semibold text-foreground">${stats.totalVolume.toLocaleString()}</p>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Filters */}
+        <Card className="bg-card/80 backdrop-blur-sm border-border/50">
+          <CardContent className="p-3 sm:p-4">
+            <div className="flex flex-col sm:flex-row gap-3">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search by asset, chain, or tx hash..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-9 bg-secondary/50 border-border/50"
+                />
+              </div>
+              <div className="flex gap-2">
+                <Select value={typeFilter} onValueChange={setTypeFilter}>
+                  <SelectTrigger className="w-[130px] bg-secondary/50 border-border/50">
+                    <Filter className="w-4 h-4 mr-2" />
+                    <SelectValue placeholder="Type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Types</SelectItem>
+                    <SelectItem value="deposit">Deposit</SelectItem>
+                    <SelectItem value="withdrawal">Withdrawal</SelectItem>
+                    <SelectItem value="swap">Swap</SelectItem>
+                    <SelectItem value="bridge">Bridge</SelectItem>
+                    <SelectItem value="stake">Stake</SelectItem>
+                    <SelectItem value="unstake">Unstake</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                  <SelectTrigger className="w-[130px] bg-secondary/50 border-border/50">
+                    <SelectValue placeholder="Status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Status</SelectItem>
+                    <SelectItem value="completed">Completed</SelectItem>
+                    <SelectItem value="pending">Pending</SelectItem>
+                    <SelectItem value="failed">Failed</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Transactions - Mobile Cards */}
+        <Card className="bg-card/80 backdrop-blur-sm border-border/50 md:hidden">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-h3 font-medium">Recent Transactions</CardTitle>
+          </CardHeader>
+          <CardContent className="p-0">
+            {paginatedTransactions.map((tx) => (
+              <MobileTransactionCard key={tx.id} tx={tx} onClick={() => openTransactionDetail(tx)} />
+            ))}
+            {filteredTransactions.length === 0 && (
+              <div className="py-12 text-center text-muted-foreground">
+                No transactions found matching your filters.
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Transactions Table - Desktop */}
+        <Card className="bg-card/80 backdrop-blur-sm border-border/50 hidden md:block">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-h3 font-medium">Recent Transactions</CardTitle>
+          </CardHeader>
+          <CardContent className="p-0 overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow className="hover:bg-transparent border-border/50">
+                  <TableHead className="text-muted-foreground">Type</TableHead>
+                  <TableHead className="text-muted-foreground">Amount</TableHead>
+                  <TableHead className="text-muted-foreground">Value</TableHead>
+                  <TableHead className="text-muted-foreground">Fee</TableHead>
+                  <TableHead className="text-muted-foreground">Time</TableHead>
+                  <TableHead className="text-muted-foreground">Status</TableHead>
+                  <TableHead className="text-muted-foreground">Tx Hash</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {paginatedTransactions.map((tx) => (
+                  <TransactionRow key={tx.id} tx={tx} onClick={() => openTransactionDetail(tx)} />
+                ))}
+              </TableBody>
+            </Table>
+            {filteredTransactions.length === 0 && (
+              <div className="py-12 text-center text-muted-foreground">
+                No transactions found matching your filters.
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+            <p className="text-sm text-muted-foreground">
+              Showing {(currentPage - 1) * ITEMS_PER_PAGE + 1} to {Math.min(currentPage * ITEMS_PER_PAGE, filteredTransactions.length)} of {filteredTransactions.length} transactions
+            </p>
+            <Pagination>
+              <PaginationContent>
+                <PaginationItem>
+                  <PaginationPrevious
+                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                    className={cn(currentPage === 1 && "pointer-events-none opacity-50", "cursor-pointer")}
+                  />
+                </PaginationItem>
+                {getPageNumbers().map((page, i) => (
+                  <PaginationItem key={i}>
+                    {page === 'ellipsis' ? (
+                      <PaginationEllipsis />
+                    ) : (
+                      <PaginationLink
+                        onClick={() => setCurrentPage(page)}
+                        isActive={currentPage === page}
+                        className="cursor-pointer"
+                      >
+                        {page}
+                      </PaginationLink>
+                    )}
+                  </PaginationItem>
+                ))}
+                <PaginationItem>
+                  <PaginationNext
+                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                    className={cn(currentPage === totalPages && "pointer-events-none opacity-50", "cursor-pointer")}
+                  />
+                </PaginationItem>
+              </PaginationContent>
+            </Pagination>
+          </div>
+        )}
+      </div>
     </>
   );
 });

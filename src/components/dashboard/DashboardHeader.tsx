@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Search, Bell, Menu, ChevronDown, LogOut } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { WalletConnectDialog } from "@/components/WalletConnectDialog";
-import { useWallet } from "@/hooks/useWallet";
+import { useWallet } from "@/contexts/WalletContext";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -50,7 +50,7 @@ export function DashboardHeader({ onMenuToggle }: DashboardHeaderProps) {
         <div className="flex items-center gap-3">
           {/* Theme Toggle */}
           <ThemeToggle />
-          
+
           {/* Notifications */}
           <button className="relative p-2 rounded-lg hover:bg-secondary text-muted-foreground transition-colors">
             <Bell className="w-5 h-5" />
@@ -73,7 +73,7 @@ export function DashboardHeader({ onMenuToggle }: DashboardHeaderProps) {
                   {currentWallet?.name}
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem 
+                <DropdownMenuItem
                   className="flex items-center gap-2 text-destructive cursor-pointer"
                   onClick={disconnect}
                 >
@@ -83,9 +83,9 @@ export function DashboardHeader({ onMenuToggle }: DashboardHeaderProps) {
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
-            <Button 
-              variant="default" 
-              size="sm" 
+            <Button
+              variant="default"
+              size="sm"
               className="hidden sm:flex items-center gap-2"
               onClick={() => setWalletDialogOpen(true)}
               disabled={isConnecting}
@@ -96,18 +96,18 @@ export function DashboardHeader({ onMenuToggle }: DashboardHeaderProps) {
 
           {/* Mobile Wallet */}
           {isConnected ? (
-            <Button 
-              variant="outline" 
-              size="icon-sm" 
+            <Button
+              variant="outline"
+              size="icon-sm"
               className="sm:hidden"
               onClick={disconnect}
             >
               <div className="w-2 h-2 rounded-full bg-success" />
             </Button>
           ) : (
-            <Button 
-              variant="default" 
-              size="icon-sm" 
+            <Button
+              variant="default"
+              size="icon-sm"
               className="sm:hidden"
               onClick={() => setWalletDialogOpen(true)}
             >

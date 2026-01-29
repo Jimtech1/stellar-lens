@@ -41,24 +41,25 @@ export const WALLETS: WalletInfo[] = [
 ];
 
 // Freighter wallet integration
+import { isConnected, requestAccess, getAddress } from "@stellar/freighter-api";
+
 export async function connectFreighter(): Promise<string | null> {
   try {
     // Check if Freighter is installed
-    if (typeof window !== 'undefined' && (window as any).freighterApi) {
-      const freighter = (window as any).freighterApi;
-      const isConnected = await freighter.isConnected();
-      
-      if (!isConnected) {
-        throw new Error('Freighter is not connected');
-      }
-      
-      const publicKey = await freighter.getPublicKey();
-      return publicKey;
+    const connectionResult = await isConnected();
+    if (!connectionResult.isConnected) {
+       // Just alert the user to install it, don't throw immediately if we can guide them
+       window.open('https://www.freighter.app/', '_blank');
+       throw new Error('Freighter wallet is not installed or not enabled.');
+    }
+
+    // Request access
+    const accessResult = await requestAccess();
+    if (accessResult.error) {
+      throw new Error(accessResult.error);
     }
     
-    // Freighter not installed
-    window.open('https://www.freighter.app/', '_blank');
-    return null;
+    return accessResult.address;
   } catch (error) {
     console.error('Freighter connection error:', error);
     throw error;

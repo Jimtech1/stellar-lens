@@ -6,12 +6,31 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { HoloLogo } from "@/components/HoloLogo";
 import { WalletConnectDialog } from "@/components/WalletConnectDialog";
-import { useWallet } from "@/hooks/useWallet";
+import { useWallet } from "@/contexts/WalletContext";
+import { useAuth } from "@/contexts/AuthContext";
 
 export function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [walletDialogOpen, setWalletDialogOpen] = useState(false);
-  const { connect, disconnect, isConnecting, isConnected, formattedAddress } = useWallet();
+  const { disconnect, isConnected, formattedAddress } = useWallet();
+  const { loginWithWallet, isLoading } = useAuth();
+
+  // Local loading state for the dialog interactions
+  const [isConnectingWallet, setIsConnectingWallet] = useState(false);
+
+  const handleWalletConnect = async (type: any): Promise<string | null> => {
+    try {
+      setIsConnectingWallet(true);
+      await loginWithWallet(type);
+      setWalletDialogOpen(false);
+      return "connected";
+    } catch (e) {
+      console.error("Login failed", e);
+      throw e;
+    } finally {
+      setIsConnectingWallet(false);
+    }
+  };
 
   const navLinks = [
     { label: "Dashboard", href: "/dashboard" },
@@ -45,9 +64,9 @@ export function Navbar() {
           <div className="hidden md:flex items-center gap-3">
             <ThemeToggle />
             {isConnected ? (
-              <Button 
-                variant="outline" 
-                size="sm" 
+              <Button
+                variant="outline"
+                size="sm"
                 className="flex items-center gap-2"
                 onClick={disconnect}
               >
@@ -55,13 +74,13 @@ export function Navbar() {
                 <span className="font-mono">{formattedAddress}</span>
               </Button>
             ) : (
-              <Button 
-                variant="hero" 
-                size="sm" 
+              <Button
+                variant="hero"
+                size="sm"
                 onClick={() => setWalletDialogOpen(true)}
-                disabled={isConnecting}
+                disabled={isConnectingWallet || isLoading}
               >
-                {isConnecting ? 'Connecting...' : 'Connect Wallet'}
+                {isConnectingWallet ? 'Connecting...' : 'Connect Wallet'}
               </Button>
             )}
           </div>
@@ -100,8 +119,8 @@ export function Navbar() {
                   </a>
                 ))}
                 {isConnected ? (
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     className="w-full mt-2 flex items-center justify-center gap-2"
                     onClick={() => {
                       disconnect();
@@ -112,16 +131,16 @@ export function Navbar() {
                     <span className="font-mono">{formattedAddress}</span>
                   </Button>
                 ) : (
-                  <Button 
-                    variant="hero" 
+                  <Button
+                    variant="hero"
                     className="w-full mt-2"
                     onClick={() => {
                       setWalletDialogOpen(true);
                       setIsMenuOpen(false);
                     }}
-                    disabled={isConnecting}
+                    disabled={isConnectingWallet || isLoading}
                   >
-                    {isConnecting ? 'Connecting...' : 'Connect Wallet'}
+                    {isConnectingWallet ? 'Connecting...' : 'Connect Wallet'}
                   </Button>
                 )}
               </div>
@@ -133,8 +152,8 @@ export function Navbar() {
       <WalletConnectDialog
         open={walletDialogOpen}
         onOpenChange={setWalletDialogOpen}
-        onConnect={connect}
-        isConnecting={isConnecting}
+        onConnect={handleWalletConnect}
+        isConnecting={isConnectingWallet}
       />
     </>
   );
