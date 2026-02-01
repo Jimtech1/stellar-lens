@@ -109,7 +109,7 @@ class ApiClient {
 
             // Call refresh endpoint directly (bypass interceptor)
             // Note: We use a fresh axios instance to avoid loops
-            const response = await axios.post(`${BASE_URL}/auth/refresh`, {
+            const response = await axios.post(`${BASE_URL}auth/refresh`, {
               refreshToken,
             });
 

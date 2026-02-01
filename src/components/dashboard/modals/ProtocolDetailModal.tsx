@@ -32,7 +32,7 @@ export interface SorobanProtocol {
   apy: number;
   token: string;
   audited: boolean;
-  users: string;
+  users: string | number;
   logo: string;
 }
 
@@ -50,16 +50,16 @@ function isSorobanProtocol(protocol: ProtocolType): protocol is SorobanProtocol 
   return 'name' in protocol && 'audited' in protocol && 'logo' in protocol;
 }
 
-export const ProtocolDetailModal = memo(({ 
-  open, 
-  onOpenChange, 
+export const ProtocolDetailModal = memo(({
+  open,
+  onOpenChange,
   protocol,
   onInvest
 }: ProtocolDetailModalProps) => {
   if (!protocol) return null;
 
   const isSoroban = isSorobanProtocol(protocol);
-  
+
   // Normalize data based on type
   const displayName = isSoroban ? protocol.name : protocol.protocol;
   const displayLogo = isSoroban ? protocol.logo : protocol.protocolLogo;
@@ -188,7 +188,7 @@ export const ProtocolDetailModal = memo(({
                 </a>
               </Button>
             </div>
-            
+
             {/* Category-Specific Action Buttons */}
             <div className="grid grid-cols-2 gap-2">
               {displayCategory === 'dex' && (

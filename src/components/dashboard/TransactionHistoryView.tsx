@@ -243,13 +243,13 @@ export const TransactionHistoryView = memo(() => {
         // Ensure dates are parsed correctly if API returns strings
         return res.map(tx => ({ ...tx, timestamp: new Date(tx.timestamp) }));
       } catch (e) {
-        console.warn("Using mock transactions", e);
-        return mockTransactionsData;
+        console.error("API error", e);
+        return [];
       }
     }
   });
 
-  const transactions = transactionsData || mockTransactionsData;
+  const transactions = transactionsData || [];
 
   const openTransactionDetail = (tx: Transaction) => {
     setSelectedTransaction(tx);

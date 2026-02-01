@@ -22,7 +22,7 @@ interface DashboardSidebarProps {
   onViewChange: (view: DashboardView) => void;
 }
 
-const navItems = [
+const navItems: { id: DashboardView; label: string; icon: any; disabled?: boolean }[] = [
   { id: "overview" as DashboardView, label: "Overview", icon: LayoutDashboard },
   { id: "assets" as DashboardView, label: "Assets", icon: Wallet },
   { id: "wallets" as DashboardView, label: "Wallets", icon: Layers },
@@ -61,16 +61,29 @@ export function DashboardSidebar({ collapsed, onToggle, activeView, onViewChange
         {navItems.map((item) => (
           <button
             key={item.id}
-            onClick={() => onViewChange(item.id)}
+            onClick={() => !item.disabled && onViewChange(item.id)}
+            disabled={item.disabled}
             className={cn(
-              "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors",
+              "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors relative group",
               activeView === item.id
                 ? "bg-primary/10 text-primary font-medium"
-                : "text-muted-foreground hover:text-foreground hover:bg-secondary"
+                : item.disabled
+                  ? "text-muted-foreground/50 cursor-not-allowed"
+                  : "text-muted-foreground hover:text-foreground hover:bg-secondary"
             )}
           >
             <item.icon className="w-5 h-5 shrink-0" />
-            {!collapsed && <span className="text-small">{item.label}</span>}
+            {!collapsed && (
+              <span className="text-small flex-1 text-left flex justify-between items-center">
+                {item.label}
+                {item.disabled && <span className="text-[9px] uppercase tracking-wider opacity-70 border border-border px-1 rounded">Soon</span>}
+              </span>
+            )}
+            {collapsed && item.disabled && (
+              <div className="absolute left-14 bg-popover text-popover-foreground text-xs px-2 py-1 rounded shadow-md opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50 pointer-events-none">
+                Coming Soon
+              </div>
+            )}
           </button>
         ))}
       </nav>

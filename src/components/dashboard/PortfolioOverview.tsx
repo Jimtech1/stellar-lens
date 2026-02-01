@@ -6,10 +6,11 @@ import {
 } from "lucide-react";
 import { AreaChart, Area, ResponsiveContainer, XAxis, YAxis, Tooltip, PieChart as RechartsPie, Pie, Cell } from "recharts";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { portfolioHistory, portfolioStats, mockTransactions } from "@/lib/mockData";
+import { portfolioStats } from "@/lib/mockData";
 import { DepositWithdrawDialog } from "./forms/DepositWithdrawDialog";
 import { SwapDialog } from "./forms/SwapDialog";
 import { EarnDialog } from "./forms/EarnDialog";
+import { LiveMarketWidget } from "./LiveMarketWidget";
 import { useLivePortfolio, useAnimatedCounter } from "@/hooks/useLiveData";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
@@ -193,31 +194,31 @@ export function PortfolioOverview() {
     queryKey: ['portfolio'],
     queryFn: async () => {
       try {
-        // Try fetching real data
         return await api.get<any>('/portfolio');
       } catch (e) {
-        console.warn("Using mock data due to API error", e);
-        // Fallback to mock data structure on error (or for demo)
-        return {
-          totalValue: portfolioStats.totalValue,
-          change24h: portfolioStats.change24h,
-          totalYield: portfolioStats.totalYield,
-          avgApy: portfolioStats.avgApy,
-          riskScore: portfolioStats.riskScore,
-          assetCount: portfolioStats.assetCount,
-          history: portfolioHistory
-        };
+        console.error("API error", e);
+        return null; // No mock fallback
       }
     }
   });
 
-  // Use real data if available, else fallback provided by queryFn catch
-  const stats = portfolioData || portfolioStats;
+  // Use real data or empty state
+  const defaultStats = {
+    totalValue: 0,
+    change24h: 0,
+    totalYield: 0,
+    avgApy: 0,
+    riskScore: 0,
+    assetCount: 0,
+    history: []
+  };
+
+  const stats = { ...defaultStats, ...portfolioData };
 
   // Live data hooks (wrapping the fetched stats)
   const liveStats = useLivePortfolio(stats);
-  const animatedValue = useAnimatedCounter(liveStats.totalValue, 500, (v) => v.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
-  const animatedYield = useAnimatedCounter(liveStats.totalYield, 500, (v) => v.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
+  const animatedValue = useAnimatedCounter(liveStats.totalValue || 0, 500, (v) => v.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
+  const animatedYield = useAnimatedCounter(liveStats.totalYield || 0, 500, (v) => v.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
 
   // Track value updates for animation
   useEffect(() => {
@@ -235,9 +236,30 @@ export function PortfolioOverview() {
     return () => window.removeEventListener('navigate-to-discover', handleNavigate);
   }, []);
 
-  const filteredTransactions = mockTransactions.filter(
-    (tx) => activityFilter === "all" || tx.type === activityFilter
-  );
+  const { data: historyData } = useQuery({
+    queryKey: ['portfolioHistory', selectedTimeframe],
+    queryFn: async () => {
+      try {
+        return await api.get<any[]>(`/portfolio/history?period=${selectedTimeframe}`);
+      } catch (e) {
+        return [];
+      }
+    }
+  });
+
+  const { data: transactionsData } = useQuery({
+    queryKey: ['recentTransactions'],
+    queryFn: async () => {
+      try {
+        return await api.get<any[]>('/transactions?limit=5');
+      } catch (e) {
+        return [];
+      }
+    }
+  });
+
+  const displayHistory = historyData || [];
+  const recentTransactions = transactionsData || [];
 
   const timeframes: TimeFrame[] = ["1D", "1W", "1M", "3M", "1Y"];
   const activityFilters: { key: ActivityFilter; label: string }[] = [
@@ -247,6 +269,10 @@ export function PortfolioOverview() {
     { key: "swap", label: "Swap" },
     { key: "bridge", label: "Bridge" },
   ];
+
+  const filteredTransactions = recentTransactions.filter(
+    (tx) => activityFilter === "all" || tx.type === activityFilter
+  );
 
   return (
     <>
@@ -295,7 +321,7 @@ export function PortfolioOverview() {
                 <TrendingDown className="w-3 h-3 sm:w-3.5 sm:h-3.5 md:w-4 md:h-4 text-destructive flex-shrink-0" />
               )}
               <span className={`text-[10px] sm:text-xs md:text-small font-medium ${liveStats.change24h >= 0 ? 'text-success' : 'text-destructive'}`}>
-                {liveStats.change24h >= 0 ? '+' : ''}{liveStats.change24h.toFixed(2)}%
+                {liveStats.change24h >= 0 ? '+' : ''}{(liveStats.change24h || 0).toFixed(2)}%
               </span>
               <span className="text-[9px] sm:text-[10px] md:text-tiny text-muted-foreground">24h</span>
             </div>
@@ -348,36 +374,36 @@ export function PortfolioOverview() {
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 md:gap-4">
             <button
               onClick={() => setDepositOpen(true)}
-              className="card-elevated p-3 sm:p-4 flex items-center gap-2 sm:gap-3 hover:border-primary/30 transition-colors group active:scale-[0.98]"
+              className="card-elevated p-3 sm:p-4 flex items-center gap-2 sm:gap-3 hover:bg-secondary/50 transition-all group"
             >
-              <div className="w-8 h-8 sm:w-9 sm:h-9 md:w-10 md:h-10 rounded-lg bg-success/10 text-success flex items-center justify-center text-sm sm:text-base md:text-lg font-bold flex-shrink-0">
+              <div className="w-8 h-8 sm:w-9 sm:h-9 md:w-10 md:h-10 rounded-lg bg-secondary text-foreground flex items-center justify-center text-sm sm:text-base md:text-lg font-bold flex-shrink-0 group-hover:scale-110 transition-transform">
                 ↓
               </div>
               <span className="font-medium text-xs sm:text-sm md:text-base text-foreground group-hover:text-primary transition-colors">Deposit</span>
             </button>
             <button
               onClick={() => setWithdrawOpen(true)}
-              className="card-elevated p-3 sm:p-4 flex items-center gap-2 sm:gap-3 hover:border-primary/30 transition-colors group active:scale-[0.98]"
+              className="card-elevated p-3 sm:p-4 flex items-center gap-2 sm:gap-3 hover:bg-secondary/50 transition-all group"
             >
-              <div className="w-8 h-8 sm:w-9 sm:h-9 md:w-10 md:h-10 rounded-lg bg-destructive/10 text-destructive flex items-center justify-center text-sm sm:text-base md:text-lg font-bold flex-shrink-0">
+              <div className="w-8 h-8 sm:w-9 sm:h-9 md:w-10 md:h-10 rounded-lg bg-secondary text-foreground flex items-center justify-center text-sm sm:text-base md:text-lg font-bold flex-shrink-0 group-hover:scale-110 transition-transform">
                 ↑
               </div>
               <span className="font-medium text-xs sm:text-sm md:text-base text-foreground group-hover:text-primary transition-colors">Withdraw</span>
             </button>
             <button
               onClick={() => setSwapOpen(true)}
-              className="card-elevated p-3 sm:p-4 flex items-center gap-2 sm:gap-3 hover:border-primary/30 transition-colors group active:scale-[0.98]"
+              className="card-elevated p-3 sm:p-4 flex items-center gap-2 sm:gap-3 hover:bg-secondary/50 transition-all group"
             >
-              <div className="w-8 h-8 sm:w-9 sm:h-9 md:w-10 md:h-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center flex-shrink-0">
+              <div className="w-8 h-8 sm:w-9 sm:h-9 md:w-10 md:h-10 rounded-lg bg-secondary text-foreground flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
                 <ArrowUpDown className="w-4 h-4 sm:w-4.5 sm:h-4.5 md:w-5 md:h-5" />
               </div>
               <span className="font-medium text-xs sm:text-sm md:text-base text-foreground group-hover:text-primary transition-colors">Swap</span>
             </button>
             <button
               onClick={() => setEarnOpen(true)}
-              className="card-elevated p-3 sm:p-4 flex items-center gap-2 sm:gap-3 hover:border-primary/30 transition-colors group active:scale-[0.98]"
+              className="card-elevated p-3 sm:p-4 flex items-center gap-2 sm:gap-3 hover:bg-secondary/50 transition-all group"
             >
-              <div className="w-8 h-8 sm:w-9 sm:h-9 md:w-10 md:h-10 rounded-lg bg-warning/10 text-warning flex items-center justify-center flex-shrink-0">
+              <div className="w-8 h-8 sm:w-9 sm:h-9 md:w-10 md:h-10 rounded-lg bg-secondary text-foreground flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
                 <Sparkles className="w-4 h-4 sm:w-4.5 sm:h-4.5 md:w-5 md:h-5" />
               </div>
               <span className="font-medium text-xs sm:text-sm md:text-base text-foreground group-hover:text-primary transition-colors">Earn</span>
@@ -407,7 +433,7 @@ export function PortfolioOverview() {
 
             <div className="h-36 sm:h-44 md:h-64">
               <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={portfolioHistory} margin={{ left: -10, right: 0, top: 4, bottom: 0 }}>
+                <AreaChart data={displayHistory} margin={{ left: -10, right: 0, top: 4, bottom: 0 }}>
                   <defs>
                     <linearGradient id="portfolioGradient" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="0%" stopColor="hsl(224, 100%, 58%)" stopOpacity={0.3} />
@@ -446,74 +472,82 @@ export function PortfolioOverview() {
             </div>
           </motion.div>
 
-          {/* Recent Activity */}
-          <motion.div variants={itemVariants} className="card-elevated p-3 sm:p-4 md:p-5">
-            <div className="flex items-center justify-between mb-2 sm:mb-3 md:mb-4">
-              <h3 className="text-xs sm:text-sm md:text-h3 font-semibold text-foreground">Recent Activity</h3>
-              <Filter className="w-3.5 h-3.5 md:w-4 md:h-4 text-muted-foreground" />
-            </div>
+          {/* Right Column (Activity + Markets) */}
+          <div className="flex flex-col gap-3 sm:gap-4 md:gap-6">
+            {/* Live Markets Widget */}
+            <motion.div variants={itemVariants}>
+              <LiveMarketWidget />
+            </motion.div>
 
-            {/* Activity Filter */}
-            <div className="flex flex-wrap gap-1 mb-2 sm:mb-3 md:mb-4">
-              {activityFilters.map((filter) => (
-                <button
-                  key={filter.key}
-                  onClick={() => setActivityFilter(filter.key)}
-                  className={`px-2 py-0.5 sm:py-1 text-[9px] sm:text-[10px] md:text-xs font-medium rounded-md transition-colors ${activityFilter === filter.key
-                    ? "bg-primary/10 text-primary"
-                    : "text-muted-foreground hover:text-foreground hover:bg-secondary"
-                    }`}
-                >
-                  {filter.label}
-                </button>
-              ))}
-            </div>
+            {/* Recent Activity */}
+            <motion.div variants={itemVariants} className="card-elevated p-3 sm:p-4 md:p-5 flex-1">
+              <div className="flex items-center justify-between mb-2 sm:mb-3 md:mb-4">
+                <h3 className="text-xs sm:text-sm md:text-h3 font-semibold text-foreground">Recent Activity</h3>
+                <Filter className="w-3.5 h-3.5 md:w-4 md:h-4 text-muted-foreground" />
+              </div>
 
-            <div className="space-y-2 sm:space-y-3 md:space-y-4 max-h-[180px] sm:max-h-[220px] md:max-h-[320px] overflow-y-auto">
-              <AnimatePresence mode="popLayout">
-                {filteredTransactions.slice(0, 5).map((tx) => (
-                  <motion.div
-                    key={tx.id}
-                    className="flex items-center justify-between gap-2"
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: 10 }}
-                    layout
+              {/* Activity Filter */}
+              <div className="flex flex-wrap gap-1 mb-2 sm:mb-3 md:mb-4">
+                {activityFilters.map((filter) => (
+                  <button
+                    key={filter.key}
+                    onClick={() => setActivityFilter(filter.key)}
+                    className={`px-2 py-0.5 sm:py-1 text-[9px] sm:text-[10px] md:text-xs font-medium rounded-md transition-colors ${activityFilter === filter.key
+                      ? "bg-primary/10 text-primary"
+                      : "text-muted-foreground hover:text-foreground hover:bg-secondary"
+                      }`}
                   >
-                    <div className="flex items-center gap-2 sm:gap-2.5 md:gap-3 min-w-0">
-                      <div className={`w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${tx.type === 'deposit' ? 'bg-success/10' :
-                        tx.type === 'withdrawal' ? 'bg-destructive/10' :
-                          tx.type === 'swap' ? 'bg-primary/10' : 'bg-warning/10'
-                        }`}>
-                        {tx.type === 'deposit' && <TrendingUp className="w-3 h-3 sm:w-3.5 sm:h-3.5 md:w-4 md:h-4 text-success" />}
-                        {tx.type === 'withdrawal' && <TrendingDown className="w-3 h-3 sm:w-3.5 sm:h-3.5 md:w-4 md:h-4 text-destructive" />}
-                        {tx.type === 'swap' && <Percent className="w-3 h-3 sm:w-3.5 sm:h-3.5 md:w-4 md:h-4 text-primary" />}
-                        {tx.type === 'bridge' && <DollarSign className="w-3 h-3 sm:w-3.5 sm:h-3.5 md:w-4 md:h-4 text-warning" />}
-                      </div>
-                      <div className="min-w-0">
-                        <p className="text-[10px] sm:text-xs md:text-small font-medium text-foreground capitalize truncate">{tx.type}</p>
-                        <p className="text-[9px] sm:text-[10px] md:text-tiny text-muted-foreground truncate">{tx.asset}</p>
-                      </div>
-                    </div>
-                    <div className="text-right flex-shrink-0">
-                      <p className="text-[10px] sm:text-xs md:text-small font-mono font-medium text-foreground">
-                        ${tx.value.toLocaleString()}
-                      </p>
-                      <p className={`text-[9px] sm:text-[10px] md:text-tiny ${tx.status === 'completed' ? 'text-success' : tx.status === 'pending' ? 'text-warning' : 'text-destructive'}`}>
-                        {tx.status}
-                      </p>
-                    </div>
-                  </motion.div>
+                    {filter.label}
+                  </button>
                 ))}
-              </AnimatePresence>
+              </div>
 
-              {filteredTransactions.length === 0 && (
-                <div className="text-center py-4 sm:py-6 md:py-8">
-                  <p className="text-[10px] sm:text-xs md:text-small text-muted-foreground">No {activityFilter} transactions</p>
-                </div>
-              )}
-            </div>
-          </motion.div>
+              <div className="space-y-2 sm:space-y-3 md:space-y-4 max-h-[180px] sm:max-h-[220px] md:max-h-[320px] overflow-y-auto">
+                <AnimatePresence mode="popLayout">
+                  {filteredTransactions.slice(0, 5).map((tx) => (
+                    <motion.div
+                      key={tx.id}
+                      className="flex items-center justify-between gap-2"
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: 10 }}
+                      layout
+                    >
+                      <div className="flex items-center gap-2 sm:gap-2.5 md:gap-3 min-w-0">
+                        <div className={`w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${tx.type === 'deposit' ? 'bg-success/10' :
+                          tx.type === 'withdrawal' ? 'bg-destructive/10' :
+                            tx.type === 'swap' ? 'bg-primary/10' : 'bg-warning/10'
+                          }`}>
+                          {tx.type === 'deposit' && <TrendingUp className="w-3 h-3 sm:w-3.5 sm:h-3.5 md:w-4 md:h-4 text-success" />}
+                          {tx.type === 'withdrawal' && <TrendingDown className="w-3 h-3 sm:w-3.5 sm:h-3.5 md:w-4 md:h-4 text-destructive" />}
+                          {tx.type === 'swap' && <Percent className="w-3 h-3 sm:w-3.5 sm:h-3.5 md:w-4 md:h-4 text-primary" />}
+                          {tx.type === 'bridge' && <DollarSign className="w-3 h-3 sm:w-3.5 sm:h-3.5 md:w-4 md:h-4 text-warning" />}
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-[10px] sm:text-xs md:text-small font-medium text-foreground capitalize truncate">{tx.type}</p>
+                          <p className="text-[9px] sm:text-[10px] md:text-tiny text-muted-foreground truncate">{tx.asset}</p>
+                        </div>
+                      </div>
+                      <div className="text-right flex-shrink-0">
+                        <p className="text-[10px] sm:text-xs md:text-small font-mono font-medium text-foreground">
+                          ${tx.value.toLocaleString()}
+                        </p>
+                        <p className={`text-[9px] sm:text-[10px] md:text-tiny ${tx.status === 'completed' ? 'text-success' : tx.status === 'pending' ? 'text-warning' : 'text-destructive'}`}>
+                          {tx.status}
+                        </p>
+                      </div>
+                    </motion.div>
+                  ))}
+                </AnimatePresence>
+
+                {filteredTransactions.length === 0 && (
+                  <div className="text-center py-4 sm:py-6 md:py-8">
+                    <p className="text-[10px] sm:text-xs md:text-small text-muted-foreground">No {activityFilter} transactions</p>
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          </div>
         </div>
 
         {/* Claimable Rewards Banner */}
@@ -532,268 +566,6 @@ export function PortfolioOverview() {
               <Gift className="w-4 h-4" />
               Claim All
             </button>
-          </div>
-        </motion.div>
-
-        {/* Soroban Protocol Positions */}
-        <motion.div variants={itemVariants} className="card-elevated p-3 sm:p-4 md:p-5">
-          <div className="flex items-center justify-between mb-3 md:mb-4">
-            <h3 className="text-xs sm:text-sm md:text-h3 font-semibold text-foreground flex items-center gap-2">
-              <Layers className="w-4 h-4 text-primary" />
-              Soroban Protocol Positions
-            </h3>
-            <div className="flex items-center gap-2">
-              <Badge variant="outline" className="text-[10px] bg-primary/10 text-primary border-primary/20">
-                {sorobanPositions.length} Active
-              </Badge>
-              <span className="text-xs text-muted-foreground">Avg APY: <span className="text-success font-medium">{averageApy.toFixed(1)}%</span></span>
-            </div>
-          </div>
-
-          <div className="space-y-3">
-            {sorobanPositions.map((position) => (
-              <div key={position.id} className="p-3 rounded-xl border border-border/50 bg-background/50 hover:border-primary/30 transition-all">
-                {/* Protocol Header */}
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
-                      {position.type === "LP" && <Droplets className="w-4 h-4 text-primary" />}
-                      {position.type === "Lending" && <Building2 className="w-4 h-4 text-primary" />}
-                      {position.type === "Staking" && <Lock className="w-4 h-4 text-primary" />}
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-1.5">
-                        <span className="font-semibold text-sm text-foreground">{position.protocol}</span>
-                        {position.audited && <Badge variant="outline" className="text-[9px] px-1 py-0 bg-success/10 text-success border-success/20">🛡️</Badge>}
-                        {position.trending && <Badge variant="outline" className="text-[9px] px-1 py-0 bg-warning/10 text-warning border-warning/20">🔥</Badge>}
-                      </div>
-                      <span className="text-xs text-muted-foreground">{position.pool}</span>
-                    </div>
-                  </div>
-                  <Badge variant="outline" className={`text-[10px] ${getRiskColor(position.risk)}`}>
-                    {getRiskLabel(position.risk)} Risk
-                  </Badge>
-                </div>
-
-                {/* Position Details Grid */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-2">
-                  <div>
-                    <p className="text-[10px] text-muted-foreground">Value</p>
-                    <p className="text-sm font-bold font-mono">${position.value.toLocaleString()}</p>
-                    <span className={`text-[10px] ${position.change24h >= 0 ? 'text-success' : 'text-destructive'}`}>
-                      {position.change24h >= 0 ? '+' : ''}{position.change24h}%
-                    </span>
-                  </div>
-                  <div>
-                    <p className="text-[10px] text-muted-foreground">{position.type === "Lending" ? "Net APY" : "APR"}</p>
-                    <p className="text-sm font-bold text-success">{position.type === "Lending" ? position.netApy : position.apr}%</p>
-                    <span className="text-[10px] text-muted-foreground">~${position.dailyRewards || position.dailyNet || position.dailyYield}/day</span>
-                  </div>
-                  {position.type === "LP" && (
-                    <>
-                      <div>
-                        <p className="text-[10px] text-muted-foreground">Pool Share</p>
-                        <p className="text-sm font-bold">{position.share}%</p>
-                        <span className="text-[10px] text-muted-foreground">Fees: ${position.fees7d}</span>
-                      </div>
-                      <div>
-                        <p className="text-[10px] text-muted-foreground">IL</p>
-                        <p className={`text-sm font-bold ${position.impermanentLoss < 0 ? 'text-destructive' : 'text-success'}`}>{position.impermanentLoss}%</p>
-                      </div>
-                    </>
-                  )}
-                  {position.type === "Lending" && (
-                    <>
-                      <div>
-                        <p className="text-[10px] text-muted-foreground">Health Factor</p>
-                        <p className={`text-sm font-bold ${position.healthFactor >= 2 ? 'text-success' : 'text-warning'}`}>{position.healthFactor}</p>
-                      </div>
-                      <div>
-                        <p className="text-[10px] text-muted-foreground">Utilization</p>
-                        <p className="text-sm font-bold">{position.utilization}%</p>
-                      </div>
-                    </>
-                  )}
-                  {position.type === "Staking" && (
-                    <>
-                      <div>
-                        <p className="text-[10px] text-muted-foreground">Claimable</p>
-                        <p className="text-sm font-bold text-warning">${position.claimable?.value}</p>
-                      </div>
-                      <div>
-                        <p className="text-[10px] text-muted-foreground">Unlocks</p>
-                        <p className="text-sm font-bold">{position.unlocksIn}d</p>
-                      </div>
-                    </>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        </motion.div>
-
-        {/* Yield & Risk Row */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4 md:gap-6">
-          {/* Yield Distribution */}
-          <motion.div variants={itemVariants} className="card-elevated p-3 sm:p-4 md:p-5">
-            <h3 className="text-xs sm:text-sm md:text-h3 font-semibold text-foreground mb-3 flex items-center gap-2">
-              <PieChart className="w-4 h-4 text-primary" />
-              Yield Distribution
-            </h3>
-            <div className="flex items-center gap-4">
-              <div className="w-24 h-24 sm:w-28 sm:h-28">
-                <ResponsiveContainer width="100%" height="100%">
-                  <RechartsPie>
-                    <Pie data={yieldDistribution} cx="50%" cy="50%" innerRadius={25} outerRadius={45} paddingAngle={2} dataKey="value">
-                      {yieldDistribution.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.color} />
-                      ))}
-                    </Pie>
-                  </RechartsPie>
-                </ResponsiveContainer>
-              </div>
-              <div className="flex-1 space-y-1.5">
-                {yieldDistribution.map((item) => (
-                  <div key={item.name} className="flex items-center justify-between text-xs">
-                    <div className="flex items-center gap-1.5">
-                      <div className="w-2 h-2 rounded-full" style={{ backgroundColor: item.color }} />
-                      <span className="text-muted-foreground">{item.name}</span>
-                    </div>
-                    <span className="font-medium">{item.value}%</span>
-                  </div>
-                ))}
-                <div className="pt-1.5 border-t border-border/50 flex justify-between text-xs">
-                  <span className="text-muted-foreground">Monthly</span>
-                  <span className="font-bold text-success">${monthlyYield}</span>
-                </div>
-              </div>
-            </div>
-          </motion.div>
-
-          {/* Protocol Health */}
-          <motion.div variants={itemVariants} className="card-elevated p-3 sm:p-4 md:p-5">
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="text-xs sm:text-sm md:text-h3 font-semibold text-foreground flex items-center gap-2">
-                <Activity className="w-4 h-4 text-primary" />
-                Protocol Health
-              </h3>
-              <Badge variant="outline" className="text-[10px] bg-warning/10 text-warning border-warning/20">
-                <Bell className="w-3 h-3 mr-1" />
-                {activeAlerts.length}
-              </Badge>
-            </div>
-            <div className="space-y-2">
-              {protocolHealth.map((protocol) => (
-                <div key={protocol.name} className="flex items-center justify-between p-2 rounded-lg bg-background/50 border border-border/30">
-                  <div className="flex items-center gap-2">
-                    {getStatusIcon(protocol.status)}
-                    <div>
-                      <p className="text-xs font-medium">{protocol.name}</p>
-                      <p className="text-[10px] text-muted-foreground">{protocol.detail}</p>
-                    </div>
-                  </div>
-                  <Badge variant="outline" className={`text-[9px] ${protocol.status === "operational" ? "bg-success/10 text-success border-success/20" : "bg-warning/10 text-warning border-warning/20"}`}>
-                    {protocol.status === "operational" ? "OK" : "Alert"}
-                  </Badge>
-                </div>
-              ))}
-            </div>
-            <div className="mt-2 pt-2 border-t border-border/50 space-y-1">
-              {activeAlerts.slice(0, 2).map((alert) => (
-                <div key={alert.id} className="flex items-start gap-1.5 text-[10px] text-muted-foreground">
-                  <AlertTriangle className="w-3 h-3 text-warning mt-0.5 flex-shrink-0" />
-                  <span>{alert.message}</span>
-                </div>
-              ))}
-            </div>
-          </motion.div>
-        </div>
-
-        {/* Performance Comparison Table */}
-        <motion.div variants={itemVariants} className="card-elevated p-3 sm:p-4 md:p-5">
-          <div className="flex items-center justify-between mb-3 md:mb-4">
-            <h3 className="text-xs sm:text-sm md:text-h3 font-semibold text-foreground flex items-center gap-2">
-              <BarChart3 className="w-4 h-4 text-primary" />
-              Performance Comparison
-            </h3>
-            <Badge variant="outline" className="text-[10px] bg-primary/10 text-primary border-primary/20">
-              vs Market Average
-            </Badge>
-          </div>
-
-          {/* Desktop Table */}
-          <div className="hidden md:block overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow className="border-border/50">
-                  <TableHead className="text-xs text-muted-foreground h-10">Protocol</TableHead>
-                  <TableHead className="text-xs text-muted-foreground h-10">Type</TableHead>
-                  <TableHead className="text-xs text-muted-foreground h-10 text-right">Your APY</TableHead>
-                  <TableHead className="text-xs text-muted-foreground h-10 text-right">Avg APY</TableHead>
-                  <TableHead className="text-xs text-muted-foreground h-10 text-right">Rank</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {performanceComparison.map((item, index) => (
-                  <TableRow key={index} className="border-border/30 hover:bg-muted/30">
-                    <TableCell className="py-3 text-sm font-medium">{item.protocol}</TableCell>
-                    <TableCell className="py-3 text-sm text-muted-foreground">{item.type}</TableCell>
-                    <TableCell className="py-3 text-sm font-mono text-right text-success font-medium">{item.yourApy}%</TableCell>
-                    <TableCell className="py-3 text-sm font-mono text-right text-muted-foreground">{item.avgApy}%</TableCell>
-                    <TableCell className="py-3 text-right">
-                      <div className="flex items-center justify-end gap-1">
-                        {item.rank.includes("Top") && <Trophy className="w-3 h-3 text-warning" />}
-                        <span className={`text-sm font-medium ${item.rankColor}`}>{item.rank}</span>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
-
-          {/* Mobile Cards */}
-          <div className="md:hidden space-y-2">
-            {performanceComparison.map((item, index) => (
-              <div key={index} className="p-3 rounded-lg bg-background/50 border border-border/30">
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center gap-2">
-                    <span className="font-medium text-sm">{item.protocol}</span>
-                    <Badge variant="outline" className="text-[9px]">{item.type}</Badge>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    {item.rank.includes("Top") && <Trophy className="w-3 h-3 text-warning" />}
-                    <span className={`text-xs font-medium ${item.rankColor}`}>{item.rank}</span>
-                  </div>
-                </div>
-                <div className="flex items-center justify-between text-xs">
-                  <div>
-                    <span className="text-muted-foreground">Your APY: </span>
-                    <span className="font-mono text-success font-medium">{item.yourApy}%</span>
-                  </div>
-                  <div>
-                    <span className="text-muted-foreground">Avg: </span>
-                    <span className="font-mono text-muted-foreground">{item.avgApy}%</span>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* Optimization Opportunities */}
-          <div className="mt-3 pt-3 border-t border-border/50">
-            <div className="flex items-center gap-2 mb-2">
-              <Target className="w-3.5 h-3.5 text-primary" />
-              <span className="text-xs font-medium text-foreground">Optimization Opportunities</span>
-            </div>
-            <div className="space-y-1.5">
-              {optimizationOpportunities.map((opp, index) => (
-                <div key={index} className="flex items-start gap-2 text-[11px] text-muted-foreground">
-                  <ChevronRight className="w-3 h-3 text-primary mt-0.5 flex-shrink-0" />
-                  <span>{opp}</span>
-                </div>
-              ))}
-            </div>
           </div>
         </motion.div>
 

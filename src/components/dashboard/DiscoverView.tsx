@@ -26,38 +26,60 @@ const chains = ["all", "Stellar", "Ethereum", "Polygon", "Arbitrum"];
 type SortOption = "apy" | "risk" | "tvl";
 type ViewMode = "grid" | "list";
 
+import { useWallet } from "@/contexts/WalletContext";
+import { api } from "@/lib/api";
+import { useQuery } from "@tanstack/react-query";
+
+// ... (keep imports)
+
 export function DiscoverView() {
+  const { walletType, isConnected } = useWallet();
+  // Default to connected chain if available, else 'all'
+  const isEVM = walletType === 'metamask';
+  const defaultChain = isConnected ? (isEVM ? "Ethereum" : "Stellar") : "all";
+
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
-  const [selectedChain, setSelectedChain] = useState("all");
+  const [selectedChain, setSelectedChain] = useState(defaultChain);
   const [sortBy, setSortBy] = useState<SortOption>("apy");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
   const [investOpen, setInvestOpen] = useState(false);
   const [selectedOpportunity, setSelectedOpportunity] = useState<YieldOpportunity | null>(null);
   const [showFilters, setShowFilters] = useState(false);
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
-  const [liveOpportunities, setLiveOpportunities] = useState(mockYieldOpportunities);
+
   const [protocolModalOpen, setProtocolModalOpen] = useState(false);
   const [selectedProtocol, setSelectedProtocol] = useState<YieldOpportunity | null>(null);
-  
+
   const openProtocolDetail = (opp: YieldOpportunity) => {
     setSelectedProtocol(opp);
     setProtocolModalOpen(true);
   };
 
-  // Simulate live APY updates
+  // Fetch Yields
+  const chainParam = isConnected ? (isEVM ? 'ethereum' : 'stellar') : '';
+
+  const { data: liveOpportunities = [] } = useQuery({
+    queryKey: ['yields', chainParam],
+    queryFn: async () => {
+      try {
+        // Pass chain parameter to backend
+        const url = `/defi/yields${chainParam ? `?chain=${chainParam}` : ''}`;
+        return await api.get<YieldOpportunity[]>(url);
+      } catch (e) {
+        console.error(e);
+        return [];
+      }
+    }
+  });
+
+  // Update selected chain when wallet changes
   useEffect(() => {
-    const interval = setInterval(() => {
-      setLiveOpportunities((prev) =>
-        prev.map((opp) => ({
-          ...opp,
-          apy: opp.apy + (Math.random() - 0.5) * 0.2,
-          tvl: opp.tvl * (1 + (Math.random() - 0.5) * 0.01),
-        }))
-      );
-    }, 4000);
-    return () => clearInterval(interval);
-  }, []);
+    if (isConnected) {
+      const targetChain = isEVM ? "Ethereum" : "Stellar";
+      setSelectedChain(targetChain);
+    }
+  }, [isConnected, isEVM, walletType]);
 
   const openInvest = (opp: YieldOpportunity) => {
     setSelectedOpportunity(opp);
@@ -69,7 +91,11 @@ export function DiscoverView() {
       const matchesSearch = opp.protocol.toLowerCase().includes(searchQuery.toLowerCase()) ||
         opp.asset.toLowerCase().includes(searchQuery.toLowerCase());
       const matchesCategory = selectedCategory === "all" || opp.category === selectedCategory;
-      const matchesChain = selectedChain === "all" || opp.chain === selectedChain;
+
+      // Case-insensitive chain matching
+      const matchesChain = selectedChain === "all" ||
+        (opp.chain && opp.chain.toLowerCase() === selectedChain.toLowerCase());
+
       return matchesSearch && matchesCategory && matchesChain;
     })
     .sort((a, b) => {
@@ -77,7 +103,7 @@ export function DiscoverView() {
       if (sortBy === "apy") { aVal = a.apy; bVal = b.apy; }
       else if (sortBy === "risk") { aVal = a.riskScore; bVal = b.riskScore; }
       else { aVal = a.tvl; bVal = b.tvl; }
-      
+
       return sortOrder === "desc" ? bVal - aVal : aVal - bVal;
     });
 
@@ -93,9 +119,9 @@ export function DiscoverView() {
     return "High";
   };
 
-  const activeFiltersCount = 
-    (selectedCategory !== "all" ? 1 : 0) + 
-    (selectedChain !== "all" ? 1 : 0) + 
+  const activeFiltersCount =
+    (selectedCategory !== "all" ? 1 : 0) +
+    (selectedChain !== "all" ? 1 : 0) +
     (searchQuery ? 1 : 0);
 
   const clearFilters = () => {
@@ -116,12 +142,12 @@ export function DiscoverView() {
   return (
     <>
       <InvestDialog open={investOpen} onOpenChange={setInvestOpen} opportunity={selectedOpportunity} />
-      <ProtocolDetailModal 
-        open={protocolModalOpen} 
-        onOpenChange={setProtocolModalOpen} 
+      <ProtocolDetailModal
+        open={protocolModalOpen}
+        onOpenChange={setProtocolModalOpen}
         protocol={selectedProtocol}
       />
-      
+
       <motion.div
         variants={containerVariants}
         initial="hidden"
@@ -160,11 +186,10 @@ export function DiscoverView() {
               <button
                 key={cat}
                 onClick={() => setSelectedCategory(cat)}
-                className={`px-3 py-1.5 text-small font-medium rounded-md transition-colors capitalize whitespace-nowrap ${
-                  selectedCategory === cat
-                    ? "bg-card text-foreground shadow-sm"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
+                className={`px-3 py-1.5 text-small font-medium rounded-md transition-colors capitalize whitespace-nowrap ${selectedCategory === cat
+                  ? "bg-card text-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground"
+                  }`}
               >
                 {cat === "all" ? "All Types" : cat}
               </button>
@@ -177,11 +202,10 @@ export function DiscoverView() {
               <button
                 key={chain}
                 onClick={() => setSelectedChain(chain)}
-                className={`px-3 py-1.5 text-small font-medium rounded-md transition-colors capitalize whitespace-nowrap ${
-                  selectedChain === chain
-                    ? "bg-card text-foreground shadow-sm"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
+                className={`px-3 py-1.5 text-small font-medium rounded-md transition-colors capitalize whitespace-nowrap ${selectedChain === chain
+                  ? "bg-card text-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground"
+                  }`}
               >
                 {chain === "all" ? "All Chains" : chain}
               </button>
@@ -198,11 +222,10 @@ export function DiscoverView() {
               <button
                 key={option.key}
                 onClick={() => toggleSort(option.key)}
-                className={`px-3 py-1.5 text-small font-medium rounded-lg border transition-colors flex items-center gap-1.5 ${
-                  sortBy === option.key
-                    ? "border-primary text-primary bg-primary/5"
-                    : "border-border text-muted-foreground hover:text-foreground"
-                }`}
+                className={`px-3 py-1.5 text-small font-medium rounded-lg border transition-colors flex items-center gap-1.5 ${sortBy === option.key
+                  ? "border-primary text-primary bg-primary/5"
+                  : "border-border text-muted-foreground hover:text-foreground"
+                  }`}
               >
                 {option.label}
                 {sortBy === option.key && (
@@ -274,11 +297,10 @@ export function DiscoverView() {
                         <button
                           key={cat}
                           onClick={() => setSelectedCategory(cat)}
-                          className={`px-2.5 py-1 text-xs font-medium rounded-md transition-colors capitalize ${
-                            selectedCategory === cat
-                              ? "bg-primary text-primary-foreground"
-                              : "bg-secondary text-muted-foreground"
-                          }`}
+                          className={`px-2.5 py-1 text-xs font-medium rounded-md transition-colors capitalize ${selectedCategory === cat
+                            ? "bg-primary text-primary-foreground"
+                            : "bg-secondary text-muted-foreground"
+                            }`}
                         >
                           {cat === "all" ? "All" : cat}
                         </button>
@@ -294,11 +316,10 @@ export function DiscoverView() {
                         <button
                           key={chain}
                           onClick={() => setSelectedChain(chain)}
-                          className={`px-2.5 py-1 text-xs font-medium rounded-md transition-colors capitalize ${
-                            selectedChain === chain
-                              ? "bg-primary text-primary-foreground"
-                              : "bg-secondary text-muted-foreground"
-                          }`}
+                          className={`px-2.5 py-1 text-xs font-medium rounded-md transition-colors capitalize ${selectedChain === chain
+                            ? "bg-primary text-primary-foreground"
+                            : "bg-secondary text-muted-foreground"
+                            }`}
                         >
                           {chain === "all" ? "All" : chain}
                         </button>
@@ -314,11 +335,10 @@ export function DiscoverView() {
                         <button
                           key={option}
                           onClick={() => toggleSort(option)}
-                          className={`px-2.5 py-1 text-xs font-medium rounded-md transition-colors uppercase flex items-center gap-1 ${
-                            sortBy === option
-                              ? "bg-primary text-primary-foreground"
-                              : "bg-secondary text-muted-foreground"
-                          }`}
+                          className={`px-2.5 py-1 text-xs font-medium rounded-md transition-colors uppercase flex items-center gap-1 ${sortBy === option
+                            ? "bg-primary text-primary-foreground"
+                            : "bg-secondary text-muted-foreground"
+                            }`}
                         >
                           {option}
                           {sortBy === option && <ChevronDown className={`w-3 h-3 ${sortOrder === "asc" ? "rotate-180" : ""}`} />}
@@ -350,10 +370,10 @@ export function DiscoverView() {
         </motion.div>
 
         {/* Opportunities Grid */}
-        <motion.div 
-          variants={itemVariants} 
-          className={viewMode === "grid" 
-            ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4" 
+        <motion.div
+          variants={itemVariants}
+          className={viewMode === "grid"
+            ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4"
             : "space-y-3"
           }
         >
@@ -366,9 +386,8 @@ export function DiscoverView() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95 }}
                 transition={{ delay: index * 0.03 }}
-                className={`card-elevated p-4 md:p-5 hover:shadow-card transition-shadow group cursor-pointer ${
-                  viewMode === "list" ? "flex flex-col sm:flex-row sm:items-center gap-4" : ""
-                }`}
+                className={`card-elevated p-4 md:p-5 hover:shadow-card transition-shadow group cursor-pointer ${viewMode === "list" ? "flex flex-col sm:flex-row sm:items-center gap-4" : ""
+                  }`}
                 onClick={() => openProtocolDetail(opp)}
               >
                 {/* Header */}
@@ -391,7 +410,7 @@ export function DiscoverView() {
                 <div className={`grid grid-cols-2 gap-3 md:gap-4 ${viewMode === "list" ? "sm:flex sm:gap-8" : "mb-4"}`}>
                   <div>
                     <p className="text-[10px] md:text-tiny text-muted-foreground mb-0.5 md:mb-1">APY</p>
-                    <motion.div 
+                    <motion.div
                       className="flex items-center gap-1"
                       key={opp.apy.toFixed(1)}
                       initial={{ scale: 1.05 }}

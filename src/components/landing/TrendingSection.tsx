@@ -6,67 +6,11 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { PoolDetailModal } from "@/components/dashboard/modals/PoolDetailModal";
 import { DAppDetailModal } from "@/components/dashboard/modals/DAppDetailModal";
-import { ProtocolDetailModal, SorobanProtocol } from "@/components/dashboard/modals/ProtocolDetailModal";
+import { ProtocolDetailModal } from "@/components/dashboard/modals/ProtocolDetailModal";
 import { AssetDetailModal } from "@/components/dashboard/modals/AssetDetailModal";
-import { Asset } from "@/lib/mockData";
-
-// Static data - moved outside component to prevent re-creation
-const sorobanProtocols = [
-  { id: '1', name: 'Blend Protocol', category: 'Lending', tvl: 15200000, apy: 8.5, token: 'BLND', audited: true, users: '12.5K', logo: '🔷' },
-  { id: '2', name: 'Aquarius', category: 'AMM/DEX', tvl: 45000000, apy: 12.3, token: 'AQUA', audited: true, users: '45.2K', logo: '🌊' },
-  { id: '3', name: 'Soroswap', category: 'AMM', tvl: 8500000, apy: 18.7, token: 'SORO', audited: true, users: '8.9K', logo: '⚡' },
-  { id: '4', name: 'Phoenix DeFi', category: 'Yield', tvl: 4200000, apy: 22.3, token: 'PHO', audited: false, users: '5.6K', logo: '🔥' },
-  { id: '5', name: 'Ultra Capital', category: 'Lending', tvl: 9400000, apy: 5.4, token: 'yUSDC', audited: true, users: '18K', logo: '💎' },
-  { id: '6', name: 'Mercury', category: 'Indexer', tvl: 0, apy: 0, token: 'MERC', audited: true, users: '8K', logo: '📊' },
-  { id: '7', name: 'Lumenswap', category: 'AMM', tvl: 6800000, apy: 15.2, token: 'LSP', audited: true, users: '32K', logo: '💧' },
-  { id: '8', name: 'StellarX', category: 'DEX', tvl: 12500000, apy: 5.8, token: 'XLM', audited: true, users: '85K', logo: '🌟' },
-];
-
-const initialTrendingAssets = [
-  { symbol: 'XLM', name: 'Stellar Lumens', price: 0.124, change: 5.24, volume: '2.4B', marketCap: '$3.8B' },
-  { symbol: 'AQUA', name: 'Aquarius', price: 0.0045, change: 12.8, volume: '145M', marketCap: '$52M' },
-  { symbol: 'yXLM', name: 'Ultra Stellar', price: 0.126, change: 4.1, volume: '89M', marketCap: '$18M' },
-  { symbol: 'SHX', name: 'Stronghold', price: 0.0021, change: -2.1, volume: '45M', marketCap: '$8.5M' },
-  { symbol: 'USDC', name: 'USD Coin', price: 1.00, change: 0.01, volume: '89M', marketCap: '$28B' },
-  { symbol: 'BLND', name: 'Blend Token', price: 0.082, change: 8.7, volume: '4.2M', marketCap: '$24M' },
-  { symbol: 'PHO', name: 'Phoenix', price: 0.0034, change: 15.4, volume: '980K', marketCap: '$6.2M' },
-  { symbol: 'RMT', name: 'SureRemit', price: 0.0018, change: -1.8, volume: '320K', marketCap: '$4.1M' },
-  { symbol: 'GRAT', name: 'Gratitude', price: 0.00012, change: 28.5, volume: '180K', marketCap: '$1.2M' },
-  { symbol: 'ARST', name: 'ARS Token', price: 0.0089, change: 3.2, volume: '520K', marketCap: '$3.8M' },
-];
-
-const initialLiquidityPools = [
-  { pair: 'XLM/USDC', protocol: 'Aquarius', tvl: 45000000, apy: 14.5, age: '2d', volume24h: '$890K' },
-  { pair: 'AQUA/XLM', protocol: 'StellarSwap', tvl: 12000000, apy: 22.3, age: '5d', volume24h: '$420K' },
-  { pair: 'yXLM/USDC', protocol: 'Blend', tvl: 8500000, apy: 18.7, age: '1w', volume24h: '$650K' },
-  { pair: 'ETH/XLM', protocol: 'Lumenswap', tvl: 6200000, apy: 12.1, age: '3d', volume24h: '$180K' },
-  { pair: 'BLND/XLM', protocol: 'Blend', tvl: 4800000, apy: 24.5, age: '4d', volume24h: '$520K' },
-  { pair: 'PHO/USDC', protocol: 'Phoenix', tvl: 2100000, apy: 32.2, age: '1d', volume24h: '$95K' },
-  { pair: 'BTC/XLM', protocol: 'StellarX', tvl: 15600000, apy: 5.2, age: '2w', volume24h: '$1.2M' },
-  { pair: 'EURC/USDC', protocol: 'Circle', tvl: 28900000, apy: 4.1, age: '1w', volume24h: '$2.1M' },
-];
-
-const emergingDApps = [
-  { name: 'Blend Protocol', category: 'Lending', users: '12.5K', growth: 45, logo: '🔷', tvl: '$15.2M' },
-  { name: 'Aquarius DEX', category: 'DEX', users: '45.2K', growth: 28, logo: '🌊', tvl: '$8.2M' },
-  { name: 'Soroswap', category: 'AMM', users: '8.9K', growth: 120, logo: '⚡', tvl: '$2.8M' },
-  { name: 'Phoenix DeFi', category: 'Yield', users: '5.6K', growth: 67, logo: '🔥', tvl: '$4.2M' },
-  { name: 'StellarX', category: 'DEX', users: '85K', growth: 18, logo: '🌟', tvl: '$12.5M' },
-  { name: 'Lumenswap', category: 'AMM', users: '32K', growth: 45, logo: '💧', tvl: '$6.8M' },
-  { name: 'Ultra Capital', category: 'Lending', users: '18K', growth: 35, logo: '💎', tvl: '$9.4M' },
-  { name: 'Mercury', category: 'Analytics', users: '8K', growth: 42, logo: '📊', tvl: 'N/A' },
-  { name: 'Freighter', category: 'Wallet', users: '125K', growth: 18, logo: '🚀', tvl: 'N/A' },
-  { name: 'Stellar Expert', category: 'Explorer', users: '85K', growth: 12, logo: '🔍', tvl: 'N/A' },
-];
-
-const initialNetworkAggregates = [
-  { metric: 'Total XLM Volume', value: 2400000000, change: '+8.2%', period: '24h', format: 'currency' },
-  { metric: 'Active Contracts', value: 1847, change: '+124', period: 'today', format: 'number' },
-  { metric: 'Unique Wallets', value: 892000, change: '+2.1K', period: '24h', format: 'number' },
-  { metric: 'Total Transactions', value: 4200000, change: '+180K', period: '24h', format: 'number' },
-  { metric: 'Gas Fees', value: 48500, change: '+12%', period: '24h', format: 'currency' },
-  { metric: 'Contract Calls', value: 2800000, change: '+95K', period: '24h', format: 'number' },
-];
+import { Asset as MockAsset } from "@/lib/mockData";
+import { stellarApi, Protocol, Asset } from "@/services/stellarApi";
+import { useQuery } from "@tanstack/react-query";
 
 const protocolStats = [
   { name: 'Stellar TPS', value: '4,000+', icon: Zap },
@@ -75,7 +19,6 @@ const protocolStats = [
   { name: 'Global Nodes', value: '40+', icon: Globe },
 ];
 
-// Memoized sub-components
 const ProtocolStatCard = memo(({ stat }: { stat: typeof protocolStats[0] }) => (
   <div className="card-elevated p-4 text-center">
     <stat.icon className="w-6 h-6 mx-auto mb-2 text-primary" />
@@ -86,19 +29,33 @@ const ProtocolStatCard = memo(({ stat }: { stat: typeof protocolStats[0] }) => (
 
 ProtocolStatCard.displayName = "ProtocolStatCard";
 
-const NetworkAggregateCard = memo(({ item, formatValue }: { item: typeof initialNetworkAggregates[0], formatValue: (value: number, format: string) => string }) => (
-  <div className="card-elevated p-3">
-    <p className="text-tiny text-muted-foreground mb-1">{item.metric}</p>
-    <p className="text-body font-bold font-mono text-foreground">
-      {formatValue(item.value, item.format)}
-    </p>
-    <p className="text-tiny text-success">{item.change} ({item.period})</p>
-  </div>
-));
+const NetworkAggregateCard = memo(({ label, value, change, format = 'number' }: { label: string, value: number, change?: string, format?: string }) => {
+  const formatValue = (val: number, fmt: string) => {
+    if (fmt === 'currency') {
+      if (val >= 1000000000) return '$' + (val / 1000000000).toFixed(1) + 'B';
+      if (val >= 1000000) return '$' + (val / 1000000).toFixed(1) + 'M';
+      if (val >= 1000) return '$' + (val / 1000).toFixed(1) + 'K';
+      return '$' + val.toFixed(0);
+    }
+    if (val >= 1000000) return (val / 1000000).toFixed(1) + 'M';
+    if (val >= 1000) return (val / 1000).toFixed(1) + 'K';
+    return val.toLocaleString();
+  };
+
+  return (
+    <div className="card-elevated p-3">
+      <p className="text-tiny text-muted-foreground mb-1">{label}</p>
+      <p className="text-body font-bold font-mono text-foreground">
+        {formatValue(value, format)}
+      </p>
+      {change && <p className="text-tiny text-success">{change} (24h)</p>}
+    </div>
+  );
+});
 
 NetworkAggregateCard.displayName = "NetworkAggregateCard";
 
-const ProtocolCard = memo(({ protocol, onClick }: { protocol: typeof sorobanProtocols[0]; onClick: () => void }) => (
+const ProtocolCard = memo(({ protocol, onClick }: { protocol: Protocol; onClick: () => void }) => (
   <div className="card-elevated p-4 hover:shadow-card transition-all cursor-pointer" onClick={onClick}>
     <div className="flex items-center gap-3 mb-3">
       <span className="text-2xl">{protocol.logo}</span>
@@ -125,7 +82,7 @@ const ProtocolCard = memo(({ protocol, onClick }: { protocol: typeof sorobanProt
       </div>
     </div>
     <div className="flex items-center justify-between mt-2 pt-2 border-t border-border">
-      <span className="text-tiny text-muted-foreground">{protocol.users} users</span>
+      <span className="text-tiny text-muted-foreground">{protocol.users.toLocaleString()} users</span>
       <span className="text-tiny text-primary">{protocol.token}</span>
     </div>
   </div>
@@ -133,7 +90,7 @@ const ProtocolCard = memo(({ protocol, onClick }: { protocol: typeof sorobanProt
 
 ProtocolCard.displayName = "ProtocolCard";
 
-const AssetRow = memo(({ asset, index, onClick }: { asset: typeof initialTrendingAssets[0], index: number, onClick: () => void }) => (
+const AssetRow = memo(({ asset, index, onClick }: { asset: Asset, index: number, onClick: () => void }) => (
   <div className="p-4 flex items-center justify-between hover:bg-secondary/50 transition-colors cursor-pointer" onClick={onClick}>
     <div className="flex items-center gap-3">
       <span className="text-tiny text-muted-foreground w-4">{index + 1}</span>
@@ -147,40 +104,38 @@ const AssetRow = memo(({ asset, index, onClick }: { asset: typeof initialTrendin
     </div>
     <div className="text-right">
       <p className="text-small font-mono text-foreground">
-        ${asset.price.toFixed(asset.price < 1 ? 4 : 2)}
+        ${asset.price < 0.01 ? asset.price.toExponential(2) : asset.price.toFixed(2)}
       </p>
-      <p className={`text-tiny ${asset.change >= 0 ? 'text-success' : 'text-destructive'}`}>
-        {asset.change >= 0 ? '+' : ''}{asset.change.toFixed(2)}%
+      <p className={`text-tiny ${asset.change24h >= 0 ? 'text-success' : 'text-destructive'}`}>
+        {asset.change24h >= 0 ? '+' : ''}{asset.change24h.toFixed(2)}%
       </p>
     </div>
     <div className="text-right hidden md:block">
-      <p className="text-tiny text-muted-foreground">Vol: {asset.volume}</p>
-      <p className="text-tiny text-muted-foreground">MCap: {asset.marketCap}</p>
+      <p className="text-tiny text-muted-foreground">Vol: ${(asset.volume24h / 1000000).toFixed(1)}M</p>
     </div>
   </div>
 ));
 
 AssetRow.displayName = "AssetRow";
 
-const PoolRow = memo(({ pool, onClick }: { pool: typeof initialLiquidityPools[0]; onClick: () => void }) => (
+const PoolRow = memo(({ pool, onClick }: { pool: any; onClick: () => void }) => (
   <div className="p-4 flex items-center justify-between hover:bg-secondary/50 transition-colors cursor-pointer" onClick={onClick}>
     <div>
       <div className="flex items-center gap-2">
-        <p className="text-small font-medium text-foreground">{pool.pair}</p>
-        <Badge variant="secondary" className="text-tiny">{pool.age}</Badge>
+        <p className="text-small font-medium text-foreground truncate max-w-[120px]">{pool.id}</p>
+        <Badge variant="secondary" className="text-tiny">{pool.fee / 100}%</Badge>
       </div>
-      <p className="text-tiny text-muted-foreground">{pool.protocol}</p>
+      <p className="text-tiny text-muted-foreground">Liquidity Pool</p>
     </div>
     <div className="text-right">
       <p className="text-small font-mono text-success">
-        {pool.apy.toFixed(1)}% APY
+        ~5-15% APY
       </p>
       <p className="text-tiny text-muted-foreground">
-        ${(pool.tvl / 1000000).toFixed(1)}M TVL
+        {pool.totalShares} Shares
       </p>
     </div>
     <div className="text-right hidden md:block">
-      <p className="text-tiny text-muted-foreground">{pool.volume24h}</p>
       <p className="text-tiny text-primary flex items-center gap-1">
         View <ArrowUpRight className="w-3 h-3" />
       </p>
@@ -190,7 +145,8 @@ const PoolRow = memo(({ pool, onClick }: { pool: typeof initialLiquidityPools[0]
 
 PoolRow.displayName = "PoolRow";
 
-const DAppCard = memo(({ dapp, onClick }: { dapp: typeof emergingDApps[0]; onClick: () => void }) => (
+// Simplified DApp card 
+const DAppCard = memo(({ dapp, onClick }: { dapp: any; onClick: () => void }) => (
   <div className="card-elevated p-4 hover:shadow-card transition-all cursor-pointer" onClick={onClick}>
     <div className="flex items-center gap-3 mb-3">
       <span className="text-2xl">{dapp.logo}</span>
@@ -214,78 +170,75 @@ DAppCard.displayName = "DAppCard";
 
 export function TrendingSection() {
   const [searchQuery, setSearchQuery] = useState('');
-  const [protocols, setProtocols] = useState(sorobanProtocols);
-  const [trendingAssets, setTrendingAssets] = useState(initialTrendingAssets);
-  const [newLiquidityPools, setNewLiquidityPools] = useState(initialLiquidityPools);
-  const [networkAggregates, setNetworkAggregates] = useState(initialNetworkAggregates);
-  
-  // Modal states
-  const [selectedPool, setSelectedPool] = useState<typeof initialLiquidityPools[0] | null>(null);
-  const [selectedDApp, setSelectedDApp] = useState<typeof emergingDApps[0] | null>(null);
-  const [selectedProtocol, setSelectedProtocol] = useState<SorobanProtocol | null>(null);
-  const [selectedAsset, setSelectedAsset] = useState<Asset | null>(null);
+  // Queries
+  const { data: networkStats } = useQuery({
+    queryKey: ['networkStats'],
+    queryFn: stellarApi.getNetworkStats,
+    refetchInterval: 60000,
+  });
+
+  const { data: defaultProtocols = [], isLoading: protocolsLoading } = useQuery({
+    queryKey: ['protocols'],
+    queryFn: stellarApi.getSorobanProtocols,
+  });
+
+  const { data: defaultAssets = [], isLoading: assetsLoading } = useQuery({
+    queryKey: ['trendingAssets'],
+    queryFn: stellarApi.getTrendingAssets,
+  });
+
+  const { data: pools = [] } = useQuery({
+    queryKey: ['liquidityPools'],
+    queryFn: stellarApi.getLiquidityPools,
+  });
+
+  // Search Query
+  const { data: searchResults, isLoading: searchLoading } = useQuery({
+    queryKey: ['search', searchQuery],
+    queryFn: () => stellarApi.search(searchQuery),
+    enabled: searchQuery.length > 0,
+  });
+
+  // Derived state
+  const isSearching = searchQuery.length > 0;
+
+  const displayedAssets = isSearching
+    ? (searchResults?.matchedAssets || [])
+    : defaultAssets;
+
+  const displayedProtocols = isSearching
+    ? (searchResults?.matchedProtocols || [])
+    : defaultProtocols;
+
+  // Loading states
+  const showAssetsLoading = isSearching ? searchLoading : assetsLoading;
+  const showProtocolsLoading = isSearching ? searchLoading : protocolsLoading;
+
+
+  const [selectedPool, setSelectedPool] = useState<any>(null);
+  const [selectedDApp, setSelectedDApp] = useState<any>(null);
+  const [selectedProtocol, setSelectedProtocol] = useState<Protocol | null>(null);
+  const [selectedAsset, setSelectedAsset] = useState<MockAsset | null>(null);
+
   const [poolModalOpen, setPoolModalOpen] = useState(false);
   const [dappModalOpen, setDappModalOpen] = useState(false);
   const [protocolModalOpen, setProtocolModalOpen] = useState(false);
   const [assetModalOpen, setAssetModalOpen] = useState(false);
 
-  const handleAssetClick = useCallback((asset: typeof initialTrendingAssets[0]) => {
-    // Convert trending asset to Asset format for the modal
-    const assetData: Asset = {
-      id: asset.symbol,
+  const handleAssetClick = useCallback((asset: Asset) => {
+    const assetData: MockAsset = {
+      id: asset.id,
       name: asset.name,
       symbol: asset.symbol,
       logo: "⭐",
       balance: 0,
       value: 0,
       price: asset.price,
-      change24h: asset.change,
+      change24h: asset.change24h,
       chain: "Stellar",
     };
     setSelectedAsset(assetData);
     setAssetModalOpen(true);
-  }, []);
-
-  // Optimized live data simulation with longer interval
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setProtocols(prev => prev.map(protocol => ({
-        ...protocol,
-        tvl: protocol.tvl > 0 ? protocol.tvl * (1 + (Math.random() - 0.48) * 0.02) : 0,
-        apy: protocol.apy > 0 ? Math.max(1, protocol.apy + (Math.random() - 0.5) * 0.3) : 0
-      })));
-
-      setTrendingAssets(prev => prev.map(asset => ({
-        ...asset,
-        price: asset.symbol === 'USDC' ? 1.00 : Math.max(0.00001, asset.price * (1 + (Math.random() - 0.5) * 0.02)),
-        change: asset.change + (Math.random() - 0.5) * 0.5
-      })));
-
-      setNewLiquidityPools(prev => prev.map(pool => ({
-        ...pool,
-        tvl: pool.tvl * (1 + (Math.random() - 0.48) * 0.01),
-        apy: Math.max(1, pool.apy + (Math.random() - 0.5) * 0.5)
-      })));
-
-      setNetworkAggregates(prev => prev.map(agg => ({
-        ...agg,
-        value: agg.value * (1 + (Math.random() - 0.4) * 0.005)
-      })));
-    }, 5000); // Increased interval from 3s to 5s
-
-    return () => clearInterval(interval);
-  }, []);
-
-  const formatAggValue = useCallback((value: number, format: string) => {
-    if (format === 'currency') {
-      if (value >= 1000000000) return '$' + (value / 1000000000).toFixed(1) + 'B';
-      if (value >= 1000000) return '$' + (value / 1000000).toFixed(1) + 'M';
-      if (value >= 1000) return '$' + (value / 1000).toFixed(1) + 'K';
-      return '$' + value.toFixed(0);
-    }
-    if (value >= 1000000) return (value / 1000000).toFixed(1) + 'M';
-    if (value >= 1000) return (value / 1000).toFixed(1) + 'K';
-    return value.toLocaleString();
   }, []);
 
   return (
@@ -294,12 +247,12 @@ export function TrendingSection() {
         open={poolModalOpen}
         onOpenChange={setPoolModalOpen}
         pool={selectedPool ? {
-          pair: selectedPool.pair,
-          protocol: selectedPool.protocol,
-          tvl: selectedPool.tvl,
-          apy: selectedPool.apy,
-          age: selectedPool.age,
-          volume24h: selectedPool.volume24h,
+          pair: selectedPool.id.substring(0, 10) + '...',
+          protocol: 'Stellar DEX',
+          tvl: 0,
+          apy: 0,
+          age: 'N/A',
+          volume24h: 'N/A',
         } : null}
       />
       <DAppDetailModal
@@ -310,166 +263,162 @@ export function TrendingSection() {
       <ProtocolDetailModal
         open={protocolModalOpen}
         onOpenChange={setProtocolModalOpen}
-        protocol={selectedProtocol}
+        protocol={selectedProtocol as any}
       />
       <AssetDetailModal
         open={assetModalOpen}
         onOpenChange={setAssetModalOpen}
         asset={selectedAsset}
       />
+
       <section className="py-24 bg-secondary/20">
-      <div className="container mx-auto px-4">
-        {/* Section Header with Search */}
-        <div className="text-center max-w-2xl mx-auto mb-8 animate-fade-in">
-          <Badge variant="outline" className="mb-4 border-primary/30 text-primary">
-            <Activity className="w-3 h-3 mr-1" />
-            Live Data
-          </Badge>
-          <h2 className="text-h1 md:text-4xl font-bold text-foreground mb-4">
-            Explore the Stellar Ecosystem
-          </h2>
-          <p className="text-body text-muted-foreground mb-6">
-            Stream and aggregate Soroban smart contract positions, discover trending assets, and find new opportunities.
-          </p>
-          
-          {/* Search Bar */}
-          <div className="relative max-w-md mx-auto">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              type="text"
-              placeholder="Search assets, wallets, protocols..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 h-12 bg-background border-border"
-            />
-          </div>
-        </div>
+        <div className="container mx-auto px-4">
+          <div className="text-center max-w-2xl mx-auto mb-8 animate-fade-in">
+            <Badge variant="outline" className="mb-4 border-primary/30 text-primary">
+              <Activity className="w-3 h-3 mr-1" />
+              Live Data
+            </Badge>
+            <h2 className="text-h1 md:text-4xl font-bold text-foreground mb-4">
+              Explore the Stellar Ecosystem
+            </h2>
+            <p className="text-body text-muted-foreground mb-6">
+              Stream and aggregate Soroban smart contract positions, discover trending assets, and find new opportunities.
+            </p>
 
-        {/* Protocol Stats Banner */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-          {protocolStats.map((stat, index) => (
-            <ProtocolStatCard key={index} stat={stat} />
-          ))}
-        </div>
-
-        {/* Live Network Aggregates */}
-        <div className="mb-8">
-          <div className="flex items-center gap-2 mb-4">
-            <Activity className="w-5 h-5 text-primary animate-pulse" />
-            <h3 className="text-h3 font-semibold text-foreground">Live Network Aggregates</h3>
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-            {networkAggregates.map((item, index) => (
-              <NetworkAggregateCard key={index} item={item} formatValue={formatAggValue} />
-            ))}
-          </div>
-        </div>
-
-        {/* Soroban Positions */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2">
-              <Coins className="w-5 h-5 text-primary" />
-              <h3 className="text-h3 font-semibold text-foreground">Soroban Smart Contract Protocols</h3>
-              <Badge variant="secondary" className="text-tiny">Live</Badge>
-            </div>
-            <Link to="/soroban-positions">
-              <Button variant="ghost" size="sm" className="text-primary hover:text-primary/80">
-                View All <ChevronRight className="w-4 h-4 ml-1" />
-              </Button>
-            </Link>
-          </div>
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {protocols.slice(0, 4).map((protocol) => (
-              <ProtocolCard 
-                key={protocol.id} 
-                protocol={protocol} 
-                onClick={() => {
-                  setSelectedProtocol(protocol);
-                  setProtocolModalOpen(true);
-                }}
+            <div className="relative max-w-md mx-auto">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                type="text"
+                placeholder="Search assets, protocols..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10 h-12 bg-background border-border"
               />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+            {protocolStats.map((stat, index) => (
+              <ProtocolStatCard key={index} stat={stat} />
             ))}
           </div>
-        </div>
 
-        <div className="grid lg:grid-cols-2 gap-8">
-          {/* Trending Assets */}
-          <div>
+          {networkStats && (
+            <div className="mb-8">
+              <div className="flex items-center gap-2 mb-4">
+                <Activity className="w-5 h-5 text-primary animate-pulse" />
+                <h3 className="text-h3 font-semibold text-foreground">Live Network Aggregates</h3>
+              </div>
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+                <NetworkAggregateCard label="Total XLM Vol" value={networkStats.volume24h} change="+8.2%" format="currency" />
+                <NetworkAggregateCard label="Active Contracts" value={networkStats.activeContracts} change="+12" />
+                <NetworkAggregateCard label="Unique Wallets" value={networkStats.uniqueWallets} change="+2.1K" />
+                <NetworkAggregateCard label="Transactions" value={networkStats.txCount24h} change="+180K" />
+                <NetworkAggregateCard label="Gas Fees (XLM)" value={networkStats.fees24h} change="+12%" />
+                <NetworkAggregateCard label="Contract Calls" value={networkStats.contractCalls24h} change="+95K" />
+              </div>
+            </div>
+          )}
+
+          <div className="mb-8">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
-                <TrendingUp className="w-5 h-5 text-success" />
-                <h3 className="text-h3 font-semibold text-foreground">Trending Assets</h3>
+                <Coins className="w-5 h-5 text-primary" />
+                <h3 className="text-h3 font-semibold text-foreground">Soroban Smart Contract Protocols</h3>
+                <Badge variant="secondary" className="text-tiny">Live</Badge>
               </div>
-              <Link to="/trending-assets">
+              <Link to="/soroban-positions">
                 <Button variant="ghost" size="sm" className="text-primary hover:text-primary/80">
                   View All <ChevronRight className="w-4 h-4 ml-1" />
                 </Button>
               </Link>
             </div>
-            <div className="card-elevated divide-y divide-border max-h-[400px] overflow-y-auto">
-              {trendingAssets.slice(0, 5).map((asset, i) => (
-                <AssetRow key={asset.symbol} asset={asset} index={i} onClick={() => handleAssetClick(asset)} />
-              ))}
-            </div>
-          </div>
 
-          {/* New Liquidity Pools */}
-          <div>
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-2">
-                <Droplets className="w-5 h-5 text-primary" />
-                <h3 className="text-h3 font-semibold text-foreground">New Liquidity Pools</h3>
+            {showProtocolsLoading ? (
+              <div className="text-center py-8 text-muted-foreground">Loading protocols...</div>
+            ) : (
+              <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+                {displayedProtocols.slice(0, 4).map((protocol) => (
+                  <ProtocolCard
+                    key={protocol.id}
+                    protocol={protocol}
+                    onClick={() => {
+                      setSelectedProtocol(protocol);
+                      setProtocolModalOpen(true);
+                    }}
+                  />
+                ))}
+                {displayedProtocols.length === 0 && (
+                  <div className="col-span-full text-center py-4 text-muted-foreground">
+                    {isSearching ? `No protocols found matching "${searchQuery}"` : "No protocols available"}
+                  </div>
+                )}
               </div>
-              <Link to="/liquidity-pools">
-                <Button variant="ghost" size="sm" className="text-primary hover:text-primary/80">
-                  View All <ChevronRight className="w-4 h-4 ml-1" />
-                </Button>
-              </Link>
-            </div>
-            <div className="card-elevated divide-y divide-border max-h-[400px] overflow-y-auto">
-              {newLiquidityPools.slice(0, 5).map((pool) => (
-                <PoolRow 
-                  key={pool.pair} 
-                  pool={pool} 
-                  onClick={() => {
-                    setSelectedPool(pool);
-                    setPoolModalOpen(true);
-                  }}
-                />
-              ))}
-            </div>
+            )}
           </div>
-        </div>
 
-        {/* Emerging dApps */}
-        <div className="mt-8">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2">
-              <Boxes className="w-5 h-5 text-primary" />
-              <h3 className="text-h3 font-semibold text-foreground">Emerging dApps</h3>
+          <div className="grid lg:grid-cols-2 gap-8">
+            {/* Trending Assets */}
+            <div>
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2">
+                  <TrendingUp className="w-5 h-5 text-success" />
+                  <h3 className="text-h3 font-semibold text-foreground">
+                    {isSearching ? 'Search Results' : 'Trending Assets'}
+                  </h3>
+                </div>
+                <Link to="/trending-assets">
+                  <Button variant="ghost" size="sm" className="text-primary hover:text-primary/80">
+                    View All <ChevronRight className="w-4 h-4 ml-1" />
+                  </Button>
+                </Link>
+              </div>
+              <div className="card-elevated divide-y divide-border max-h-[400px] overflow-y-auto">
+                {showAssetsLoading ? (
+                  <div className="p-4 text-center text-muted-foreground">Loading assets...</div>
+                ) : (
+                  <>
+                    {displayedAssets.slice(0, 10).map((asset: Asset, i: number) => (
+                      <AssetRow key={asset.id} asset={asset} index={i} onClick={() => handleAssetClick(asset)} />
+                    ))}
+                    {displayedAssets.length === 0 && (
+                      <div className="p-4 text-center text-muted-foreground">
+                        {isSearching ? `No assets found matching "${searchQuery}"` : "No assets available"}
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
             </div>
-            <Link to="/emerging-dapps">
-              <Button variant="ghost" size="sm" className="text-primary hover:text-primary/80">
-                View All <ChevronRight className="w-4 h-4 ml-1" />
-              </Button>
-            </Link>
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-            {emergingDApps.slice(0, 5).map((dapp) => (
-              <DAppCard 
-                key={dapp.name} 
-                dapp={dapp} 
-                onClick={() => {
-                  setSelectedDApp(dapp);
-                  setDappModalOpen(true);
-                }}
-              />
-            ))}
+
+            <div>
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2">
+                  <Droplets className="w-5 h-5 text-primary" />
+                  <h3 className="text-h3 font-semibold text-foreground">New Liquidity Pools</h3>
+                </div>
+                <Link to="/liquidity-pools">
+                  <Button variant="ghost" size="sm" className="text-primary hover:text-primary/80">
+                    View All <ChevronRight className="w-4 h-4 ml-1" />
+                  </Button>
+                </Link>
+              </div>
+              <div className="card-elevated divide-y divide-border max-h-[400px] overflow-y-auto">
+                {pools.slice(0, 8).map((pool: any) => (
+                  <PoolRow
+                    key={pool.id}
+                    pool={pool}
+                    onClick={() => {
+                      setSelectedPool(pool);
+                      setPoolModalOpen(true);
+                    }}
+                  />
+                ))}
+              </div>
+            </div>
           </div>
         </div>
-      </div>
-    </section>
+      </section>
     </>
   );
 }

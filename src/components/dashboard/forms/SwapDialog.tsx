@@ -6,6 +6,10 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ArrowUpDown, Loader2, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/lib/api";
+import { useWallet } from "@/contexts/WalletContext";
+import { signAndSubmitTransaction } from "@/lib/stellar";
 
 interface SwapDialogProps {
   open: boolean;
@@ -27,14 +31,34 @@ export function SwapDialog({ open, onOpenChange, preselectedFromAsset }: SwapDia
   const [fromAmount, setFromAmount] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const { signTransaction, isConnected, address } = useWallet();
+
 
   const fromAssetData = assets.find(a => a.symbol === fromAsset);
   const toAssetData = assets.find(a => a.symbol === toAsset);
-  
-  const exchangeRate = fromAssetData && toAssetData 
-    ? fromAssetData.price / toAssetData.price 
-    : 0;
-  
+
+  // Fetch swap quote
+  const { data: quoteData } = useQuery({
+    queryKey: ['swapQuote', fromAsset, toAsset, fromAmount],
+    queryFn: async () => {
+      if (!fromAmount || parseFloat(fromAmount) <= 0) return null;
+      try {
+        const res = await api.get<any>(`/defi/swap/quote?fromToken=${fromAsset}&toToken=${toAsset}&amount=${fromAmount}`);
+        return res;
+      } catch (e) {
+        console.error(e);
+        return null; // Fallback or error state
+      }
+    },
+    enabled: !!fromAmount && parseFloat(fromAmount) > 0 && fromAsset !== toAsset,
+  });
+
+  // If we have a quote, derive rate from it, otherwise use fallback logic (or 0) for display
+  const exchangeRate = (quoteData && fromAmount && parseFloat(fromAmount) > 0)
+    ? (parseFloat(quoteData.buyAmount) / parseFloat(fromAmount)) // Assuming 0x/1inch style response: buyAmount
+    : (fromAssetData && toAssetData ? fromAssetData.price / toAssetData.price : 0); // Fallback to price ratio if no quote
+
+
   const toAmount = fromAmount ? (parseFloat(fromAmount) * exchangeRate).toFixed(6) : "";
 
   const handleSwapAssets = () => {
@@ -53,7 +77,7 @@ export function SwapDialog({ open, onOpenChange, preselectedFromAsset }: SwapDia
 
   const handleSwap = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!fromAmount || parseFloat(fromAmount) <= 0) {
       toast.error("Please enter a valid amount");
       return;
@@ -69,13 +93,36 @@ export function SwapDialog({ open, onOpenChange, preselectedFromAsset }: SwapDia
       return;
     }
 
+    if (!isConnected) {
+      toast.error("Please connect your wallet first");
+      return;
+    }
+
     setIsLoading(true);
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    toast.success(`Swapped ${fromAmount} ${fromAsset} for ${toAmount} ${toAsset}`);
-    setIsLoading(false);
-    setFromAmount("");
-    onOpenChange(false);
+    try {
+      // 1. Build Transaction
+      const buildRes = await api.post<{ transactionXdr: string }>('/defi/swap/build-tx', {
+        fromToken: fromAsset,
+        toToken: toAsset,
+        amount: fromAmount,
+        minAmountOut: toAmount, // Using calculated toAmount as minAmountOut for now, ideally strictly from quote
+        from: address
+      });
+
+      if (!buildRes?.transactionXdr) throw new Error("Failed to build transaction");
+
+      // 2. Sign & Submit
+      await signAndSubmitTransaction(buildRes.transactionXdr, signTransaction);
+
+      toast.success(`Swapped ${fromAmount} ${fromAsset} for ${toAsset}`);
+      setFromAmount("");
+      onOpenChange(false);
+    } catch (error: any) {
+      console.error("Swap failed", error);
+      toast.error(error.message || "Swap failed");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (

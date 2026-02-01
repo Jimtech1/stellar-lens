@@ -8,16 +8,22 @@ import { Loader2, TrendingUp, Shield, ExternalLink, Sparkles } from "lucide-reac
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/lib/api";
+import { useWallet } from "@/contexts/WalletContext";
+
 interface EarnDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
 const topOpportunities = [
-  { id: "1", protocol: "Blend Protocol", asset: "XLM-USDC", apy: 12.5, risk: "Low", tvl: "$15.2M", logo: "🔷" },
-  { id: "2", protocol: "Aquarius DEX", asset: "AQUA-XLM", apy: 22.3, risk: "Medium", tvl: "$8.2M", logo: "🌊" },
-  { id: "3", protocol: "Ultra Capital", asset: "yUSDC", apy: 8.4, risk: "Low", tvl: "$9.4M", logo: "💎" },
-  { id: "4", protocol: "Phoenix DeFi", asset: "PHO-XLM", apy: 32.1, risk: "High", tvl: "$4.2M", logo: "🔥" },
+  { id: "1", protocol: "Blend Protocol", asset: "XLM-USDC", apy: 12.5, risk: "Low", tvl: "$15.2M", logo: "🔷", chain: "Stellar" },
+  { id: "2", protocol: "Aquarius DEX", asset: "AQUA-XLM", apy: 22.3, risk: "Medium", tvl: "$8.2M", logo: "🌊", chain: "Stellar" },
+  { id: "3", protocol: "Ultra Capital", asset: "yUSDC", apy: 8.4, risk: "Low", tvl: "$9.4M", logo: "💎", chain: "Stellar" },
+  { id: "4", protocol: "Phoenix DeFi", asset: "PHO-XLM", apy: 32.1, risk: "High", tvl: "$4.2M", logo: "🔥", chain: "Stellar" },
+  { id: "5", protocol: "Aave", asset: "USDC", apy: 4.5, risk: "Low", tvl: "$1.2B", logo: "👻", chain: "Ethereum" },
+  { id: "6", protocol: "Uniswap", asset: "ETH-USDC", apy: 15.2, risk: "Medium", tvl: "$500M", logo: "🦄", chain: "Ethereum" },
 ];
 
 const assets = [
@@ -28,10 +34,11 @@ const assets = [
 
 export function EarnDialog({ open, onOpenChange }: EarnDialogProps) {
   const navigate = useNavigate();
-  const [selectedOpportunity, setSelectedOpportunity] = useState(topOpportunities[0]);
+  const [selectedOpportunity, setSelectedOpportunity] = useState<any | null>(null);
   const [selectedAsset, setSelectedAsset] = useState("XLM");
   const [amount, setAmount] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const { signTransaction, isConnected } = useWallet();
 
   const selectedAssetData = assets.find(a => a.symbol === selectedAsset);
 
@@ -41,9 +48,35 @@ export function EarnDialog({ open, onOpenChange }: EarnDialogProps) {
     return "text-destructive";
   };
 
+  const { walletType } = useWallet();
+  const isEVM = walletType === 'metamask';
+
+  const { data: yieldOpportunities, isLoading: isLoadingYields } = useQuery({
+    queryKey: ['yields', isEVM ? 'ethereum' : 'stellar'],
+    queryFn: async () => {
+      try {
+        const chainParam = isEVM ? 'ethereum' : 'stellar';
+        const res = await api.get<any[]>(`/defi/yields?chain=${chainParam}`);
+        return res || [];
+      } catch (e) {
+        console.error(e);
+        return [];
+      }
+    }
+  });
+
+  // Filter opportunities based on connected wallet
+  const displayOpportunities = (yieldOpportunities || []).filter(opp => {
+    const chain = (opp.chain || "").toLowerCase();
+    if (isEVM) return ['ethereum', 'polygon', 'arbitrum'].includes(chain) || !chain;
+    return chain === 'stellar' || !chain;
+  });
+
+  const activeOpportunity = selectedOpportunity || displayOpportunities[0];
+
   const handleInvest = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!amount || parseFloat(amount) <= 0) {
       toast.error("Please enter a valid amount");
       return;
@@ -54,13 +87,38 @@ export function EarnDialog({ open, onOpenChange }: EarnDialogProps) {
       return;
     }
 
+    if (!isConnected) {
+      toast.error("Please connect your wallet first");
+      return;
+    }
+
     setIsLoading(true);
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    toast.success(`Invested ${amount} ${selectedAsset} in ${selectedOpportunity.protocol}`);
-    setIsLoading(false);
-    setAmount("");
-    onOpenChange(false);
+    try {
+      // 1. Build Transaction
+      const buildRes = await api.post<{ transactionXdr: string }>('/defi/invest', {
+        opportunityId: activeOpportunity.id,
+        asset: selectedAsset,
+        amount: amount,
+        protocol: activeOpportunity.protocol
+      });
+
+      if (!buildRes?.transactionXdr) throw new Error("Failed to build transaction");
+
+      // 2. Sign
+      const signedXdr = await signTransaction(buildRes.transactionXdr);
+
+      // 3. Broadcast
+      await api.post('/rpc/broadcast', { transaction: signedXdr });
+
+      toast.success(`Invested ${amount} ${selectedAsset} in ${activeOpportunity.protocol}`);
+      setAmount("");
+      onOpenChange(false);
+    } catch (error: any) {
+      console.error("Investment failed", error);
+      toast.error(error.message || "Investment failed");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleExploreMore = () => {
@@ -85,19 +143,18 @@ export function EarnDialog({ open, onOpenChange }: EarnDialogProps) {
           <div>
             <Label className="mb-2 block">Select Opportunity</Label>
             <div className="grid grid-cols-2 gap-2">
-              {topOpportunities.map((opp) => (
+              {displayOpportunities.slice(0, 4).map((opp) => (
                 <button
                   key={opp.id}
                   type="button"
                   onClick={() => setSelectedOpportunity(opp)}
-                  className={`p-3 rounded-lg border text-left transition-all ${
-                    selectedOpportunity.id === opp.id
-                      ? "border-primary bg-primary/5 ring-1 ring-primary"
-                      : "border-border hover:border-primary/30"
-                  }`}
+                  className={`p-3 rounded-lg border text-left transition-all ${(activeOpportunity?.id === opp.id)
+                    ? "border-primary bg-primary/5 ring-1 ring-primary"
+                    : "border-border hover:border-primary/30"
+                    }`}
                 >
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="text-lg">{opp.logo}</span>
+                    <span className="text-lg">{opp.logo || "💰"}</span>
                     <span className="text-sm font-medium text-foreground truncate">{opp.protocol}</span>
                   </div>
                   <div className="flex items-center justify-between">
@@ -110,34 +167,36 @@ export function EarnDialog({ open, onOpenChange }: EarnDialogProps) {
           </div>
 
           {/* Selected Opportunity Details */}
-          <div className="p-4 bg-secondary/50 rounded-lg">
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-2">
-                <span className="text-2xl">{selectedOpportunity.logo}</span>
-                <div>
-                  <p className="font-semibold text-foreground">{selectedOpportunity.protocol}</p>
-                  <p className="text-xs text-muted-foreground">{selectedOpportunity.asset}</p>
+          {activeOpportunity && (
+            <div className="p-4 bg-secondary/50 rounded-lg">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <span className="text-2xl">{activeOpportunity.logo || "💰"}</span>
+                  <div>
+                    <p className="font-semibold text-foreground">{activeOpportunity.protocol}</p>
+                    <p className="text-xs text-muted-foreground">{activeOpportunity.asset}</p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <div className="flex items-center gap-1">
+                    <TrendingUp className="w-4 h-4 text-success" />
+                    <span className="text-lg font-bold text-success">{activeOpportunity.apy}%</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground">APY</p>
                 </div>
               </div>
-              <div className="text-right">
-                <div className="flex items-center gap-1">
-                  <TrendingUp className="w-4 h-4 text-success" />
-                  <span className="text-lg font-bold text-success">{selectedOpportunity.apy}%</span>
+              <div className="grid grid-cols-2 gap-3 text-sm">
+                <div className="flex items-center gap-2">
+                  <Shield className={`w-4 h-4 ${getRiskColor(activeOpportunity.risk)}`} />
+                  <span className={getRiskColor(activeOpportunity.risk)}>{activeOpportunity.risk} Risk</span>
                 </div>
-                <p className="text-xs text-muted-foreground">APY</p>
+                <div className="text-right">
+                  <span className="text-muted-foreground">TVL: </span>
+                  <span className="font-mono">{activeOpportunity.tvl}</span>
+                </div>
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-3 text-sm">
-              <div className="flex items-center gap-2">
-                <Shield className={`w-4 h-4 ${getRiskColor(selectedOpportunity.risk)}`} />
-                <span className={getRiskColor(selectedOpportunity.risk)}>{selectedOpportunity.risk} Risk</span>
-              </div>
-              <div className="text-right">
-                <span className="text-muted-foreground">TVL: </span>
-                <span className="font-mono">{selectedOpportunity.tvl}</span>
-              </div>
-            </div>
-          </div>
+          )}
 
           {/* Investment Form */}
           <form onSubmit={handleInvest} className="space-y-4">
@@ -189,7 +248,7 @@ export function EarnDialog({ open, onOpenChange }: EarnDialogProps) {
               <div className="p-3 bg-success/5 border border-success/20 rounded-lg">
                 <p className="text-xs text-muted-foreground mb-1">Estimated Annual Return</p>
                 <p className="text-lg font-bold text-success font-mono">
-                  +${(parseFloat(amount) * (selectedOpportunity.apy / 100)).toFixed(2)} {selectedAsset}
+                  +${(parseFloat(amount) * (activeOpportunity.apy / 100)).toFixed(2)} {selectedAsset}
                 </p>
               </div>
             )}

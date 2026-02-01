@@ -49,13 +49,13 @@ export function AssetsView() {
       try {
         return await api.get<Asset[]>('/portfolio/assets');
       } catch (e) {
-        console.warn("Using mock assets", e);
-        return mockAssets;
+        console.error("API error", e);
+        return [];
       }
     }
   });
 
-  const displayAssets = assetsData || mockAssets;
+  const displayAssets = assetsData || [];
 
   // Live price updates
   const liveAssets = useLiveAssets(displayAssets);
@@ -158,8 +158,8 @@ export function AssetsView() {
                 key={chain}
                 onClick={() => setSelectedChain(chain)}
                 className={`px-3 py-1.5 text-small font-medium rounded-md transition-colors capitalize whitespace-nowrap ${selectedChain === chain
-                    ? "bg-card text-foreground shadow-sm"
-                    : "text-muted-foreground hover:text-foreground"
+                  ? "bg-card text-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground"
                   }`}
               >
                 {chain === "all" ? "All Chains" : chain}
@@ -174,8 +174,8 @@ export function AssetsView() {
                 key={col}
                 onClick={() => toggleSort(col)}
                 className={`px-3 py-1.5 text-small font-medium rounded-lg border transition-colors flex items-center gap-1.5 ${sortBy === col
-                    ? "border-primary text-primary bg-primary/5"
-                    : "border-border text-muted-foreground hover:text-foreground"
+                  ? "border-primary text-primary bg-primary/5"
+                  : "border-border text-muted-foreground hover:text-foreground"
                   }`}
               >
                 {col === "value" ? "Value" : col === "change24h" ? "24h %" : "APY"}
@@ -234,8 +234,8 @@ export function AssetsView() {
                           key={chain}
                           onClick={() => setSelectedChain(chain)}
                           className={`px-2.5 py-1 text-xs font-medium rounded-md transition-colors capitalize ${selectedChain === chain
-                              ? "bg-primary text-primary-foreground"
-                              : "bg-secondary text-muted-foreground"
+                            ? "bg-primary text-primary-foreground"
+                            : "bg-secondary text-muted-foreground"
                             }`}
                         >
                           {chain === "all" ? "All" : chain}
@@ -253,8 +253,8 @@ export function AssetsView() {
                           key={col}
                           onClick={() => toggleSort(col)}
                           className={`px-2.5 py-1 text-xs font-medium rounded-md transition-colors flex items-center gap-1 ${sortBy === col
-                              ? "bg-primary text-primary-foreground"
-                              : "bg-secondary text-muted-foreground"
+                            ? "bg-primary text-primary-foreground"
+                            : "bg-secondary text-muted-foreground"
                             }`}
                         >
                           {col === "value" ? "Value" : col === "change24h" ? "24h %" : col === "apy" ? "APY" : "Balance"}

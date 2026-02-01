@@ -6,6 +6,8 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ArrowDown, ArrowUp, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { useWallet } from "@/contexts/WalletContext";
+import { api } from "@/lib/api";
 
 interface DepositWithdrawDialogProps {
   open: boolean;
@@ -24,13 +26,14 @@ export function DepositWithdrawDialog({ open, onOpenChange, type }: DepositWithd
   const [selectedAsset, setSelectedAsset] = useState("USDC");
   const [amount, setAmount] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const { signTransaction, isConnected } = useWallet();
 
   const selectedAssetData = assets.find(a => a.symbol === selectedAsset);
   const isDeposit = type === "deposit";
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!amount || parseFloat(amount) <= 0) {
       toast.error("Please enter a valid amount");
       return;
@@ -41,15 +44,47 @@ export function DepositWithdrawDialog({ open, onOpenChange, type }: DepositWithd
       return;
     }
 
+    if (!isDeposit && !isConnected) {
+      toast.error("Please connect your wallet to withdraw");
+      return;
+    }
+
     setIsLoading(true);
-    
-    // Simulate transaction
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
-    toast.success(`${isDeposit ? "Deposit" : "Withdrawal"} of ${amount} ${selectedAsset} initiated`);
-    setIsLoading(false);
-    setAmount("");
-    onOpenChange(false);
+
+    try {
+      if (isDeposit) {
+        // Deposit is usually manual transfer to displayed address
+        // So we just simulate "initiation" or instructions
+        await new Promise(resolve => setTimeout(resolve, 1500));
+        toast.success(`Deposit of ${amount} ${selectedAsset} initiated`);
+      } else {
+        // Withdrawal Flow
+        // 1. Build TX
+        const buildRes = await api.post<{ transactionXdr: string }>('/wallet/withdraw', {
+          asset: selectedAsset,
+          amount: amount,
+          // destination: ... (if needed, or implicit to linked wallet)
+        });
+
+        if (!buildRes?.transactionXdr) throw new Error("Failed to build transaction");
+
+        // 2. Sign
+        const signedXdr = await signTransaction(buildRes.transactionXdr);
+
+        // 3. Broadcast
+        await api.post('/rpc/broadcast', { transaction: signedXdr });
+
+        toast.success(`Withdrawal of ${amount} ${selectedAsset} successful`);
+      }
+
+      setAmount("");
+      onOpenChange(false);
+    } catch (error: any) {
+      console.error("Action failed", error);
+      toast.error(error.message || "Action failed");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleMaxClick = () => {

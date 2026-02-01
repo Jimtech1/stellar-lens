@@ -15,6 +15,7 @@ interface WalletContextType extends WalletState {
     connect: (type: WalletType) => Promise<string | null>;
     disconnect: () => void;
     signMessage: (message: string) => Promise<string>;
+    signTransaction: (xdr: string) => Promise<string>;
 }
 
 const WalletContext = createContext<WalletContextType | undefined>(undefined);
@@ -124,7 +125,7 @@ export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ childr
                 }
                 // Freighter returns the signed message (signature) directly in some versions or an object
                 // Based on docs: returns { signedMessage } or error
-                return response.signedMessage;
+                return response.signedMessage as string;
             } catch (e) {
                 console.error("Freighter signing error", e);
                 throw new Error("Failed to sign message with Freighter");
@@ -140,8 +141,30 @@ export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         throw new Error('Signing not implemented for this wallet');
     };
 
+    const signTransaction = async (xdr: string): Promise<string> => {
+        const currentState = stateRef.current;
+        if (!currentState.address || !currentState.walletType) throw new Error('No wallet connected');
+
+        if (currentState.walletType === 'freighter') {
+            try {
+                const { signTransaction: signFreighterTransaction } = await import("@stellar/freighter-api");
+                const response = await signFreighterTransaction(xdr, { networkPassphrase: "Test SDF Network ; September 2015" }); // Using Testnet for dev, ideally configurable
+
+                if (response.error) {
+                    throw new Error(response.error);
+                }
+                return response.signedTxXdr;
+            } catch (e) {
+                console.error("Freighter tx signing error", e);
+                throw new Error("Failed to sign transaction with Freighter");
+            }
+        }
+
+        throw new Error("Transaction signing not supported for this wallet type");
+    };
+
     return (
-        <WalletContext.Provider value={{ ...state, connect, disconnect, signMessage }}>
+        <WalletContext.Provider value={{ ...state, connect, disconnect, signMessage, signTransaction }}>
             {children}
         </WalletContext.Provider>
     );
