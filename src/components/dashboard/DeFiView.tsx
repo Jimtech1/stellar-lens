@@ -131,7 +131,6 @@ export function DeFiView() {
                 <EarnDialog
                     open={earnOpen}
                     onOpenChange={setEarnOpen}
-                    activeOpportunity={selectedOpp}
                 />
             )}
         </div>

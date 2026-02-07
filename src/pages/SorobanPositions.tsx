@@ -73,7 +73,10 @@ export default function SorobanPositions() {
         if (sortBy === 'tvl') return b.tvl - a.tvl;
         if (sortBy === 'apy') return b.apy - a.apy;
         if (sortBy === 'users') {
-          const parseUsers = (u: string) => parseFloat(u.replace('K', '')) * (u.includes('K') ? 1000 : 1);
+          const parseUsers = (u: string | number) => {
+            const str = String(u);
+            return parseFloat(str.replace('K', '')) * (str.includes('K') ? 1000 : 1);
+          };
           return parseUsers(b.users) - parseUsers(a.users);
         }
         if (sortBy === 'name') return a.name.localeCompare(b.name);
