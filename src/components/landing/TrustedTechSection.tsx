@@ -14,7 +14,7 @@ const technologies = [
   },
   {
     icon: Layers,
-    name: "LayerZero CCTP V2",
+    name: "Circle CCTP V2",
     description: "Protocol for cross-chain bridging",
   },
   {
