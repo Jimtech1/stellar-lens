@@ -7,7 +7,6 @@ import { HoloBackground } from "@/components/landing/HoloBackground";
 import { Skeleton } from "@/components/ui/skeleton";
 
 // Lazy load dashboard views with prefetch hints
-// Lazy load dashboard views with prefetch hints
 const PortfolioOverview = lazy(() => import("@/components/dashboard/PortfolioOverview").then(m => ({ default: m.PortfolioOverview })));
 const AssetsView = lazy(() => import("@/components/dashboard/AssetsView").then(m => ({ default: m.AssetsView })));
 const BridgeView = lazy(() => import("@/components/dashboard/BridgeView").then(m => ({ default: m.BridgeView })));

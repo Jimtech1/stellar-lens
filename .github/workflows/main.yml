@@ -1,0 +1,43 @@
+name: Deploy yielder fe (docker)
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan ${{ secrets.SERVER_IP }} >> ~/.ssh/known_hosts
+
+      - name: Sync code to server
+        run: |
+          rsync -av --delete ./ \
+          ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}:/home/ubuntu/yielder/fe
+
+      - name: Build & run container
+        run: |
+          ssh ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} << EOF
+          cd /home/ubuntu/yielder/fe
+
+          docker build -t yielder-ui .
+
+          docker stop yielder-ui || true
+          docker rm yielder-ui || true
+
+          docker run -d \
+            --name yielder-ui \
+            -p 3000:3000 \
+            -e VITE_API_BASE_URL="${{ secrets.VITE_API_BASE_URL }}" \
+            --restart unless-stopped \
+            yielder-ui
+          EOF
