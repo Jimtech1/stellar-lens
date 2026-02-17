@@ -10,6 +10,7 @@ import {
   History,
   Activity,
   TrendingUp,
+  Eye,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { DashboardView } from "@/pages/Dashboard";
@@ -30,6 +31,7 @@ const navItems = [
   { id: "analytics" as DashboardView, label: "Analytics", icon: BarChart3 },
   { id: "activity" as DashboardView, label: "Activity", icon: Activity },
   { id: "pnl" as DashboardView, label: "Profit & Loss", icon: TrendingUp },
+  { id: "smartmoney" as DashboardView, label: "Smart Money", icon: Eye },
   { id: "transactions" as DashboardView, label: "Transactions", icon: History },
   { id: "settings" as DashboardView, label: "Settings", icon: Settings },
 ];
