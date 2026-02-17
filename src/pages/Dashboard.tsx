@@ -15,8 +15,10 @@ const AnalyticsView = lazy(() => import("@/components/dashboard/AnalyticsView").
 const SettingsView = lazy(() => import("@/components/dashboard/SettingsView").then(m => ({ default: m.SettingsView })));
 const TransactionHistoryView = lazy(() => import("@/components/dashboard/TransactionHistoryView").then(m => ({ default: m.TransactionHistoryView })));
 const WalletManagementView = lazy(() => import("@/components/dashboard/WalletManagementView").then(m => ({ default: m.WalletManagementView })));
+const ActivityFeedView = lazy(() => import("@/components/dashboard/ActivityFeedView").then(m => ({ default: m.ActivityFeedView })));
+const ProfitLossView = lazy(() => import("@/components/dashboard/ProfitLossView").then(m => ({ default: m.ProfitLossView })));
 
-export type DashboardView = "overview" | "assets" | "wallets" | "bridge" | "discover" | "analytics" | "transactions" | "settings";
+export type DashboardView = "overview" | "assets" | "wallets" | "bridge" | "discover" | "analytics" | "activity" | "pnl" | "transactions" | "settings";
 
 // View loading skeleton
 const ViewLoader = memo(() => (
@@ -64,6 +66,10 @@ const Dashboard = () => {
         return <DiscoverView />;
       case "analytics":
         return <AnalyticsView />;
+      case "activity":
+        return <ActivityFeedView />;
+      case "pnl":
+        return <ProfitLossView />;
       case "transactions":
         return <TransactionHistoryView />;
       case "settings":
